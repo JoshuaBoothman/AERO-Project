@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import Home from './pages/Home';
+import Events from './pages/Events';
+import EventDetails from './pages/EventDetails'; // <--- Import
 import './App.css';
 
 function App() {
@@ -39,6 +41,11 @@ function App() {
               <Route path="events" element={<Events />} /> 
           */}
         </Route>
+
+        <Route path="events" element={<Events />} />
+
+        <Route path="events/:slug" element={<EventDetails />} />
+// ...
       </Routes>
     </BrowserRouter>
   );

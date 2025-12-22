@@ -22,3 +22,21 @@
 ### Next Steps
 * Build the "Events List" page.
 * Create the "Event Details" view.
+
+## [2025-12-22] - Public Events Module
+**Milestone:** Public Events & Details Views Completed
+
+### Completed Items
+* **Database**
+    * Seeded `venues` and `events` (Past, Active, Planned).
+* **Backend (API)**
+    * Created `getEvents`: Fetches public events sorted by date.
+    * Created `getEventDetail`: Fetches single event by slug with venue details.
+* **Frontend (Client)**
+    * **Theming:** Updated `Layout.jsx` to expose organization colors as CSS variables (`--primary-color`, `--accent-color`).
+    * **Events List:** Created `Events.jsx` with responsive grid layout and "Active" event highlighting.
+    * **Event Details:** Created `EventDetails.jsx` with status-aware badges and dynamic button logic (View Recap vs Get Tickets).
+    * **Routing:** Added dynamic route `/events/:slug`.
+
+### Next Steps
+* **Authentication:** Build Login/Register flow to enable Ticket Purchasing.
