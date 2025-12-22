@@ -5,6 +5,9 @@ import Home from './pages/Home';
 import Events from './pages/Events';
 import EventDetails from './pages/EventDetails'; 
 import './App.css';
+import { AuthProvider } from './context/AuthContext';
+import Login from './pages/Login';
+import Register from './pages/Register';
 
 function App() {
   const [orgSettings, setOrgSettings] = useState(null);
@@ -29,6 +32,7 @@ function App() {
   }, []);
 
   return (
+    <AuthProvider>
     <BrowserRouter>
       <Routes>
         {/* The Layout wraps all routes inside it */}
@@ -40,12 +44,16 @@ function App() {
           <Route path="events" element={<Events />} />
 
           <Route path="events/:slug" element={<EventDetails />} />
+          
+          <Route path="login" element={<Login />} />
+          <Route path="register" element={<Register />} />
         </Route>
 
         
 // ...
       </Routes>
-    </BrowserRouter>
+      </BrowserRouter>
+      </AuthProvider>
   );
 }
 

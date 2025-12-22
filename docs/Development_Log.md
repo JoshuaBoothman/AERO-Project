@@ -58,3 +58,20 @@
 
 ### Next Steps
 * **Authentication:** Build Login/Register flow to enable Ticket Purchasing.
+
+## [2025-12-22] - Authentication Infrastructure
+**Milestone:** User Registration & Login Flow
+
+### Completed Items
+* **Backend (API)**
+    * Installed `bcryptjs` and `jsonwebtoken`.
+    * Hardened `db.js` to use parameterized queries (SQL Injection protection).
+    * Created `authRegister` endpoint (Hashes password, creates User).
+    * Created `authLogin` endpoint (Validates credentials, returns JWT).
+* **Frontend (Client)**
+    * Implemented `AuthContext` for global user state management.
+    * Created `Login.jsx` and `Register.jsx` pages.
+    * Updated `Layout.jsx` to show "Login" vs "User Profile" based on state.
+
+### Next Steps
+* **Ticket Purchasing:** Connect the "Get Tickets" button in Event Details to a secure purchase flow.

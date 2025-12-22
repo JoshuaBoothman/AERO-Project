@@ -1,10 +1,12 @@
-import { Outlet } from 'react-router-dom';
+import { Outlet, Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 function Layout({ orgSettings, loading, error }) {
+  const { user, logout } = useAuth(); // <--- Get user state
+
   if (loading) return <div>Loading settings...</div>;
   if (error) return <div>Error: {error}</div>;
 
-  // We create a style object that defines all our CSS variables dynamically
   const themeStyles = {
     '--primary-color': orgSettings?.primary_color || '#000000',
     '--secondary-color': orgSettings?.secondary_color || '#FFFFFF',
@@ -12,14 +14,62 @@ function Layout({ orgSettings, loading, error }) {
   };
 
   return (
-    // Apply the themeStyles object to the wrapper
     <div className="app-container" style={themeStyles}>
       <header style={{ 
           backgroundColor: 'var(--primary-color)', 
-          color: 'var(--secondary-color)' 
+          color: 'var(--secondary-color)',
+          padding: '1rem',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
         }}>
-        <h1>{orgSettings?.organization_name}</h1>
-        <p>Support: {orgSettings?.support_email}</p>
+        
+        {/* Left Side: Logo/Name */}
+        <div>
+          <h1 style={{ margin: 0 }}>{orgSettings?.organization_name}</h1>
+          <small>Support: {orgSettings?.support_email}</small>
+        </div>
+
+        {/* Right Side: Navigation */}
+        <nav style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <Link to="/" style={{ color: 'inherit', textDecoration: 'none' }}>Home</Link>
+          <Link to="/events" style={{ color: 'inherit', textDecoration: 'none' }}>Events</Link>
+          
+          {/* Auth Logic */}
+          {user ? (
+            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', borderLeft: '1px solid rgba(255,255,255,0.3)', paddingLeft: '1rem' }}>
+              <span>Hi, {user.firstName}</span>
+              <button 
+                onClick={logout} 
+                style={{ 
+                  background: 'rgba(0,0,0,0.2)', 
+                  border: 'none', 
+                  color: 'inherit', 
+                  padding: '5px 10px', 
+                  cursor: 'pointer',
+                  borderRadius: '4px'
+                }}
+              >
+                Logout
+              </button>
+            </div>
+          ) : (
+            <Link 
+              to="/login" 
+              style={{ 
+                backgroundColor: 'var(--accent-color)', 
+                color: 'var(--primary-color)', 
+                padding: '0.5rem 1rem', 
+                borderRadius: '4px', 
+                textDecoration: 'none',
+                fontWeight: 'bold'
+              }}
+            >
+              Login
+            </Link>
+          )}
+        </nav>
+
       </header>
       
       <main>
