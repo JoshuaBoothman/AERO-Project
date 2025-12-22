@@ -8,6 +8,7 @@ import './App.css';
 import { AuthProvider } from './context/AuthContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import EventPurchase from './pages/EventPurchase';
 
 function App() {
   const [orgSettings, setOrgSettings] = useState(null);
@@ -46,7 +47,9 @@ function App() {
           <Route path="events/:slug" element={<EventDetails />} />
           
           <Route path="login" element={<Login />} />
-          <Route path="register" element={<Register />} />
+            <Route path="register" element={<Register />} />
+            
+            <Route path="events/:slug/purchase" element={<EventPurchase />} />
         </Route>
 
         

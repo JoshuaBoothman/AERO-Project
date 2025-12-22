@@ -75,3 +75,22 @@
 
 ### Next Steps
 * **Ticket Purchasing:** Connect the "Get Tickets" button in Event Details to a secure purchase flow.
+
+## [2025-12-23] - Ticket Purchasing MVP
+**Milestone:** End-to-End Ticket Purchase Flow (Mock Payment)
+
+### Completed Items
+* **Database**
+    * Seeded `event_ticket_types` for the active event.
+* **Backend (API)**
+    * **Refactor:** Upgraded `db.js` to use Singleton Connection Pool pattern (Performance/Stability).
+    * **Feature:** Created `createOrder` endpoint with atomic SQL Transactions (Orders + OrderItems + Attendees + Transactions).
+    * **Update:** Modified `getEventDetail` to fetch and return available ticket types.
+* **Frontend (Client)**
+    * **UX:** Implemented "Ticket Selector" Modal in `EventDetails.jsx`.
+    * **Logic:** Connected Checkout button to `createOrder` API.
+    * **State:** Removed broken navigation flow; replaced with instant feedback Modal.
+
+### Next Steps
+* **Attendee Management:** Allow purchasers to assign specific names/emails to their tickets.
+* **My Orders:** Create a User Profile view to see purchase history.

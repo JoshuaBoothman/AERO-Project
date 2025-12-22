@@ -1,5 +1,11 @@
 # AERO Project Backlog & Enhancements
 
+## High Priority
+* [ ] **Attendee Assignment Flow:** * Create UI for users to view their purchased tickets.
+    * Allow assigning a specific "Person" (Name/Email) to each ticket.
+    * Handle "Guest" creation vs "Existing User" lookup.
+* [ ] **Waiver System:** Implement digital waiver signing for assigned attendees.
+
 ## Authentication & User Management
 - [ ] **Email Confirmation:** Implement a flow to verify user email addresses upon registration (likely using SendGrid or similar).
 - [ ] **Social Login:** Add "Sign in with Google" (and potentially Microsoft) using OAuth.
