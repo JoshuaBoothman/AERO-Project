@@ -94,3 +94,17 @@
 ### Next Steps
 * **Attendee Management:** Allow purchasers to assign specific names/emails to their tickets.
 * **My Orders:** Create a User Profile view to see purchase history.
+
+## [2025-12-23] - Attendee Management & UI Polish
+**Milestone:** Attendee Data Capture & Visual Consistency
+
+### Completed Items
+* **Backend (API)**
+    * **Feature:** Updated `createOrder` endpoint to process `attendees` array within the main transaction.
+    * **Logic:** Implemented automatic 8-character `ticket_code` generation for each registered attendee.
+    * **Data:** Verified insertion into `attendees` table linking to specific `order_items`.
+* **Frontend (Client)**
+    * **UX:** Implemented `AttendeeModal` workflow in `EventDetails.jsx`, intercepting checkout to collect Names/Emails per ticket.
+    * **UI Core:** Implemented Global Box-Sizing Reset (`box-sizing: border-box`) to fix layout overflows.
+    * **Visuals:** Standardized "Status Badges" to use Brand/Accent colors consistently across Events List and Details views.
+    * **Fix:** Enforced strict aspect ratio and dimensions for Event Hero images to prevent layout shifts.

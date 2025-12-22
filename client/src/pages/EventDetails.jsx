@@ -15,7 +15,9 @@ function EventDetails() {
   
   // Purchase State
   const [showTicketModal, setShowTicketModal] = useState(false);
+  const [showAttendeeModal, setShowAttendeeModal] = useState(false);
   const [cart, setCart] = useState({}); // { ticket_type_id: quantity }
+  const [attendeeDetails, setAttendeeDetails] = useState({}); // { "ticketId_index": { firstName, lastName, email } }
   const [purchasing, setPurchasing] = useState(false);
   const [purchaseSuccess, setPurchaseSuccess] = useState(null);
 
@@ -33,6 +35,7 @@ function EventDetails() {
             const { tickets, ...eventData } = data;
             setEvent(eventData);
         } else {
+            // Fallback if tickets aren't nested (based on previous API iterations)
             setEvent(data);
         }
       } catch (err) {
@@ -44,195 +47,238 @@ function EventDetails() {
     fetchEvent();
   }, [slug]);
 
-  const handleGetTickets = () => {
-    if (!user) {
-        // Redirect to login, but remember to come back here!
-        navigate('/login', { state: { from: location } });
-    } else {
-        setShowTicketModal(true);
-    }
-  };
-
-  const updateCart = (ticketId, delta) => {
+  const updateCart = (ticketId, change) => {
     setCart(prev => {
-        const currentQty = prev[ticketId] || 0;
-        const newQty = Math.max(0, currentQty + delta);
-        return { ...prev, [ticketId]: newQty };
+        const current = prev[ticketId] || 0;
+        const next = Math.max(0, current + change);
+        if (next === 0) {
+            const { [ticketId]: _, ...rest } = prev;
+            return rest;
+        }
+        return { ...prev, [ticketId]: next };
     });
   };
 
-  const handleCheckout = async () => {
+  const handleInitialCheckout = () => {
+    // 1. Close ticket modal, Open Attendee modal
+    setShowTicketModal(false);
+    setShowAttendeeModal(true);
+    
+    // 2. Initialize attendee slots
+    const initialSlots = {};
+    Object.entries(cart).forEach(([ticketId, qty]) => {
+        for(let i=0; i<qty; i++) {
+             initialSlots[`${ticketId}_${i}`] = { firstName: '', lastName: '', email: user?.email || '' };
+        }
+    });
+    setAttendeeDetails(initialSlots);
+  };
+
+  const handleAttendeeChange = (key, field, value) => {
+    setAttendeeDetails(prev => ({
+        ...prev,
+        [key]: { ...prev[key], [field]: value }
+    }));
+  };
+
+  const handleFinalCheckout = async () => {
+    if (!user) {
+        navigate('/login', { state: { from: location } });
+        return;
+    }
+
     setPurchasing(true);
     setError(null);
 
-    // Prepare items for API
-    const items = Object.entries(cart)
-        .filter(([_, qty]) => qty > 0)
-        .map(([id, qty]) => ({ ticketTypeId: parseInt(id), quantity: qty }));
-
-    if (items.length === 0) {
-        alert("Please select at least one ticket.");
-        setPurchasing(false);
-        return;
-    }
+    // Prepare payload
+    const itemsPayload = Object.entries(cart).map(([ticketTypeId, quantity]) => {
+        // Gather attendees for this ticket type
+        const attendees = [];
+        for(let i=0; i<quantity; i++) {
+            const key = `${ticketTypeId}_${i}`;
+            attendees.push(attendeeDetails[key]);
+        }
+        return { ticketTypeId: parseInt(ticketTypeId), quantity, attendees };
+    });
 
     try {
         const token = localStorage.getItem('token');
         const res = await fetch('/api/createOrder', {
             method: 'POST',
-            headers: {
+            headers: { 
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify({
                 eventId: event.event_id,
-                items
+                items: itemsPayload
             })
         });
 
-        const result = await res.json();
+        const data = await res.json();
         
-        if (!res.ok) throw new Error(result.error || "Purchase failed");
-
-        setPurchaseSuccess(result);
-        setCart({}); // Clear cart
-        // Don't close modal immediately so they see success message
-
+        if (res.ok) {
+            setPurchaseSuccess(data);
+            setCart({});
+            setAttendeeDetails({});
+            setShowAttendeeModal(false);
+        } else {
+            setError(data.error || 'Purchase failed');
+            setShowAttendeeModal(false); 
+            setShowTicketModal(true); 
+        }
     } catch (err) {
-        console.error(err);
-        alert(`Error: ${err.message}`);
+        setError(err.message);
     } finally {
         setPurchasing(false);
     }
   };
 
-  if (loading) return <div>Loading details...</div>;
-  if (error) return <div className="card"><h3>Error</h3><p>{error}</p><Link to="/events">Back to Events</Link></div>;
+  if (loading) return <div className="container">Loading...</div>;
+  if (error) return <div className="container error">{error}</div>;
+  if (!event) return <div className="container">Event not found</div>;
 
-  const formatDate = (date) => new Date(date).toLocaleDateString() + ' ' + new Date(date).toLocaleTimeString();
-  const isPast = new Date(event.end_date) < new Date();
-
-  // Helper for total calculation
-  const cartTotal = Object.entries(cart).reduce((total, [id, qty]) => {
-      const ticket = tickets.find(t => t.ticket_type_id === parseInt(id));
-      return total + (ticket ? ticket.price * qty : 0);
+  const cartTotal = tickets.reduce((sum, t) => {
+    return sum + (t.price * (cart[t.ticket_type_id] || 0));
   }, 0);
 
   return (
-    <div className="event-details-page">
-      <Link to="/events" className="back-link">← Back to Events</Link>
-      
-      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        {/* Banner */}
-        {event.banner_url && (
-            <div style={{ width: '100%', height: '300px', overflow: 'hidden', borderBottom: '1px solid #eee' }}>
-                <img src={event.banner_url} alt={event.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            </div>
-        )}
-
-        <div style={{ padding: '2rem' }}>
-            <h1>{event.name}</h1>
-            
-            {/* Status Badge */}
-            <div className="status-badge" style={{ 
-                display: 'inline-block', padding: '4px 8px', borderRadius: '4px', marginBottom: '1rem',
-                fontWeight: 'bold', fontSize: '0.85rem', background: '#eee', color: '#555'
-            }}>
-                {event.status.toUpperCase()}
-            </div>
-
-            <h3>Date & Time</h3>
-            <p>{formatDate(event.start_date)} - {formatDate(event.end_date)}</p>
-
-            <h3>Location</h3>
-            <p><strong>{event.venue_name}</strong><br/>{event.address_line_1}<br/>{event.city}, {event.state} {event.postcode}</p>
-
-            <h3>About this Event</h3>
-            <p style={{ whiteSpace: 'pre-line' }}>{event.description}</p>
-
-            <hr />
-            
-            <div className="actions">
-                {event.is_purchasing_enabled ? (
-                    <button 
-                      className="primary-button" 
-                      onClick={handleGetTickets}
-                    >
-                        Get Tickets
-                    </button>
-                ) : (
-                    <button disabled style={{ opacity: 0.6, cursor: 'not-allowed' }}>
-                        {isPast ? 'Event Ended' : 'Ticket Sales Closed'}
-                    </button>
-                )}
-            </div>
+    <div className="container">
+      {event.banner_url && (
+        <div className="event-banner">
+            <img src={event.banner_url} alt={event.name} />
         </div>
+      )}
+      
+      <div className="event-header">
+        <Link to="/events" className="back-link">← Back to Events</Link>
+        <span className={`status-badge status-${event.status?.toLowerCase()}`}>
+            {event.status}
+        </span>
+      </div>
+      
+      <div className="event-hero">
+          <h1>{event.name}</h1>
+          <p>{event.description}</p>
+          <button 
+             className="primary-button"
+             onClick={() => setShowTicketModal(true)}
+          >
+             Get Tickets
+          </button>
       </div>
 
-      {/* TICKET MODAL */}
+      {purchaseSuccess && (
+        <div style={{ backgroundColor: '#d4edda', color: '#155724', padding: '1rem', borderRadius: '4px', marginTop: '1rem' }}>
+            <h3>Success!</h3>
+            <p>{purchaseSuccess.message}</p>
+            <p>Order ID: #{purchaseSuccess.orderId}</p>
+        </div>
+      )}
+
+      {/* Ticket Selection Modal */}
       {showTicketModal && (
-        <div style={{
-            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
-        }}>
-            <div className="card" style={{ width: '90%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto' }}>
+        <div className="modal-overlay">
+            <div className="modal-content">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                     <h2>Select Tickets</h2>
-                    <button onClick={() => setShowTicketModal(false)} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer' }}>×</button>
+                    <button className="secondary-button" onClick={() => setShowTicketModal(false)}>Close</button>
                 </div>
-
-                {purchaseSuccess ? (
-                    <div style={{ textAlign: 'center', padding: '2rem 0' }}>
-                        <h3 style={{ color: 'green' }}>Order Confirmed!</h3>
-                        <p>Order ID: #{purchaseSuccess.orderId}</p>
-                        <p>Total Paid: ${purchaseSuccess.total}</p>
-                        <button className="secondary-button" onClick={() => setShowTicketModal(false)}>Close</button>
-                    </div>
+                
+                {tickets.length === 0 ? (
+                    <p>No tickets available for this event.</p>
                 ) : (
                     <>
-                        {tickets.length === 0 ? (
-                            <p>No tickets available for this event.</p>
-                        ) : (
-                            <div className="ticket-list">
-                                {tickets.map(t => (
-                                    <div key={t.ticket_type_id} style={{ 
-                                        display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
-                                        padding: '1rem', borderBottom: '1px solid #eee' 
-                                    }}>
-                                        <div>
-                                            <strong>{t.name}</strong>
-                                            <div style={{ color: '#666', fontSize: '0.9rem' }}>${t.price}</div>
-                                        </div>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                            <button 
-                                                style={{ width: '30px', height: '30px', padding: 0 }} 
-                                                onClick={() => updateCart(t.ticket_type_id, -1)}
-                                            >-</button>
-                                            <span style={{ width: '20px', textAlign: 'center' }}>{cart[t.ticket_type_id] || 0}</span>
-                                            <button 
-                                                style={{ width: '30px', height: '30px', padding: 0 }} 
-                                                onClick={() => updateCart(t.ticket_type_id, 1)}
-                                            >+</button>
-                                        </div>
+                        <div className="ticket-list">
+                            {tickets.map(t => (
+                                <div key={t.ticket_type_id} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: '1px solid #eee' }}>
+                                    <div>
+                                        <strong>{t.name}</strong>
+                                        <div>${t.price}</div>
                                     </div>
-                                ))}
-                            </div>
-                        )}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                        <button 
+                                            style={{ width: '30px', height: '30px', padding: 0 }} 
+                                            onClick={() => updateCart(t.ticket_type_id, -1)}
+                                        >-</button>
+                                        <span style={{ width: '20px', textAlign: 'center' }}>{cart[t.ticket_type_id] || 0}</span>
+                                        <button 
+                                            style={{ width: '30px', height: '30px', padding: 0 }} 
+                                            onClick={() => updateCart(t.ticket_type_id, 1)}
+                                        >+</button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
 
                         <div style={{ marginTop: '2rem', paddingTop: '1rem', borderTop: '2px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <h3>Total: ${cartTotal.toFixed(2)}</h3>
-                            
-                            {/* THIS IS THE CHECKOUT BUTTON */}
                             <button 
                                 className="primary-button" 
                                 disabled={purchasing || cartTotal === 0}
-                                onClick={handleCheckout}
+                                onClick={handleInitialCheckout}
                             >
-                                {purchasing ? 'Processing...' : 'Checkout'}
+                                Next: Attendee Details
                             </button>
                         </div>
                     </>
                 )}
+            </div>
+        </div>
+      )}
+
+      {/* Attendee Details Modal */}
+      {showAttendeeModal && (
+        <div className="modal-overlay">
+            <div className="modal-content" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                    <h2>Attendee Details</h2>
+                    <button className="secondary-button" onClick={() => setShowAttendeeModal(false)}>Back</button>
+                </div>
+
+                {Object.entries(cart).map(([ticketId, qty]) => {
+                    const ticketName = tickets.find(t => t.ticket_type_id === parseInt(ticketId))?.name;
+                    return Array.from({ length: qty }).map((_, idx) => {
+                        const key = `${ticketId}_${idx}`;
+                        const data = attendeeDetails[key] || {};
+                        return (
+                            <div key={key} style={{ marginBottom: '1rem', padding: '1rem', backgroundColor: '#f9f9f9', borderRadius: '4px' }}>
+                                <h4>{ticketName} #{idx + 1}</h4>
+                                <div className="attendee-form-grid">
+                                    <input 
+                                        className="attendee-input"
+                                        type="text" placeholder="First Name" 
+                                        value={data.firstName || ''}
+                                        onChange={e => handleAttendeeChange(key, 'firstName', e.target.value)}
+                                    />
+                                    <input 
+                                        className="attendee-input"
+                                        type="text" placeholder="Last Name" 
+                                        value={data.lastName || ''}
+                                        onChange={e => handleAttendeeChange(key, 'lastName', e.target.value)}
+                                    />
+                                    <input 
+                                        className="attendee-input"
+                                        type="email" placeholder="Email" 
+                                        value={data.email || ''}
+                                        onChange={e => handleAttendeeChange(key, 'email', e.target.value)}
+                                    />
+                                </div>
+                            </div>
+                        );
+                    });
+                })}
+
+                <div style={{ marginTop: '1rem' }}>
+                    <button 
+                        className="primary-button" 
+                        onClick={handleFinalCheckout}
+                        disabled={purchasing}
+                        style={{ width: '100%' }}
+                    >
+                        {purchasing ? 'Processing Order...' : `Confirm & Pay $${cartTotal.toFixed(2)}`}
+                    </button>
+                </div>
             </div>
         </div>
       )}

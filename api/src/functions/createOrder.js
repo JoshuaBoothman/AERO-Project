@@ -12,7 +12,7 @@ app.http('createOrder', {
         }
 
         const { eventId, items } = await request.json();
-        // items expected structure: [{ ticketTypeId: 1, quantity: 2 }]
+        // items structure: [{ ticketTypeId: 1, quantity: 2, attendees: [{ firstName, lastName, email }, ...] }]
 
         if (!items || items.length === 0) {
             return { status: 400, body: JSON.stringify({ error: "No items in cart" }) };
@@ -34,98 +34,77 @@ app.http('createOrder', {
                 if (personCheck.recordset.length > 0) {
                     personId = personCheck.recordset[0].person_id;
                 } else {
-                    // Create a person record if missing
-                    // We need user details first to populate Person table
-                    // Note: We need a separate request/query here that is NOT part of the transaction 
-                    // if we wanted to be purely read-only, but it's fine to be in it.
-                    // However, we can't reuse the 'request' object for a different query easily in mssql 
-                    // without clearing parameters. Let's make new Request objects for each query.
-                    
-                    const userDetailsReq = new sql.Request(transaction);
-                    const userDetails = await userDetailsReq.input('uid', sql.Int, user.userId)
-                        .query("SELECT first_name, last_name, email FROM users WHERE user_id = @uid");
-                    
-                    const u = userDetails.recordset[0];
-                    
-                    const pReq = new sql.Request(transaction);
-                    const pRes = await pReq
+                    // Create person record if not exists (Basic info from what we have)
+                    const personInsert = new sql.Request(transaction);
+                    const pRes = await personInsert
                         .input('uid', sql.Int, user.userId)
-                        .input('fname', sql.NVarChar, u.first_name)
-                        .input('lname', sql.NVarChar, u.last_name)
-                        .input('email', sql.NVarChar, u.email)
-                        .query(`
-                            INSERT INTO persons (user_id, first_name, last_name, email, created_at)
-                            OUTPUT INSERTED.person_id
-                            VALUES (@uid, @fname, @lname, @email, GETUTCDATE())
-                        `);
-                    personId = pRes.recordset[0].person_id;
+                        .input('email', sql.NVarChar, user.email || 'unknown@example.com') 
+                        .query("INSERT INTO persons (user_id, email, first_name, last_name) VALUES (@uid, @email, 'Unknown', 'User'); SELECT SCOPE_IDENTITY() AS id");
+                    personId = pRes.recordset[0].id;
                 }
 
-                // 2. Calculate Totals & Validate Ticket Types
+                // 2. Create Order Header
+                const orderReq = new sql.Request(transaction);
+                const orderRes = await orderReq
+                    .input('p_id', sql.Int, personId)
+                    .input('e_id', sql.Int, eventId)
+                    .query("INSERT INTO orders (person_id, event_id, order_date, total_amount, payment_status) VALUES (@p_id, @e_id, GETUTCDATE(), 0, 'Pending'); SELECT SCOPE_IDENTITY() AS id");
+                
+                const orderId = orderRes.recordset[0].id;
                 let totalAmount = 0;
-                const processItems = []; 
 
+                // 3. Process Items & Attendees
                 for (const item of items) {
-                    const tReq = new sql.Request(transaction);
-                    const tRes = await tReq.input('tid', sql.Int, item.ticketTypeId)
-                        .query("SELECT price, name FROM event_ticket_types WHERE ticket_type_id = @tid");
+                    // Get price for this ticket type
+                    const priceReq = new sql.Request(transaction);
+                    const priceRes = await priceReq.input('tt_id', sql.Int, item.ticketTypeId)
+                        .query("SELECT price FROM event_ticket_types WHERE ticket_type_id = @tt_id");
                     
-                    if (tRes.recordset.length === 0) throw new Error(`Invalid Ticket Type ID: ${item.ticketTypeId}`);
+                    if (priceRes.recordset.length === 0) throw new Error(`Invalid ticket type: ${item.ticketTypeId}`);
                     
-                    const price = tRes.recordset[0].price;
-                    totalAmount += (price * item.quantity);
+                    const price = priceRes.recordset[0].price;
+                    const itemTotal = price * item.quantity;
+                    totalAmount += itemTotal;
+
+                    // Insert Order Item
+                    const itemReq = new sql.Request(transaction);
+                    const itemRes = await itemReq
+                        .input('o_id', sql.Int, orderId)
+                        .input('tt_id', sql.Int, item.ticketTypeId)
+                        .input('qty', sql.Int, item.quantity)
+                        .input('price', sql.Decimal(10, 2), price)
+                        .query("INSERT INTO order_items (order_id, ticket_type_id, quantity, price) VALUES (@o_id, @tt_id, @qty, @price); SELECT SCOPE_IDENTITY() AS id");
                     
-                    for(let i=0; i < item.quantity; i++) {
-                        processItems.push({
-                            ticketTypeId: item.ticketTypeId,
-                            price: price
-                        });
+                    const orderItemId = itemRes.recordset[0].id;
+
+                    // Insert Attendees (NEW)
+                    if (item.attendees && item.attendees.length > 0) {
+                        for (const attendee of item.attendees) {
+                            const ticketCode = Math.random().toString(36).substring(2, 10).toUpperCase(); // Simple 8-char code
+                            
+                            const attReq = new sql.Request(transaction);
+                            await attReq
+                                .input('oi_id', sql.Int, orderItemId)
+                                .input('fn', sql.NVarChar, attendee.firstName)
+                                .input('ln', sql.NVarChar, attendee.lastName)
+                                .input('em', sql.NVarChar, attendee.email)
+                                .input('code', sql.NVarChar, ticketCode)
+                                .query(`
+                                    INSERT INTO attendees (order_item_id, first_name, last_name, email, ticket_code, status)
+                                    VALUES (@oi_id, @fn, @ln, @em, @code, 'Registered')
+                                `);
+                        }
                     }
                 }
 
-                // 3. Create Order
-                const orderReq = new sql.Request(transaction);
-                const orderRes = await orderReq
-                    .input('user_id', sql.Int, user.userId)
+                // 4. Update Order Total
+                const totalReq = new sql.Request(transaction);
+                await totalReq
+                    .input('oid', sql.Int, orderId)
                     .input('total', sql.Decimal(10, 2), totalAmount)
-                    .query(`
-                        INSERT INTO orders (user_id, total_amount, payment_status, order_date)
-                        OUTPUT INSERTED.order_id
-                        VALUES (@user_id, @total, 'Unpaid', GETUTCDATE())
-                    `);
-                
-                const orderId = orderRes.recordset[0].order_id;
+                    .query("UPDATE orders SET total_amount = @total WHERE order_id = @oid");
 
-                // 4. Create Attendees & Order Items
-                for (const pItem of processItems) {
-                    // A. Create Attendee
-                    const attReq = new sql.Request(transaction);
-                    const attRes = await attReq
-                        .input('evt_id', sql.Int, eventId)
-                        .input('per_id', sql.Int, personId)
-                        .input('tt_id', sql.Int, pItem.ticketTypeId)
-                        .query(`
-                            INSERT INTO attendees (event_id, person_id, ticket_type_id, status, created_at)
-                            OUTPUT INSERTED.attendee_id
-                            VALUES (@evt_id, @per_id, @tt_id, 'Registered', GETUTCDATE())
-                        `);
-                    
-                    const attendeeId = attRes.recordset[0].attendee_id;
-
-                    // B. Create Order Item
-                    const oiReq = new sql.Request(transaction);
-                    await oiReq
-                        .input('oid', sql.Int, orderId)
-                        .input('aid', sql.Int, attendeeId)
-                        .input('ref', sql.Int, pItem.ticketTypeId)
-                        .input('price', sql.Decimal(10, 2), pItem.price)
-                        .query(`
-                            INSERT INTO order_items (order_id, attendee_id, item_type, item_reference_id, price_at_purchase, fulfillment_status)
-                            VALUES (@oid, @aid, 'Ticket', @ref, @price, 'Fulfilled')
-                        `);
-                }
-
-                // 5. Mock Payment Transaction
+                // 5. Create Mock Transaction
                 const transReq = new sql.Request(transaction);
                 await transReq
                     .input('oid', sql.Int, orderId)
