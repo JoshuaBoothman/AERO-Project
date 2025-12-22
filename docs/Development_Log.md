@@ -40,3 +40,21 @@
 
 ### Next Steps
 * **Authentication:** Build Login/Register flow to enable Ticket Purchasing.
+
+## [2025-12-22] - UI Polish & Images
+**Milestone:** Implemented Images and Refined Visual Hierarchy
+
+### Completed Items
+* **Database**
+    * Added `banner_url` column to `events` table.
+    * Seeded placeholder images for existing events.
+* **Backend (API)**
+    * Updated `getEvents` and `getEventDetail` to return image URLs.
+* **Frontend (UI/UX)**
+    * **Global Styles:** Switched background to soft blue-grey (`#f5f7fa`) to reduce contrast.
+    * **Events List:** Refactored cards into a "Thumbnail + Content" row layout.
+    * **Event Details:** Added full-width Hero Banner image.
+    * **Buttons:** Established clear hierarchy with `.primary-button` (Active) and `.secondary-button` (View Only).
+
+### Next Steps
+* **Authentication:** Build Login/Register flow to enable Ticket Purchasing.

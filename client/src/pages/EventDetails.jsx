@@ -61,7 +61,35 @@ function EventDetails() {
     <div className="event-details-page">
       <Link to="/events" className="back-link">← Back to Events</Link>
       
-      <div className="card">
+        <div className="card">
+        <div className="card" style={{ padding: 0, overflow: 'hidden' }}> {/* Remove padding from card wrapper so image hits edges */}
+        
+        {/* BANNER IMAGE */}
+        {event.banner_url && (
+            <div style={{ 
+                width: '100%', 
+                height: '300px', 
+                overflow: 'hidden',
+                borderBottom: '1px solid #eee'
+            }}>
+                <img 
+                    src={event.banner_url} 
+                    alt={event.name} 
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                />
+            </div>
+        )}
+
+        {/* Content Container (re-add padding here) */}
+        <div style={{ padding: '2rem' }}>
+            
+            <h1>{event.name}</h1>
+            {/* ... rest of the existing JSX ... */}
+            
+            {/* Make sure to close the extra div we opened! */}
+        </div>
+      </div>
+        
         <h1>{event.name}</h1>
         
         <div className="status-badge" style={{ 

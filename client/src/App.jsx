@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import Home from './pages/Home';
 import Events from './pages/Events';
-import EventDetails from './pages/EventDetails'; // <--- Import
+import EventDetails from './pages/EventDetails'; 
 import './App.css';
 
 function App() {
@@ -37,14 +37,12 @@ function App() {
           {/* The "index" route is what renders when you visit "/" */}
           <Route index element={<Home />} />
           
-          {/* Future routes will go here, e.g.:
-              <Route path="events" element={<Events />} /> 
-          */}
+          <Route path="events" element={<Events />} />
+
+          <Route path="events/:slug" element={<EventDetails />} />
         </Route>
 
-        <Route path="events" element={<Events />} />
-
-        <Route path="events/:slug" element={<EventDetails />} />
+        
 // ...
       </Routes>
     </BrowserRouter>

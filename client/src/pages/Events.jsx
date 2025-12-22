@@ -72,17 +72,35 @@ function Events() {
   );
 }
 
+// ... imports and Event function remain the same ...
+
 function EventCard({ event, type, formatDate, isPast }) {
   const isCurrent = type === 'current';
 
-  // Dynamic styles
+  // Card Container
   const cardStyle = {
     opacity: isPast ? 0.7 : 1,
     marginBottom: '1rem',
-    borderLeft: isCurrent ? '5px solid var(--accent-color, #FFD700)' : '1px solid #ddd',
+    borderLeft: isCurrent ? '5px solid var(--accent-color, #FFD700)' : '1px solid transparent', // Changed default to transparent
     boxShadow: isCurrent ? '0 4px 12px rgba(0,0,0,0.1)' : 'none',
-    // Optional: Center all text in the Active card for a poster-like feel?
-    // textAlign: isCurrent ? 'center' : 'left' 
+    display: 'flex',       // <--- Flexbox for Image + Content side-by-side
+    flexDirection: 'row',  // Row direction
+    overflow: 'hidden',    // Ensures image respects rounded corners
+    padding: 0,            // Reset padding so image touches edge
+  };
+
+  const imageStyle = {
+    width: '200px',        // Fixed width for thumbnail
+    objectFit: 'cover',    // Ensures image covers area without stretching
+    display: 'block'       // Removes bottom whitespace
+  };
+
+  const contentStyle = {
+    padding: '1.5rem',     // Re-add padding to the content side
+    flex: 1,               // Take up remaining space
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center'
   };
 
   const badgeStyle = {
@@ -90,55 +108,53 @@ function EventCard({ event, type, formatDate, isPast }) {
     color: 'var(--primary-color, #000000)',
     padding: '4px 10px',
     borderRadius: '4px',
-    fontSize: '0.8rem',
+    fontSize: '0.75rem',
     fontWeight: 'bold',
     letterSpacing: '0.5px',
     textTransform: 'uppercase',
-    whiteSpace: 'nowrap' // Prevents badge from breaking into two lines
+    alignSelf: 'flex-start' // Don't stretch
   };
 
   return (
     <div className="card event-card" style={cardStyle}>
       
-      {/* HEADER ROW: 
-          justifyContent: 'center' -> Centers the Title+Badge group horizontally
-          alignItems: 'center' -> Vertically aligns text and badge
-      */}
-      <div style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center', // <--- This centers the group
-        gap: '12px', 
-        marginBottom: '0.5rem',
-        flexWrap: 'wrap' // Handles very small screens gracefully
-      }}>
-        <h3 style={{ margin: 0, textAlign: 'center' }}>{event.name}</h3>
+      {/* 1. THUMBNAIL IMAGE (Left Side) */}
+      {event.banner_url ? (
+        <img src={event.banner_url} alt={event.name} style={imageStyle} />
+      ) : (
+        // Fallback grey box if no image
+        <div style={{...imageStyle, background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#aaa'}}>
+            No Image
+        </div>
+      )}
+
+      {/* 2. CONTENT (Right Side) */}
+      <div style={contentStyle}>
         
-        {isCurrent && (
-           <span style={badgeStyle}>
-             ACTIVE
-           </span>
-        )}
-      </div>
-      
-      <p className="event-date" style={{ marginTop: '0.5rem', color: '#666', textAlign: 'center' }}>
-        {formatDate(event.start_date)} - {formatDate(event.end_date)}
-      </p>
-      
-      {/* I've left these left-aligned for readability, but we can center them too if you prefer */}
-      <p><strong>Location:</strong> {event.venue_name}, {event.city}</p>
-      
-      <p>{event.description}</p>
-      
-      <div style={{ textAlign: 'center', marginTop: '1rem' }}>
-        <Link to={`/events/${event.slug}`}>
-          <button className={isCurrent ? 'primary-button' : ''}>
-             {isPast ? 'View Recap' : 'View Details'}
-          </button>
-        </Link>
+        {/* Header Row */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '0.5rem' }}>
+          <h3 style={{ margin: 0 }}>{event.name}</h3>
+          {isCurrent && <span style={badgeStyle}>ACTIVE</span>}
+        </div>
+        
+        <p className="event-date" style={{ margin: '0 0 0.5rem 0', color: '#666', fontSize: '0.9rem' }}>
+          {formatDate(event.start_date)} - {formatDate(event.end_date)}
+        </p>
+        
+        <p style={{ margin: '0 0 1rem 0' }}>{event.description}</p>
+        
+        <div style={{ marginTop: 'auto' }}>
+            <Link to={`/events/${event.slug}`}>
+                {/* Apply styling to ALL buttons now */}
+                <button className={isCurrent ? 'primary-button' : 'secondary-button'}>
+                    {isPast ? 'View Recap' : 'View Details'}
+                </button>
+            </Link>
+        </div>
       </div>
     </div>
   );
 }
+// ... export default
 
 export default Events;
