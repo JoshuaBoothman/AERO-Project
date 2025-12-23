@@ -33,11 +33,11 @@ app.http('getEventDetail', {
 
             // 2. Fetch Ticket Types for this Event (Parameterized)
             const ticketQuery = `
-                SELECT ticket_type_id, name, price, system_role 
+                SELECT ticket_type_id, name, price, system_role, is_pilot
                 FROM event_ticket_types 
                 WHERE event_id = @eventId
             `;
-            
+
             const ticketResult = await db.query(ticketQuery, [
                 { name: 'eventId', type: sql.Int, value: eventData.event_id }
             ]);

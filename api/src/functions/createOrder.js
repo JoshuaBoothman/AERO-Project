@@ -21,90 +21,163 @@ app.http('createOrder', {
         try {
             const pool = await getPool();
             const transaction = new sql.Transaction(pool);
-            
+
             await transaction.begin();
-            const request = new sql.Request(transaction);
 
             try {
-                // 1. Get or Create Person ID for the User
-                let personCheck = await request.input('u_id', sql.Int, user.userId)
+                // 1. Get or Create Person ID for the MAIN User (Order Owner)
+                // This person_id will be used for the main user's attendee record and potentially as a fallback for planes.
+                const mainUserPersonReq = new sql.Request(transaction);
+                let personCheck = await mainUserPersonReq.input('u_id', sql.Int, user.userId)
                     .query("SELECT person_id FROM persons WHERE user_id = @u_id");
-                
-                let personId;
+
+                let mainPersonId;
                 if (personCheck.recordset.length > 0) {
-                    personId = personCheck.recordset[0].person_id;
+                    mainPersonId = personCheck.recordset[0].person_id;
                 } else {
                     // Create person record if not exists (Basic info from what we have)
                     const personInsert = new sql.Request(transaction);
                     const pRes = await personInsert
                         .input('uid', sql.Int, user.userId)
-                        .input('email', sql.NVarChar, user.email || 'unknown@example.com') 
+                        .input('email', sql.NVarChar, user.email || 'unknown@example.com')
                         .query("INSERT INTO persons (user_id, email, first_name, last_name) VALUES (@uid, @email, 'Unknown', 'User'); SELECT SCOPE_IDENTITY() AS id");
-                    personId = pRes.recordset[0].id;
+                    mainPersonId = pRes.recordset[0].id;
                 }
 
                 // 2. Create Order Header
                 const orderReq = new sql.Request(transaction);
                 const orderRes = await orderReq
-                    .input('p_id', sql.Int, personId)
-                    .input('e_id', sql.Int, eventId)
-                    .query("INSERT INTO orders (person_id, event_id, order_date, total_amount, payment_status) VALUES (@p_id, @e_id, GETUTCDATE(), 0, 'Pending'); SELECT SCOPE_IDENTITY() AS id");
-                
+                    .input('uid', sql.Int, user.userId)
+                    .query("INSERT INTO orders (user_id, total_amount, payment_status) VALUES (@uid, 0, 'Pending'); SELECT SCOPE_IDENTITY() AS id");
+
                 const orderId = orderRes.recordset[0].id;
                 let totalAmount = 0;
 
                 // 3. Process Items & Attendees
                 for (const item of items) {
-                    // Get price for this ticket type
-                    const priceReq = new sql.Request(transaction);
-                    const priceRes = await priceReq.input('tt_id', sql.Int, item.ticketTypeId)
-                        .query("SELECT price FROM event_ticket_types WHERE ticket_type_id = @tt_id");
-                    
-                    if (priceRes.recordset.length === 0) throw new Error(`Invalid ticket type: ${item.ticketTypeId}`);
-                    
-                    const price = priceRes.recordset[0].price;
-                    const itemTotal = price * item.quantity;
-                    totalAmount += itemTotal;
+                    // Get ticket details
+                    const ticketReq = new sql.Request(transaction);
+                    const ticketRes = await ticketReq.input('tt_id', sql.Int, item.ticketTypeId)
+                        .query("SELECT price, system_role, is_pilot FROM event_ticket_types WHERE ticket_type_id = @tt_id");
 
-                    // Insert Order Item
-                    const itemReq = new sql.Request(transaction);
-                    const itemRes = await itemReq
-                        .input('o_id', sql.Int, orderId)
-                        .input('tt_id', sql.Int, item.ticketTypeId)
-                        .input('qty', sql.Int, item.quantity)
-                        .input('price', sql.Decimal(10, 2), price)
-                        .query("INSERT INTO order_items (order_id, ticket_type_id, quantity, price) VALUES (@o_id, @tt_id, @qty, @price); SELECT SCOPE_IDENTITY() AS id");
-                    
-                    const orderItemId = itemRes.recordset[0].id;
+                    if (ticketRes.recordset.length === 0) throw new Error(`Invalid ticket type: ${item.ticketTypeId}`);
 
-                    // Insert Attendees (NEW)
-                    if (item.attendees && item.attendees.length > 0) {
-                        for (const attendee of item.attendees) {
-                            const ticketCode = Math.random().toString(36).substring(2, 10).toUpperCase(); // Simple 8-char code
-                            
-                            const attReq = new sql.Request(transaction);
-                            await attReq
-                                .input('oi_id', sql.Int, orderItemId)
-                                .input('fn', sql.NVarChar, attendee.firstName)
-                                .input('ln', sql.NVarChar, attendee.lastName)
-                                .input('em', sql.NVarChar, attendee.email)
-                                .input('code', sql.NVarChar, ticketCode)
+                    const ticketType = ticketRes.recordset[0];
+                    const price = ticketType.price;
+
+                    // Ensure we have attendee data for each quantity
+                    // If specific attendee details are provided, use them. Otherwise, create generic placeholders.
+                    const attendeesToProcess = item.attendees && item.attendees.length > 0
+                        ? item.attendees
+                        : Array(item.quantity).fill({}); // Fallback for quantity if no specific attendees
+
+                    for (const attendeeData of attendeesToProcess) {
+                        totalAmount += price;
+
+                        // A. Create/Get Person for this specific Attendee
+                        let attendeePersonId;
+                        const safeUserEmail = (user.email || '').toLowerCase();
+                        const safeAttendeeEmail = (attendeeData.email || '').toLowerCase();
+
+                        if (safeUserEmail && safeAttendeeEmail && safeUserEmail === safeAttendeeEmail) {
+                            // If attendee email matches the main user, use the main user's person_id
+                            attendeePersonId = mainPersonId;
+                        } else if (attendeeData.firstName || attendeeData.lastName || safeAttendeeEmail) {
+                            // If specific attendee details are provided (and it's not the main user), create a new Person record
+                            const pReq = new sql.Request(transaction);
+                            const pRes = await pReq
+                                .input('fn', sql.NVarChar, attendeeData.firstName || 'Guest')
+                                .input('ln', sql.NVarChar, attendeeData.lastName || 'User')
+                                .input('em', sql.NVarChar, attendeeData.email || null)
                                 .query(`
-                                    INSERT INTO attendees (order_item_id, first_name, last_name, email, ticket_code, status)
-                                    VALUES (@oi_id, @fn, @ln, @em, @code, 'Registered')
+                                    INSERT INTO persons (first_name, last_name, email)
+                                    VALUES (@fn, @ln, @em);
+                                    SELECT SCOPE_IDENTITY() AS id
                                 `);
+                            attendeePersonId = pRes.recordset[0].id;
+                        } else {
+                            // If no specific attendee data, default to the main user's person_id
+                            attendeePersonId = mainPersonId;
                         }
+
+                        // B. Create Attendee Record
+                        // Schema: attendee_id, event_id, person_id, ticket_type_id, status
+                        const attReq = new sql.Request(transaction);
+                        const attRes = await attReq
+                            .input('eid', sql.Int, eventId)
+                            .input('pid', sql.Int, attendeePersonId)
+                            .input('ttid', sql.Int, item.ticketTypeId)
+                            .query(`
+                                INSERT INTO attendees (event_id, person_id, ticket_type_id, status)
+                                VALUES (@eid, @pid, @ttid, 'Registered');
+                                SELECT SCOPE_IDENTITY() AS id;
+                            `);
+                        const attendeeId = attRes.recordset[0].id;
+
+                        // C. Create Order Item
+                        // Schema: order_item_id, order_id, attendee_id, item_type, item_reference_id, price_at_purchase
+                        const itemReq = new sql.Request(transaction);
+                        await itemReq
+                            .input('oid', sql.Int, orderId)
+                            .input('aid', sql.Int, attendeeId)
+                            .input('itype', sql.VarChar, 'Ticket') // Assuming 'Ticket' is a valid item_type
+                            .input('refid', sql.Int, item.ticketTypeId) // Linking back to ticket type
+                            .input('price', sql.Decimal(10, 2), price)
+                            .query(`
+                                INSERT INTO order_items (order_id, attendee_id, item_type, item_reference_id, price_at_purchase)
+                                VALUES (@oid, @aid, @itype, @refid, @price);
+                            `);
+
+                        // D. Handle Pilot Specific Data (Planes)
+                        if (ticketType.is_pilot && attendeeData.planes && Array.isArray(attendeeData.planes)) {
+                            for (const plane of attendeeData.planes) {
+                                // Insert Plane (linked to the attendee's person_id)
+                                const planeReq = new sql.Request(transaction);
+                                const planeRes = await planeReq
+                                    .input('pid', sql.Int, attendeePersonId) // Owner is the attendee's person
+                                    .input('name', sql.NVarChar, plane.make || 'Unknown') // Mapping 'make' to 'name'
+                                    .input('model', sql.NVarChar, plane.model || 'Unknown') // Mapping 'model' to 'model_type'
+                                    .input('rego', sql.NVarChar, plane.rego || '')
+                                    .query(`
+                                        INSERT INTO planes (person_id, name, model_type, registration_number, weight_kg)
+                                        VALUES (@pid, @name, @model, @rego, 0); -- Default weight_kg to 0
+                                        SELECT SCOPE_IDENTITY() AS id;
+                                    `);
+                                const planeId = planeRes.recordset[0].id;
+
+                                // Link Plane to Event
+                                const epReq = new sql.Request(transaction);
+                                await epReq
+                                    .input('eid', sql.Int, eventId)
+                                    .input('plid', sql.Int, planeId)
+                                    .query("INSERT INTO event_planes (event_id, plane_id) VALUES (@eid, @plid)");
+                            }
+                        }
+
+                        // E. Handle Crew Linking
+                        // TODO: Implement crew linking. This requires a 'ticket_code' column in the attendees table
+                        // or a similar mechanism for lookup, which is not currently in the schema.
+                        // For now, this logic is skipped to avoid schema errors.
+                        // if (attendeeData.linkedPilotCode) {
+                        //     const linkReq = new sql.Request(transaction);
+                        //     await linkReq.input('code', sql.NVarChar, attendeeData.linkedPilotCode)
+                        //         .input('cid', sql.Int, attendeeId)
+                        //         .query(`
+                        //             INSERT INTO pilot_pit_crews (pilot_attendee_id, crew_attendee_id)
+                        //             SELECT id, @cid FROM attendees WHERE ticket_code = @code
+                        //         `);
+                        // }
                     }
                 }
 
-                // 4. Update Order Total
+                // 4. Update Order Total & Status
                 const totalReq = new sql.Request(transaction);
                 await totalReq
                     .input('oid', sql.Int, orderId)
                     .input('total', sql.Decimal(10, 2), totalAmount)
-                    .query("UPDATE orders SET total_amount = @total WHERE order_id = @oid");
+                    .query("UPDATE orders SET total_amount = @total, payment_status = 'Paid' WHERE order_id = @oid");
 
-                // 5. Create Mock Transaction
+                // 5. Create Mock Transaction Record
                 const transReq = new sql.Request(transaction);
                 await transReq
                     .input('oid', sql.Int, orderId)
@@ -114,16 +187,11 @@ app.http('createOrder', {
                         VALUES (@oid, @amt, 'Credit Card (Mock)', 'Success', GETUTCDATE())
                     `);
 
-                // 6. Update Order Status
-                const updateReq = new sql.Request(transaction);
-                await updateReq.input('oid', sql.Int, orderId)
-                    .query("UPDATE orders SET payment_status = 'Paid' WHERE order_id = @oid");
-
                 await transaction.commit();
 
                 return {
                     status: 200,
-                    body: JSON.stringify({ 
+                    body: JSON.stringify({
                         message: "Order processed successfully",
                         orderId: orderId,
                         total: totalAmount
@@ -137,9 +205,9 @@ app.http('createOrder', {
 
         } catch (error) {
             context.log(`Error creating order: ${error.message}`);
-            return { 
-                status: 500, 
-                body: JSON.stringify({ error: "Transaction failed", details: error.message }) 
+            return {
+                status: 500,
+                body: JSON.stringify({ error: "Transaction failed", details: error.message })
             };
         }
     }
