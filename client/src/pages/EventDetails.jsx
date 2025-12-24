@@ -316,17 +316,21 @@ function EventDetails() {
                                             )}
 
                                             {/* Crew Specific Fields */}
-                                            {tickets.find(t => t.ticket_type_id === parseInt(ticketId))?.system_role?.toLowerCase() === 'crews' && (
+                                            {tickets.find(t => t.ticket_type_id === parseInt(ticketId))?.is_pit_crew && (
                                                 <div style={{ marginTop: '0.5rem', padding: '0.5rem', border: '1px solid #ffecb3', borderRadius: '4px' }}>
                                                     <h5 style={{ margin: '0 0 0.5rem' }}>🛠️ Pit Crew</h5>
+                                                    <p style={{ fontSize: '0.9rem', marginBottom: '0.5rem', color: '#666' }}>
+                                                        Please enter the <strong>Ticket Code</strong> of the Pilot you are crewing for.
+                                                        <br />
+                                                        <em>They can find this in their email or order history.</em>
+                                                    </p>
                                                     <input
                                                         className="attendee-input"
-                                                        type="text" placeholder="Link to Pilot (Enter Ticket Code if known)"
+                                                        type="text" placeholder="Pilot Ticket Code (e.g. A1B2C3D4)"
                                                         value={data.linkedPilotCode || ''}
-                                                        onChange={e => handleAttendeeChange(key, 'linkedPilotCode', e.target.value)}
+                                                        onChange={e => handleAttendeeChange(key, 'linkedPilotCode', e.target.value.toUpperCase())}
                                                         style={{ width: '100%' }}
                                                     />
-                                                    <small style={{ color: '#666' }}>We'll help you find your pilot later if you don't know this yet.</small>
                                                 </div>
                                             )}
                                         </div>

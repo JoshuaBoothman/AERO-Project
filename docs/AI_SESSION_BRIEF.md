@@ -7,6 +7,10 @@
 1.  **Read this file** (`docs/AI_SESSION_BRIEF.md`) to ground yourself in the project context.
 2.  **Read `docs/ROADMAP.md`** to understand the current sprint and backlog.
 3.  **Read `docs/Development_Log.md`** (latest entry) to see where we left off.
+4. Instruct user to run    `C:\laragon\www\AERO-Project> cd client`
+                            `C:\laragon\www\AERO-Project\client> npm run dev` to start the development server.
+5. Instruct user to run    `C:\laragon\www\AERO-Project> cd api`
+                            `C:\laragon\www\AERO-Project\api> npm start` to start the API server.
 
 ## 🔭 Project Vision & Roles
 *   **Whitelabel Goal:** Initially built for *Australian Large Scale Models* (Dave), but intended for resale to other groups.
@@ -20,13 +24,15 @@
 *   **Level:** Beginner. **Explain concepts as we go.** Do not assume knowledge. Ask before acting if unsure.
 *   **Aesthetics:** Premium, "wow-factor" designs. Responsive and polished.
 *   **Workflow:**
+    *   **Pairing:** I will be the driver. You will be the navigator.
     *   **Planning:** Always plan before coding.
     *   **Step-by-Step:** collaborative iteration.
     *   **Files:** Keep `docs/` clean.
     *   **Session Wrap-up:**
-        *   Log work in `Development_Log.md`
-        *   **Export Schema:** Update `docs/schema.sql` (In SSMS: Select **ANSI text** to ensure readability).
-        *   Commit to Git with a meaningful message.
+        *   Log work in `docs/Development_Log.md`
+        *   Update `docs/ROADMAP.md` (move completed items to "Completed", add new items to "Next Up")  
+        *   **Export Schema:** Remind user to update `docs/schema.sql` (In SSMS: Select **ANSI text** to ensure readability).
+        *   Remind user to commit to Git - include a meaningful message.
 *   **Testing:** Testing is critical. **I need to physically see the results of each step** to ensure it is working correctly before moving on.
 
 ## 🏗️ Project Architecture
@@ -42,3 +48,15 @@
 1.  **Strict Schema Compliance:** Always check `docs/schema.sql` (or active DB state) before writing queries.
 2.  **Transactions:** Use SQL Transactions for multi-table writes.
 3.  **Mobile First:** UIs must be optimized for phone usage.
+
+## 🧠 Complex Data Flows
+*   **Registration Entity Chain:** `User` -> `Person` -> `Attendee` -> `OrderItem`.
+    *   **User vs Person:** `Users` link to Auth. `Persons` hold profile data. A User *has* a Person record. Guests are Persons with no User link.
+    *   **Attendee:** Links a `Person` to an `Event`. (Must exist *before* OrderItem).
+    *   **Order Item:** Links the purchase to the `Attendee`.
+*   **Pilot/Planes:**
+    *   Planes are owned by a `Person`.
+    *   During registration, planes are linked to the *Attendee's Person ID*.
+    *   Planes are also linked to the event via `event_planes`.
+*   **Pit Crew:**
+    *   Crew are linked to Pilots via `pilot_pit_crews` (Join table: `pilot_attendee_id` <-> `crew_attendee_id`).

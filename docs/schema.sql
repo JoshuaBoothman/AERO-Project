@@ -1,4 +1,4 @@
-/****** Object:  Database [sqldb-aero-master]    Script Date: 24/12/2025 7:37:32 AM ******/
+/****** Object:  Database [sqldb-aero-master]    Script Date: 25/12/2025 7:59:19 AM ******/
 CREATE DATABASE [sqldb-aero-master]  (EDITION = 'Basic', SERVICE_OBJECTIVE = 'Basic', MAXSIZE = 2 GB) WITH CATALOG_COLLATION = SQL_Latin1_General_CP1_CI_AS, LEDGER = OFF;
 GO
 ALTER DATABASE [sqldb-aero-master] SET COMPATIBILITY_LEVEL = 170
@@ -47,7 +47,7 @@ GO
 GO
 -- ALTER DATABASE SCOPED CONFIGURATION SET MAXDOP = 8;
 GO
-/****** Object:  Sequence [dbo].[Seq_TaxInvoice]    Script Date: 24/12/2025 7:37:34 AM ******/
+/****** Object:  Sequence [dbo].[Seq_TaxInvoice]    Script Date: 25/12/2025 7:59:19 AM ******/
 CREATE SEQUENCE [dbo].[Seq_TaxInvoice] 
  AS [bigint]
  START WITH 10000
@@ -56,7 +56,7 @@ CREATE SEQUENCE [dbo].[Seq_TaxInvoice]
  MAXVALUE 9223372036854775807
  CACHE 
 GO
-/****** Object:  Table [dbo].[admin_users]    Script Date: 24/12/2025 7:37:34 AM ******/
+/****** Object:  Table [dbo].[admin_users]    Script Date: 25/12/2025 7:59:19 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -82,7 +82,7 @@ UNIQUE NONCLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[asset_hires]    Script Date: 24/12/2025 7:37:34 AM ******/
+/****** Object:  Table [dbo].[asset_hires]    Script Date: 25/12/2025 7:59:19 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -101,7 +101,7 @@ PRIMARY KEY CLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[asset_items]    Script Date: 24/12/2025 7:37:34 AM ******/
+/****** Object:  Table [dbo].[asset_items]    Script Date: 25/12/2025 7:59:19 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -119,7 +119,7 @@ PRIMARY KEY CLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[asset_types]    Script Date: 24/12/2025 7:37:34 AM ******/
+/****** Object:  Table [dbo].[asset_types]    Script Date: 25/12/2025 7:59:19 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -136,7 +136,7 @@ PRIMARY KEY CLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[attendees]    Script Date: 24/12/2025 7:37:34 AM ******/
+/****** Object:  Table [dbo].[attendees]    Script Date: 25/12/2025 7:59:19 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -152,13 +152,14 @@ CREATE TABLE [dbo].[attendees](
 	[dietary_preferences] [nvarchar](255) NULL,
 	[admin_notes] [nvarchar](max) NULL,
 	[created_at] [datetime2](7) NULL,
+	[ticket_code] [varchar](10) NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[attendee_id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[campgrounds]    Script Date: 24/12/2025 7:37:34 AM ******/
+/****** Object:  Table [dbo].[campgrounds]    Script Date: 25/12/2025 7:59:19 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -176,7 +177,7 @@ PRIMARY KEY CLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[campsite_bookings]    Script Date: 24/12/2025 7:37:34 AM ******/
+/****** Object:  Table [dbo].[campsite_bookings]    Script Date: 25/12/2025 7:59:19 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -193,7 +194,7 @@ PRIMARY KEY CLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[campsites]    Script Date: 24/12/2025 7:37:34 AM ******/
+/****** Object:  Table [dbo].[campsites]    Script Date: 25/12/2025 7:59:19 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -213,7 +214,7 @@ PRIMARY KEY CLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[checkin_logs]    Script Date: 24/12/2025 7:37:34 AM ******/
+/****** Object:  Table [dbo].[checkin_logs]    Script Date: 25/12/2025 7:59:19 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -231,7 +232,7 @@ PRIMARY KEY CLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[event_media]    Script Date: 24/12/2025 7:37:34 AM ******/
+/****** Object:  Table [dbo].[event_media]    Script Date: 25/12/2025 7:59:19 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -252,7 +253,7 @@ PRIMARY KEY CLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[event_payment_settings]    Script Date: 24/12/2025 7:37:34 AM ******/
+/****** Object:  Table [dbo].[event_payment_settings]    Script Date: 25/12/2025 7:59:19 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -268,7 +269,7 @@ PRIMARY KEY CLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[event_planes]    Script Date: 24/12/2025 7:37:34 AM ******/
+/****** Object:  Table [dbo].[event_planes]    Script Date: 25/12/2025 7:59:19 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -287,7 +288,7 @@ PRIMARY KEY CLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[event_skus]    Script Date: 24/12/2025 7:37:34 AM ******/
+/****** Object:  Table [dbo].[event_skus]    Script Date: 25/12/2025 7:59:19 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -305,7 +306,7 @@ PRIMARY KEY CLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[event_ticket_types]    Script Date: 24/12/2025 7:37:34 AM ******/
+/****** Object:  Table [dbo].[event_ticket_types]    Script Date: 25/12/2025 7:59:19 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -317,13 +318,14 @@ CREATE TABLE [dbo].[event_ticket_types](
 	[price] [decimal](10, 2) NOT NULL,
 	[system_role] [varchar](20) NOT NULL,
 	[is_pilot] [bit] NULL,
+	[is_pit_crew] [bit] NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[ticket_type_id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[events]    Script Date: 24/12/2025 7:37:34 AM ******/
+/****** Object:  Table [dbo].[events]    Script Date: 25/12/2025 7:59:19 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -352,7 +354,7 @@ UNIQUE NONCLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[order_items]    Script Date: 24/12/2025 7:37:34 AM ******/
+/****** Object:  Table [dbo].[order_items]    Script Date: 25/12/2025 7:59:19 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -372,7 +374,7 @@ PRIMARY KEY CLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[orders]    Script Date: 24/12/2025 7:37:34 AM ******/
+/****** Object:  Table [dbo].[orders]    Script Date: 25/12/2025 7:59:19 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -390,7 +392,7 @@ PRIMARY KEY CLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[organization_settings]    Script Date: 24/12/2025 7:37:34 AM ******/
+/****** Object:  Table [dbo].[organization_settings]    Script Date: 25/12/2025 7:59:19 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -413,7 +415,7 @@ PRIMARY KEY CLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[payment_methods]    Script Date: 24/12/2025 7:37:34 AM ******/
+/****** Object:  Table [dbo].[payment_methods]    Script Date: 25/12/2025 7:59:19 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -434,7 +436,7 @@ UNIQUE NONCLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[persons]    Script Date: 24/12/2025 7:37:34 AM ******/
+/****** Object:  Table [dbo].[persons]    Script Date: 25/12/2025 7:59:19 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -462,7 +464,7 @@ PRIMARY KEY CLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[pilot_pit_crews]    Script Date: 24/12/2025 7:37:34 AM ******/
+/****** Object:  Table [dbo].[pilot_pit_crews]    Script Date: 25/12/2025 7:59:19 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -478,7 +480,7 @@ PRIMARY KEY CLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[planes]    Script Date: 24/12/2025 7:37:34 AM ******/
+/****** Object:  Table [dbo].[planes]    Script Date: 25/12/2025 7:59:19 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -500,7 +502,7 @@ PRIMARY KEY CLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[product_skus]    Script Date: 24/12/2025 7:37:34 AM ******/
+/****** Object:  Table [dbo].[product_skus]    Script Date: 25/12/2025 7:59:19 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -522,7 +524,7 @@ UNIQUE NONCLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[products]    Script Date: 24/12/2025 7:37:34 AM ******/
+/****** Object:  Table [dbo].[products]    Script Date: 25/12/2025 7:59:19 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -540,7 +542,7 @@ PRIMARY KEY CLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[sku_option_links]    Script Date: 24/12/2025 7:37:34 AM ******/
+/****** Object:  Table [dbo].[sku_option_links]    Script Date: 25/12/2025 7:59:19 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -555,7 +557,7 @@ PRIMARY KEY CLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[subevent_registrations]    Script Date: 24/12/2025 7:37:34 AM ******/
+/****** Object:  Table [dbo].[subevent_registrations]    Script Date: 25/12/2025 7:59:19 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -570,7 +572,7 @@ PRIMARY KEY CLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[subevents]    Script Date: 24/12/2025 7:37:34 AM ******/
+/****** Object:  Table [dbo].[subevents]    Script Date: 25/12/2025 7:59:19 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -590,7 +592,7 @@ PRIMARY KEY CLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[transactions]    Script Date: 24/12/2025 7:37:34 AM ******/
+/****** Object:  Table [dbo].[transactions]    Script Date: 25/12/2025 7:59:19 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -609,7 +611,7 @@ PRIMARY KEY CLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[users]    Script Date: 24/12/2025 7:37:34 AM ******/
+/****** Object:  Table [dbo].[users]    Script Date: 25/12/2025 7:59:19 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -635,7 +637,7 @@ UNIQUE NONCLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[variant_categories]    Script Date: 24/12/2025 7:37:34 AM ******/
+/****** Object:  Table [dbo].[variant_categories]    Script Date: 25/12/2025 7:59:19 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -653,7 +655,7 @@ UNIQUE NONCLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[variant_options]    Script Date: 24/12/2025 7:37:34 AM ******/
+/****** Object:  Table [dbo].[variant_options]    Script Date: 25/12/2025 7:59:19 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -670,7 +672,7 @@ PRIMARY KEY CLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[variants]    Script Date: 24/12/2025 7:37:34 AM ******/
+/****** Object:  Table [dbo].[variants]    Script Date: 25/12/2025 7:59:19 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -685,7 +687,7 @@ PRIMARY KEY CLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[venues]    Script Date: 24/12/2025 7:37:34 AM ******/
+/****** Object:  Table [dbo].[venues]    Script Date: 25/12/2025 7:59:19 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -755,6 +757,8 @@ GO
 ALTER TABLE [dbo].[event_skus] ADD  DEFAULT (getutcdate()) FOR [created_at]
 GO
 ALTER TABLE [dbo].[event_ticket_types] ADD  DEFAULT ((0)) FOR [is_pilot]
+GO
+ALTER TABLE [dbo].[event_ticket_types] ADD  DEFAULT ((0)) FOR [is_pit_crew]
 GO
 ALTER TABLE [dbo].[events] ADD  DEFAULT ((0)) FOR [is_public_viewable]
 GO

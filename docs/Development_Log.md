@@ -108,3 +108,28 @@
     * **UI Core:** Implemented Global Box-Sizing Reset (`box-sizing: border-box`) to fix layout overflows.
     * **Visuals:** Standardized "Status Badges" to use Brand/Accent colors consistently across Events List and Details views.
     * **Fix:** Enforced strict aspect ratio and dimensions for Event Hero images to prevent layout shifts.
+
+## [2025-12-25] - Registration Logic & Crew Linking
+**Milestone:** Verified Registration Flow Recommendation & Implemented Post-Payment Crew Linking
+
+### Completed Items
+* **Database**
+    * Verified `persons.user_id` is nullable.
+    * Added `ticket_code` to `attendees` table (Unique identifier for linking).
+    * Added `is_pit_crew` to `event_ticket_types`.
+    * Seeded "Winter Warbirds 2026" with Pilot/Crew tickets for verification.
+* **Backend (API)**
+    * **Feature:** Implemented automatic 8-char `ticket_code` generation in `createOrder`.
+    * **Logic:** Implemented "Pilot-Crew Linking" allowing crew to link to an existing Pilot via their `ticket_code`.
+    * **Update:** Modified `getEventDetail` to return `is_pit_crew`.
+* **Frontend (Client)**
+    * **UX:** Updated `AttendeeModal` in `EventDetails.jsx` to show "Pilot Ticket Code" field for Crew tickets.
+* **Verification**
+    * Successfully tested manual Pilot creation (Code: `0URN9WME`).
+    * Successfully tested manual Crew creation (Code: `1STM26T0`).
+    * Confirmed database link in `pilot_pit_crews`.
+    * Archived `Registration_Flow_Recommendation.md`.
+
+### Next Steps
+* **Attendee Assignment Flow:** Allow users to view purchased tickets and assign names/emails after purchase.
+* **My Orders:** User profile view to see purchase history.

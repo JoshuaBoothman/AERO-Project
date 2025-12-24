@@ -101,15 +101,19 @@ app.http('createOrder', {
                         }
 
                         // B. Create Attendee Record
-                        // Schema: attendee_id, event_id, person_id, ticket_type_id, status
+                        // Generate Unique Ticket Code (Simple 8-char alphanumeric)
+                        const ticketCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+
+                        // Schema: attendee_id, event_id, person_id, ticket_type_id, status, ticket_code
                         const attReq = new sql.Request(transaction);
                         const attRes = await attReq
                             .input('eid', sql.Int, eventId)
                             .input('pid', sql.Int, attendeePersonId)
                             .input('ttid', sql.Int, item.ticketTypeId)
+                            .input('tcode', sql.VarChar, ticketCode)
                             .query(`
-                                INSERT INTO attendees (event_id, person_id, ticket_type_id, status)
-                                VALUES (@eid, @pid, @ttid, 'Registered');
+                                INSERT INTO attendees (event_id, person_id, ticket_type_id, status, ticket_code)
+                                VALUES (@eid, @pid, @ttid, 'Registered', @tcode);
                                 SELECT SCOPE_IDENTITY() AS id;
                             `);
                         const attendeeId = attRes.recordset[0].id;
@@ -155,18 +159,35 @@ app.http('createOrder', {
                         }
 
                         // E. Handle Crew Linking
-                        // TODO: Implement crew linking. This requires a 'ticket_code' column in the attendees table
-                        // or a similar mechanism for lookup, which is not currently in the schema.
-                        // For now, this logic is skipped to avoid schema errors.
-                        // if (attendeeData.linkedPilotCode) {
-                        //     const linkReq = new sql.Request(transaction);
-                        //     await linkReq.input('code', sql.NVarChar, attendeeData.linkedPilotCode)
-                        //         .input('cid', sql.Int, attendeeId)
-                        //         .query(`
-                        //             INSERT INTO pilot_pit_crews (pilot_attendee_id, crew_attendee_id)
-                        //             SELECT id, @cid FROM attendees WHERE ticket_code = @code
-                        //         `);
-                        // }
+                        // Linking via Ticket Code (Post-Payment or Same-Order if code is known/simulated - though strictly Post-Payment for MVP)
+                        if (attendeeData.linkedPilotCode) {
+                            // Verify the code exists and get the pilot's attendee_id
+                            // Note: This logic assumes the pilot is already registered (previous order) OR we allow simple lookup.
+                            // Limitation: If trying to link to a pilot defined IN THIS SAME TRANSACTION, it won't be found via SELECT yet
+                            // unless we did complex map lookups. Since we agreed on Post-Payment Linking utilizing Ticket Code,
+                            // we assume the Code provided belongs to an EXISTING attendee.
+
+                            const linkReq = new sql.Request(transaction);
+                            const linkRes = await linkReq
+                                .input('code', sql.VarChar, attendeeData.linkedPilotCode)
+                                .query("SELECT attendee_id FROM attendees WHERE ticket_code = @code");
+
+                            if (linkRes.recordset.length > 0) {
+                                const pilotAttendeeId = linkRes.recordset[0].attendee_id;
+
+                                const insertLinkReq = new sql.Request(transaction);
+                                await insertLinkReq
+                                    .input('paid', sql.Int, pilotAttendeeId)
+                                    .input('caid', sql.Int, attendeeId)
+                                    .query("INSERT INTO pilot_pit_crews (pilot_attendee_id, crew_attendee_id) VALUES (@paid, @caid)");
+                            } else {
+                                // Code not found. We can either throw an error or silently fail linking. 
+                                // For better UX, logging warning implies we might need to handle this strictly later.
+                                // But don't fail the whole order for a typo? Maybe fail to ensure they correct it?
+                                // Let's log for now.
+                                context.log(`Warning: Linked Pilot Code ${attendeeData.linkedPilotCode} not found for Attendee ${attendeeId}`);
+                            }
+                        }
                     }
                 }
 
