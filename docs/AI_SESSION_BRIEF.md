@@ -7,10 +7,11 @@
 1.  **Read this file** (`docs/AI_SESSION_BRIEF.md`) to ground yourself in the project context.
 2.  **Read `docs/ROADMAP.md`** to understand the current sprint and backlog.
 3.  **Read `docs/Development_Log.md`** (latest entry) to see where we left off.
-4. Instruct user to run    `C:\laragon\www\AERO-Project> cd client`
-                            `C:\laragon\www\AERO-Project\client> npm run dev` to start the development server.
-5. Instruct user to run    `C:\laragon\www\AERO-Project> cd api`
-                            `C:\laragon\www\AERO-Project\api> npm start` to start the API server.
+4.  **Read Git Log:** Run `git log -n 5` to see the latest committed code changes.
+5. Instruct user to run    `C:\laragon\www\AERO-Project> cd client`
+6.                             `C:\laragon\www\AERO-Project\client> npm run dev` to start the development server.
+7. Instruct user to run    `C:\laragon\www\AERO-Project> cd api`
+8.                             `C:\laragon\www\AERO-Project\api> npm start` to start the API server.
 
 ## 🔭 Project Vision & Roles
 *   **Whitelabel Goal:** Initially built for *Australian Large Scale Models* (Dave), but intended for resale to other groups.
