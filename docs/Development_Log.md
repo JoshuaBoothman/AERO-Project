@@ -132,4 +132,19 @@
 
 ### Next Steps
 * **Attendee Assignment Flow:** Allow users to view purchased tickets and assign names/emails after purchase.
-* **My Orders:** User profile view to see purchase history.
+
+## [2025-12-26] - Enhanced Registration & Linking
+**Milestone:** In-Cart Pilot-Crew Linking & Legacy Pilot Lookup
+
+### Completed Items
+* **Backend (API)**
+    * **Feature:** Created `getUserEventAttendees` to fetch a user's previously registered pilots.
+    * **Logic:** Refactored `createOrder.js` to support "In-Cart Linking" using temporary IDs.
+    * **Fix:** Patched `createOrder.js` to ensure `persons` records are correctly linked to the authenticated `user_id`.
+* **Frontend (Client)**
+    * **UI:** Enhanced Pit Crew section in `EventDetails.jsx` with a smart Pilot Selector (In-Cart vs Registered vs Manual).
+    * **State:** Implemented `myPilots` fetching and local state management.
+* **Verification**
+    * Validated In-Cart linking (Pilot + Crew in same order).
+    * Validated Cross-Order linking (Crew linking to previously registered Pilot).
+    * Fixed data issue where Pilot "Maverick" was unlinked from User.

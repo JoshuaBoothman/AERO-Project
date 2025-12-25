@@ -8,10 +8,13 @@
     - [x] SQL: Add `is_pilot` to `event_ticket_types`.
     - [x] SQL: Add `is_pit_crew` and `ticket_code`.
 - [x] **Registration Logic (API)**
-    - [x] Upgrade `createOrder` to handle Pilot (Planes) & Crew (Linking).
+    - [x] Upgrade `createOrder.js` to handle Pilot (Planes) & Crew (Linking).
+    - [x] Refactor `createOrder.js` for In-Cart Linking (Temp IDs).
     - [x] Update `getEventDetail` to expose `is_pilot` and `is_pit_crew`.
+    - [x] Create `getUserEventAttendees` for previous pilot lookup.
 - [x] **Registration UI (Frontend)**
     - [x] Enhance `AttendeeModal` with dynamic forms (Pilot vs Crew vs Spectator).
+    - [x] Implement "Smart Pilot Selector" (In-Cart + Previous + Manual).
     - [x] Implement Validations.
 
 ## 📋 Next Up (Ready for Dev)

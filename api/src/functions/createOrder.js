@@ -12,7 +12,7 @@ app.http('createOrder', {
         }
 
         const { eventId, items } = await request.json();
-        // items structure: [{ ticketTypeId: 1, quantity: 2, attendees: [{ firstName, lastName, email }, ...] }]
+        // items structure: [{ ticketTypeId: 1, quantity: 2, attendees: [{ firstName, lastName, email, tempId, linkedPilotTempId, linkedPilotCode }, ...] }]
 
         if (!items || items.length === 0) {
             return { status: 400, body: JSON.stringify({ error: "No items in cart" }) };
@@ -53,6 +53,10 @@ app.http('createOrder', {
                 const orderId = orderRes.recordset[0].id;
                 let totalAmount = 0;
 
+                // State for Linking Phase
+                const linkingActions = []; // { crewAttendeeId: int, linkedPilotTempId: string, linkedPilotCode: string }
+                const tempIdToAttendeeIdMap = {}; // { tempId: attendeeId }
+
                 // 3. Process Items & Attendees
                 for (const item of items) {
                     // Get ticket details
@@ -70,6 +74,12 @@ app.http('createOrder', {
                     const attendeesToProcess = item.attendees && item.attendees.length > 0
                         ? item.attendees
                         : Array(item.quantity).fill({}); // Fallback for quantity if no specific attendees
+
+                    // If quantity > attendees provided (rare but possible via API), fill gap
+                    if (attendeesToProcess.length < item.quantity) {
+                        const gap = item.quantity - attendeesToProcess.length;
+                        for (let k = 0; k < gap; k++) attendeesToProcess.push({});
+                    }
 
                     for (const attendeeData of attendeesToProcess) {
                         totalAmount += price;
@@ -89,9 +99,10 @@ app.http('createOrder', {
                                 .input('fn', sql.NVarChar, attendeeData.firstName || 'Guest')
                                 .input('ln', sql.NVarChar, attendeeData.lastName || 'User')
                                 .input('em', sql.NVarChar, attendeeData.email || null)
+                                .input('uid', sql.Int, user.userId)
                                 .query(`
-                                    INSERT INTO persons (first_name, last_name, email)
-                                    VALUES (@fn, @ln, @em);
+                                    INSERT INTO persons (first_name, last_name, email, user_id)
+                                    VALUES (@fn, @ln, @em, @uid);
                                     SELECT SCOPE_IDENTITY() AS id
                                 `);
                             attendeePersonId = pRes.recordset[0].id;
@@ -117,6 +128,20 @@ app.http('createOrder', {
                                 SELECT SCOPE_IDENTITY() AS id;
                             `);
                         const attendeeId = attRes.recordset[0].id;
+
+                        // Store DB ID against tempId for linking
+                        if (attendeeData.tempId) {
+                            tempIdToAttendeeIdMap[attendeeData.tempId] = attendeeId;
+                        }
+
+                        // Check if this attendee needs linking later
+                        if (attendeeData.linkedPilotTempId || attendeeData.linkedPilotCode) {
+                            linkingActions.push({
+                                crewAttendeeId: attendeeId,
+                                linkedPilotTempId: attendeeData.linkedPilotTempId,
+                                linkedPilotCode: attendeeData.linkedPilotCode
+                            });
+                        }
 
                         // C. Create Order Item
                         // Schema: order_item_id, order_id, attendee_id, item_type, item_reference_id, price_at_purchase
@@ -157,48 +182,48 @@ app.http('createOrder', {
                                     .query("INSERT INTO event_planes (event_id, plane_id) VALUES (@eid, @plid)");
                             }
                         }
-
-                        // E. Handle Crew Linking
-                        // Linking via Ticket Code (Post-Payment or Same-Order if code is known/simulated - though strictly Post-Payment for MVP)
-                        if (attendeeData.linkedPilotCode) {
-                            // Verify the code exists and get the pilot's attendee_id
-                            // Note: This logic assumes the pilot is already registered (previous order) OR we allow simple lookup.
-                            // Limitation: If trying to link to a pilot defined IN THIS SAME TRANSACTION, it won't be found via SELECT yet
-                            // unless we did complex map lookups. Since we agreed on Post-Payment Linking utilizing Ticket Code,
-                            // we assume the Code provided belongs to an EXISTING attendee.
-
-                            const linkReq = new sql.Request(transaction);
-                            const linkRes = await linkReq
-                                .input('code', sql.VarChar, attendeeData.linkedPilotCode)
-                                .query("SELECT attendee_id FROM attendees WHERE ticket_code = @code");
-
-                            if (linkRes.recordset.length > 0) {
-                                const pilotAttendeeId = linkRes.recordset[0].attendee_id;
-
-                                const insertLinkReq = new sql.Request(transaction);
-                                await insertLinkReq
-                                    .input('paid', sql.Int, pilotAttendeeId)
-                                    .input('caid', sql.Int, attendeeId)
-                                    .query("INSERT INTO pilot_pit_crews (pilot_attendee_id, crew_attendee_id) VALUES (@paid, @caid)");
-                            } else {
-                                // Code not found. We can either throw an error or silently fail linking. 
-                                // For better UX, logging warning implies we might need to handle this strictly later.
-                                // But don't fail the whole order for a typo? Maybe fail to ensure they correct it?
-                                // Let's log for now.
-                                context.log(`Warning: Linked Pilot Code ${attendeeData.linkedPilotCode} not found for Attendee ${attendeeId}`);
-                            }
-                        }
                     }
                 }
 
-                // 4. Update Order Total & Status
+                // 4. Process Linking Actions (Post-Processing)
+                for (const action of linkingActions) {
+                    let pilotAttendeeId = null;
+
+                    // Option A: Link via In-Cart Temp ID
+                    if (action.linkedPilotTempId && tempIdToAttendeeIdMap[action.linkedPilotTempId]) {
+                        pilotAttendeeId = tempIdToAttendeeIdMap[action.linkedPilotTempId];
+                    }
+                    // Option B: Link via Ticket Code (Manual or User-Selected Existing)
+                    else if (action.linkedPilotCode) {
+                        const linkReq = new sql.Request(transaction);
+                        const linkRes = await linkReq
+                            .input('code', sql.VarChar, action.linkedPilotCode.toUpperCase())
+                            .query("SELECT attendee_id FROM attendees WHERE ticket_code = @code");
+
+                        if (linkRes.recordset.length > 0) {
+                            pilotAttendeeId = linkRes.recordset[0].attendee_id;
+                        } else {
+                            context.log(`Warning: Linked Pilot Code ${action.linkedPilotCode} not found during linking step for crew ${action.crewAttendeeId}`);
+                        }
+                    }
+
+                    if (pilotAttendeeId) {
+                        const insertLinkReq = new sql.Request(transaction);
+                        await insertLinkReq
+                            .input('paid', sql.Int, pilotAttendeeId)
+                            .input('caid', sql.Int, action.crewAttendeeId)
+                            .query("INSERT INTO pilot_pit_crews (pilot_attendee_id, crew_attendee_id) VALUES (@paid, @caid)");
+                    }
+                }
+
+                // 5. Update Order Total & Status
                 const totalReq = new sql.Request(transaction);
                 await totalReq
                     .input('oid', sql.Int, orderId)
                     .input('total', sql.Decimal(10, 2), totalAmount)
                     .query("UPDATE orders SET total_amount = @total, payment_status = 'Paid' WHERE order_id = @oid");
 
-                // 5. Create Mock Transaction Record
+                // 6. Create Mock Transaction Record
                 const transReq = new sql.Request(transaction);
                 await transReq
                     .input('oid', sql.Int, orderId)

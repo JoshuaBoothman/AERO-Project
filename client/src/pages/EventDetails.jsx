@@ -21,6 +21,8 @@ function EventDetails() {
     const [purchasing, setPurchasing] = useState(false);
     const [purchaseSuccess, setPurchaseSuccess] = useState(null);
 
+    const [myPilots, setMyPilots] = useState([]); // [{ attendee_id, ticket_code, first_name, last_name }]
+
     useEffect(() => {
         async function fetchEvent() {
             try {
@@ -47,6 +49,22 @@ function EventDetails() {
         fetchEvent();
     }, [slug]);
 
+    // Fetch user's registered pilots for this event
+    useEffect(() => {
+        if (user && event && event.slug) {
+            fetch(`/api/events/${event.slug}/my-attendees`, {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (Array.isArray(data)) {
+                        setMyPilots(data);
+                    }
+                })
+                .catch(err => console.error("Failed to fetch my pilots", err));
+        }
+    }, [user, event]);
+
     const updateCart = (ticketId, change) => {
         setCart(prev => {
             const current = prev[ticketId] || 0;
@@ -68,7 +86,14 @@ function EventDetails() {
         const initialSlots = {};
         Object.entries(cart).forEach(([ticketId, qty]) => {
             for (let i = 0; i < qty; i++) {
-                initialSlots[`${ticketId}_${i}`] = { firstName: '', lastName: '', email: user?.email || '' };
+                // Generate a tempId for robust linking
+                const tempId = Math.random().toString(36).substr(2, 9);
+                initialSlots[`${ticketId}_${i}`] = {
+                    firstName: '',
+                    lastName: '',
+                    email: user?.email || '',
+                    tempId: tempId
+                };
             }
         });
         setAttendeeDetails(initialSlots);
@@ -141,6 +166,30 @@ function EventDetails() {
     const cartTotal = tickets.reduce((sum, t) => {
         return sum + (t.price * (cart[t.ticket_type_id] || 0));
     }, 0);
+
+    // Helper to get pilots currently in the cart
+    const getPilotsInCart = () => {
+        const pilots = [];
+        Object.entries(cart).forEach(([ticketId, qty]) => {
+            const ticket = tickets.find(t => t.ticket_type_id === parseInt(ticketId));
+            if (ticket?.is_pilot) {
+                for (let i = 0; i < qty; i++) {
+                    const key = `${ticketId}_${i}`;
+                    const details = attendeeDetails[key];
+                    if (details) {
+                        const label = (details.firstName || details.lastName)
+                            ? `${details.firstName} ${details.lastName}`.trim()
+                            : `Pilot #${i + 1}`;
+                        pilots.push({
+                            tempId: details.tempId,
+                            label: `${label} (In Cart)`
+                        });
+                    }
+                }
+            }
+        });
+        return pilots;
+    };
 
     return (
         <div className="container">
@@ -319,18 +368,76 @@ function EventDetails() {
                                             {tickets.find(t => t.ticket_type_id === parseInt(ticketId))?.is_pit_crew && (
                                                 <div style={{ marginTop: '0.5rem', padding: '0.5rem', border: '1px solid #ffecb3', borderRadius: '4px' }}>
                                                     <h5 style={{ margin: '0 0 0.5rem' }}>🛠️ Pit Crew</h5>
-                                                    <p style={{ fontSize: '0.9rem', marginBottom: '0.5rem', color: '#666' }}>
-                                                        Please enter the <strong>Ticket Code</strong> of the Pilot you are crewing for.
-                                                        <br />
-                                                        <em>They can find this in their email or order history.</em>
-                                                    </p>
-                                                    <input
-                                                        className="attendee-input"
-                                                        type="text" placeholder="Pilot Ticket Code (e.g. A1B2C3D4)"
-                                                        value={data.linkedPilotCode || ''}
-                                                        onChange={e => handleAttendeeChange(key, 'linkedPilotCode', e.target.value.toUpperCase())}
-                                                        style={{ width: '100%' }}
-                                                    />
+
+                                                    {/* Link Pilot Selector */}
+                                                    <div style={{ marginBottom: '1rem' }}>
+                                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Select Pilot:</label>
+                                                        <select
+                                                            className="attendee-input"
+                                                            style={{ width: '100%', marginBottom: '0.5rem' }}
+                                                            value={
+                                                                data.linkedPilotTempId ? `temp:${data.linkedPilotTempId}` :
+                                                                    data.linkedPilotCode ? `code:${data.linkedPilotCode}` :
+                                                                        ""
+                                                            }
+                                                            onChange={e => {
+                                                                const val = e.target.value;
+                                                                if (!val) {
+                                                                    handleAttendeeChange(key, 'linkedPilotTempId', null);
+                                                                    handleAttendeeChange(key, 'linkedPilotCode', '');
+                                                                } else if (val.startsWith('temp:')) {
+                                                                    handleAttendeeChange(key, 'linkedPilotTempId', val.split(':')[1]);
+                                                                    handleAttendeeChange(key, 'linkedPilotCode', '');
+                                                                    handleAttendeeChange(key, 'showManualInput', false);
+                                                                } else if (val.startsWith('code:')) {
+                                                                    handleAttendeeChange(key, 'linkedPilotTempId', null);
+                                                                    handleAttendeeChange(key, 'linkedPilotCode', val.split(':')[1]);
+                                                                    handleAttendeeChange(key, 'showManualInput', false);
+                                                                } else if (val === 'MANUAL') {
+                                                                    handleAttendeeChange(key, 'linkedPilotTempId', null);
+                                                                    handleAttendeeChange(key, 'linkedPilotCode', '');
+                                                                    handleAttendeeChange(key, 'showManualInput', true);
+                                                                }
+                                                            }}
+                                                        >
+                                                            <option value="">-- Choose Pilot --</option>
+
+                                                            {/* In Cart Pilots */}
+                                                            {getPilotsInCart().length > 0 && (
+                                                                <optgroup label="In this Order">
+                                                                    {getPilotsInCart().map(p => (
+                                                                        <option key={p.tempId} value={`temp:${p.tempId}`}>
+                                                                            {p.label}
+                                                                        </option>
+                                                                    ))}
+                                                                </optgroup>
+                                                            )}
+
+                                                            {/* Registered Pilots */}
+                                                            {myPilots.length > 0 && (
+                                                                <optgroup label="Previously Registered">
+                                                                    {myPilots.map(p => (
+                                                                        <option key={p.attendee_id} value={`code:${p.ticket_code}`}>
+                                                                            {p.first_name || 'Pilot'} {p.last_name} ({p.ticket_name})
+                                                                        </option>
+                                                                    ))}
+                                                                </optgroup>
+                                                            )}
+
+                                                            <option value="MANUAL">Enter Code Manually...</option>
+                                                        </select>
+
+                                                        {/* Manual Input Fallback */}
+                                                        {data.showManualInput && (
+                                                            <input
+                                                                className="attendee-input"
+                                                                type="text" placeholder="Enter Pilot Ticket Code (e.g. A1B2C3D4)"
+                                                                value={data.linkedPilotCode || ''}
+                                                                onChange={e => handleAttendeeChange(key, 'linkedPilotCode', e.target.value.toUpperCase())}
+                                                                style={{ width: '100%' }}
+                                                            />
+                                                        )}
+                                                    </div>
                                                 </div>
                                             )}
                                         </div>
