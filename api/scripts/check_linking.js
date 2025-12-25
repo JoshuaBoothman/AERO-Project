@@ -13,27 +13,23 @@ async function checkLinking() {
         const { getPool, sql } = require('../src/lib/db');
         const pool = await getPool();
 
-        console.log("--- Latest 5 Pilot-Pit Crew Links ---");
+        console.log("--- Checking for Planes Table ---");
         const query = `
-            SELECT TOP 5
-                link.pilot_pit_crew_id as link_id,
-                p_attendee.ticket_code as pilot_code,
-                p_person.first_name as pilot_first,
-                p_person.last_name as pilot_last,
-                c_attendee.ticket_code as crew_code,
-                c_person.first_name as crew_first,
-                c_person.last_name as crew_last,
-                c_attendee.status as crew_status
-            FROM pilot_pit_crews link
-            JOIN attendees p_attendee ON link.pilot_attendee_id = p_attendee.attendee_id
-            JOIN persons p_person ON p_attendee.person_id = p_person.person_id
-            JOIN attendees c_attendee ON link.crew_attendee_id = c_attendee.attendee_id
-            JOIN persons c_person ON c_attendee.person_id = c_person.person_id
-            ORDER BY link.pilot_pit_crew_id DESC
+            SELECT TABLE_NAME 
+            FROM INFORMATION_SCHEMA.TABLES 
+            WHERE TABLE_NAME = 'planes'
         `;
-
         const result = await pool.request().query(query);
         console.table(result.recordset);
+
+        console.log("--- Checking for Event Planes Table ---");
+        const query2 = `
+            SELECT TABLE_NAME 
+            FROM INFORMATION_SCHEMA.TABLES 
+            WHERE TABLE_NAME = 'event_planes'
+        `;
+        const result2 = await pool.request().query(query2);
+        console.table(result2.recordset);
 
         console.log("\n--- Latest 5 Orders with Attendees ---");
         const orderQuery = `

@@ -148,3 +148,7 @@
     * Validated In-Cart linking (Pilot + Crew in same order).
     * Validated Cross-Order linking (Crew linking to previously registered Pilot).
     * Fixed data issue where Pilot "Maverick" was unlinked from User.
+
+### Documentation (Planning)
+*   **Created:** `docs/Future_Feature_Requirements.md` - Roadmap for Campsites, Mechandise, Asset Hire.
+*   **Created:** `docs/Pilot_Logic_Deep_Dive.md` - Specifications for "My Hangar" and Flight Line Duties.
