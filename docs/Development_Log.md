@@ -152,3 +152,21 @@
 ### Documentation (Planning)
 *   **Created:** `docs/Future_Feature_Requirements.md` - Roadmap for Campsites, Mechandise, Asset Hire.
 *   **Created:** `docs/Pilot_Logic_Deep_Dive.md` - Specifications for "My Hangar" and Flight Line Duties.
+
+## [2025-12-27] - Order History & Attendee Management (Part 1)
+**Milestone:** Implemented "My Orders" and "Order Details" Views
+
+### Completed Items
+* **Backend (API)**
+    *   **Feature:** Created `getUserOrders` endpoint (fetches user's purchase history securely).
+    *   **Feature:** Created `getOrderDetail` endpoint (fetches specific order with tickets/attendees).
+    *   **Security:** Implemented specific `user_id` checks to ensure users can only view their own orders.
+* **Frontend (Client)**
+    *   **Page:** Created `MyOrders.jsx` - List view of past transactions.
+    *   **Page:** Created `OrderDetail.jsx` - Detailed view showing Ticket Types, and assigned Pilots/Crew.
+    *   **Navigation:** Added "My Orders" link to `Layout.jsx` (User Menu).
+    *   **Routing:** Registered new routes in `App.jsx`.
+
+### Next Steps
+*   **Attendee Assignment:** Add "Edit" functionality to the Order Detail view to allow changing names/emails.
+*   **Waiver System:** Implement the "Sign Waiver" flow from the Order Detail view.

@@ -15,15 +15,15 @@ function Layout({ orgSettings, loading, error }) {
 
   return (
     <div className="app-container" style={themeStyles}>
-      <header style={{ 
-          backgroundColor: 'var(--primary-color)', 
-          color: 'var(--secondary-color)',
-          padding: '1rem',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
-        }}>
-        
+      <header style={{
+        backgroundColor: 'var(--primary-color)',
+        color: 'var(--secondary-color)',
+        padding: '1rem',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+      }}>
+
         {/* Left Side: Logo/Name */}
         <div>
           <h1 style={{ margin: 0 }}>{orgSettings?.organization_name}</h1>
@@ -34,18 +34,19 @@ function Layout({ orgSettings, loading, error }) {
         <nav style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
           <Link to="/" style={{ color: 'inherit', textDecoration: 'none' }}>Home</Link>
           <Link to="/events" style={{ color: 'inherit', textDecoration: 'none' }}>Events</Link>
-          
+
           {/* Auth Logic */}
           {user ? (
             <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', borderLeft: '1px solid rgba(255,255,255,0.3)', paddingLeft: '1rem' }}>
               <span>Hi, {user.firstName}</span>
-              <button 
-                onClick={logout} 
-                style={{ 
-                  background: 'rgba(0,0,0,0.2)', 
-                  border: 'none', 
-                  color: 'inherit', 
-                  padding: '5px 10px', 
+              <Link to="/my-orders" style={{ color: 'inherit', textDecoration: 'none', fontWeight: 'bold' }}>My Orders</Link>
+              <button
+                onClick={logout}
+                style={{
+                  background: 'rgba(0,0,0,0.2)',
+                  border: 'none',
+                  color: 'inherit',
+                  padding: '5px 10px',
                   cursor: 'pointer',
                   borderRadius: '4px'
                 }}
@@ -54,13 +55,13 @@ function Layout({ orgSettings, loading, error }) {
               </button>
             </div>
           ) : (
-            <Link 
-              to="/login" 
-              style={{ 
-                backgroundColor: 'var(--accent-color)', 
-                color: 'var(--primary-color)', 
-                padding: '0.5rem 1rem', 
-                borderRadius: '4px', 
+            <Link
+              to="/login"
+              style={{
+                backgroundColor: 'var(--accent-color)',
+                color: 'var(--primary-color)',
+                padding: '0.5rem 1rem',
+                borderRadius: '4px',
                 textDecoration: 'none',
                 fontWeight: 'bold'
               }}
@@ -71,7 +72,7 @@ function Layout({ orgSettings, loading, error }) {
         </nav>
 
       </header>
-      
+
       <main>
         <Outlet />
       </main>

@@ -3,12 +3,15 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import Home from './pages/Home';
 import Events from './pages/Events';
-import EventDetails from './pages/EventDetails'; 
+import EventDetails from './pages/EventDetails';
 import './App.css';
 import { AuthProvider } from './context/AuthContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import EventPurchase from './pages/EventPurchase';
+
+import MyOrders from './pages/MyOrders';
+import OrderDetail from './pages/OrderDetail';
 
 function App() {
   const [orgSettings, setOrgSettings] = useState(null);
@@ -34,29 +37,29 @@ function App() {
 
   return (
     <AuthProvider>
-    <BrowserRouter>
-      <Routes>
-        {/* The Layout wraps all routes inside it */}
-        <Route path="/" element={<Layout orgSettings={orgSettings} loading={loading} error={error} />}>
-          
-          {/* The "index" route is what renders when you visit "/" */}
-          <Route index element={<Home />} />
-          
-          <Route path="events" element={<Events />} />
+      <BrowserRouter>
+        <Routes>
+          {/* The Layout wraps all routes inside it */}
+          <Route path="/" element={<Layout orgSettings={orgSettings} loading={loading} error={error} />}>
 
-          <Route path="events/:slug" element={<EventDetails />} />
-          
-          <Route path="login" element={<Login />} />
+            {/* The "index" route is what renders when you visit "/" */}
+            <Route index element={<Home />} />
+
+            <Route path="events" element={<Events />} />
+
+            <Route path="events/:slug" element={<EventDetails />} />
+
+            <Route path="login" element={<Login />} />
             <Route path="register" element={<Register />} />
-            
-            <Route path="events/:slug/purchase" element={<EventPurchase />} />
-        </Route>
 
-        
-// ...
-      </Routes>
+            <Route path="events/:slug/purchase" element={<EventPurchase />} />
+
+            <Route path="my-orders" element={<MyOrders />} />
+            <Route path="orders/:orderId" element={<OrderDetail />} />
+          </Route>
+        </Routes>
       </BrowserRouter>
-      </AuthProvider>
+    </AuthProvider>
   );
 }
 
