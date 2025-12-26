@@ -179,7 +179,9 @@
     *   **Feature:** Implemented Inline Edit Mode in `OrderDetail.jsx`.
     *   **UI/UX:** Aligned "Edit Details" button with "Registered" status badge for visual consistency.
     *   **Refactor:** Converted `tickets-list` item actions to a flex-column layout.
+    *   **Feature:** Added `react-qr-code` to `OrderDetail.jsx` for scannable gate entry.
 
 ### Next Steps
-*   **Waiver System:** Implement the "Sign Waiver" flow.
+*   **Campsite Booking:** Interactive map/list for booking spots.
+*   **Merchandise:** E-commerce store.
 

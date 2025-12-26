@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import QRCode from 'react-qr-code';
 import { useAuth } from '../context/AuthContext';
 
 function OrderDetail() {
@@ -218,8 +219,18 @@ function OrderDetail() {
                                     )}
 
                                     {item.ticket_code && (
-                                        <div style={{ marginTop: '0.5rem', fontFamily: 'monospace', background: '#eee', display: 'inline-block', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
-                                            CODE: {item.ticket_code}
+                                        <div style={{ marginTop: '1rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                                            <div style={{ background: 'white', padding: '4px', border: '1px solid #ddd', borderRadius: '4px' }}>
+                                                <QRCode value={item.ticket_code} size={64} />
+                                            </div>
+                                            <div>
+                                                <div style={{ fontFamily: 'monospace', background: '#eee', display: 'inline-block', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.9rem', fontWeight: 'bold' }}>
+                                                    {item.ticket_code}
+                                                </div>
+                                                <div style={{ fontSize: '0.75rem', color: '#666', marginTop: '4px' }}>
+                                                    Scan at Gate
+                                                </div>
+                                            </div>
                                         </div>
                                     )}
                                 </div>

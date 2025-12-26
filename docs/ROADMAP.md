@@ -18,18 +18,18 @@
     - [x] Implement Validations.
 
 ## 📋 Next Up (Ready for Dev)
-- [x] **Attendee Assignment Flow:** Allow users to view purchased tickets and assign names/emails after purchase.
-- [ ] **Waiver System:** Digital waiver signing.
-- [x] **My Orders:** User profile view to see purchase history.
+- [x] **QR Code Generation:** Display unique QR code for each ticket (for gate scanning).
+- [ ] **Campsite Booking:** Interactive map/list for booking camping spots.
+- [ ] **Merchandise Store:** E-commerce flow for pre-purchasing gear.
 
 ## 📦 Backlog (Future)
 ### Authentication & User Management
 - [ ] **Email Confirmation:** Verify via SendGrid.
 - [ ] **Social Login:** Google/Microsoft OAuth.
 - [ ] **Role Management:** Admin UI.
+- [ ] **Waiver System:** Digital waiver signing (Deferred).
 
 ### Operational Features
-- [ ] **QR Code Generation:** For tickets.
 - [ ] **Mobile Scanning App:** Gate entry.
 
 ### Technical Debt / Polish
