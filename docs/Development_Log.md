@@ -185,3 +185,22 @@
 *   **Campsite Booking:** Interactive map/list for booking spots.
 *   **Merchandise:** E-commerce store.
 
+## [2025-12-27] - Campsite Admin Map Tool
+**Milestone:** Campground Mapping Foundation
+
+### Completed Items
+* **Database**
+    *   **Seeding:** Seeded "North Field" campground (`test-map.jpg`) and 5 campsites.
+    *   **Tooling:** Created temporary seeding endpoint to bypass direct connection issues.
+* **Backend (API)**
+    *   **Features:** Implemented `getCampgrounds`, `getCampsites`, and `updateCampsiteCoords`.
+    *   **Fix:** Resolved API crash (500 Error) by fixing `recordset` property access on array results.
+* **Frontend (Client)**
+    *   **Feature:** Created `AdminMapTool.jsx` for defining campsite locations on a map image.
+    *   **Navigation:** Added `/admin/map` route.
+    *   **Logic:** Implemented dynamic fetching of campground data (removes hardcoded IDs).
+
+### Next Steps
+*   **Admin Map Tool:** Debug "Click to Save" functionality (User reported unresponsive click).
+*   **User Booking:** Build the frontend interface for users to book specific sites.
+

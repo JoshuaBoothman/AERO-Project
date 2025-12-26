@@ -11,6 +11,7 @@ import Register from './pages/Register';
 import EventPurchase from './pages/EventPurchase';
 
 import MyOrders from './pages/MyOrders';
+import AdminMapTool from './pages/camping/AdminMapTool';
 import OrderDetail from './pages/OrderDetail';
 
 function App() {
@@ -56,6 +57,8 @@ function App() {
 
             <Route path="my-orders" element={<MyOrders />} />
             <Route path="orders/:orderId" element={<OrderDetail />} />
+
+            <Route path="admin/map" element={<AdminMapTool />} />
           </Route>
         </Routes>
       </BrowserRouter>
