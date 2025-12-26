@@ -58,6 +58,7 @@ app.http('getOrderDetail', {
                     p.email,
                     a.status as attendee_status,
                     a.ticket_code,
+                    a.attendee_id,
                     e.name as event_name,
                     e.slug as event_slug,
                     e.banner_url

@@ -18,7 +18,7 @@
     - [x] Implement Validations.
 
 ## 📋 Next Up (Ready for Dev)
-- [ ] **Attendee Assignment Flow:** Allow users to view purchased tickets and assign names/emails after purchase.
+- [x] **Attendee Assignment Flow:** Allow users to view purchased tickets and assign names/emails after purchase.
 - [ ] **Waiver System:** Digital waiver signing.
 - [x] **My Orders:** User profile view to see purchase history.
 

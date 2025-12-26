@@ -167,6 +167,19 @@
     *   **Navigation:** Added "My Orders" link to `Layout.jsx` (User Menu).
     *   **Routing:** Registered new routes in `App.jsx`.
 
+
+### [2025-12-27] - Order History & Attendee Management (Part 2)
+**Milestone:** Attendee Assignment Logic
+
+### Completed Items
+* **Backend (API)**
+    *   **Feature:** Created `updateAttendee` endpoint (`PUT /api/attendees/:id`).
+    *   **Security:** Added ownership validation (User -> Order -> OrderItem -> Attendee).
+* **Frontend (Client)**
+    *   **Feature:** Implemented Inline Edit Mode in `OrderDetail.jsx`.
+    *   **UI/UX:** Aligned "Edit Details" button with "Registered" status badge for visual consistency.
+    *   **Refactor:** Converted `tickets-list` item actions to a flex-column layout.
+
 ### Next Steps
-*   **Attendee Assignment:** Add "Edit" functionality to the Order Detail view to allow changing names/emails.
-*   **Waiver System:** Implement the "Sign Waiver" flow from the Order Detail view.
+*   **Waiver System:** Implement the "Sign Waiver" flow.
+

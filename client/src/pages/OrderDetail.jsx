@@ -10,6 +10,11 @@ function OrderDetail() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    // Edit Mode State
+    const [editingAttendeeId, setEditingAttendeeId] = useState(null);
+    const [editFormData, setEditFormData] = useState({});
+    const [saving, setSaving] = useState(false);
+
     useEffect(() => {
         async function fetchOrderDetail() {
             try {
@@ -41,6 +46,62 @@ function OrderDetail() {
             fetchOrderDetail();
         }
     }, [user, orderId]);
+
+    const handleEditClick = (item) => {
+        setEditingAttendeeId(item.attendee_id);
+        setEditFormData({
+            firstName: item.first_name || '',
+            lastName: item.last_name || '',
+            email: item.email || ''
+        });
+    };
+
+    const handleCancelEdit = () => {
+        setEditingAttendeeId(null);
+        setEditFormData({});
+    };
+
+    const handleSave = async (attendeeId) => {
+        setSaving(true);
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`/api/attendees/${attendeeId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(editFormData)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.body || 'Failed to update attendee');
+            }
+
+            // Update local state
+            setOrder(prev => ({
+                ...prev,
+                items: prev.items.map(item => {
+                    if (item.attendee_id === attendeeId) {
+                        return {
+                            ...item,
+                            first_name: editFormData.firstName,
+                            last_name: editFormData.lastName,
+                            email: editFormData.email
+                        };
+                    }
+                    return item;
+                })
+            }));
+
+            setEditingAttendeeId(null);
+        } catch (err) {
+            alert(`Error updating: ${err.message}`);
+        } finally {
+            setSaving(false);
+        }
+    };
 
     if (loading) return <div className="container" style={{ padding: '2rem' }}>Loading details...</div>;
 
@@ -110,52 +171,124 @@ function OrderDetail() {
             <h2 style={{ borderBottom: '2px solid #eee', paddingBottom: '0.5rem', marginBottom: '1rem' }}>Tickets & Attendees</h2>
 
             <div className="tickets-list">
-                {tickets.map(item => (
-                    <div key={item.order_item_id} className="card" style={{ marginBottom: '1rem', borderLeft: '4px solid var(--accent-color)' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
-                            <div style={{ flex: 1, minWidth: '250px' }}>
-                                <div style={{
-                                    textTransform: 'uppercase',
-                                    fontSize: '0.8rem',
-                                    fontWeight: 'bold',
-                                    color: '#888',
-                                    marginBottom: '0.25rem'
-                                }}>
-                                    {item.ticket_name}
-                                    {item.is_pilot && <span style={{ marginLeft: '0.5rem', color: '#007bff' }}>✈️ Pilot</span>}
-                                    {item.is_pit_crew && <span style={{ marginLeft: '0.5rem', color: '#ff9800' }}>🛠️ Crew</span>}
-                                </div>
-                                <h3 style={{ margin: 0 }}>
-                                    {item.first_name || item.last_name
-                                        ? `${item.first_name} ${item.last_name}`.trim()
-                                        : <span style={{ fontStyle: 'italic', color: '#999' }}>Unassigned Ticket</span>
-                                    }
-                                </h3>
-
-                                {item.ticket_code && (
-                                    <div style={{ marginTop: '0.5rem', fontFamily: 'monospace', background: '#eee', display: 'inline-block', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
-                                        CODE: {item.ticket_code}
+                {tickets.map(item => {
+                    const isEditing = editingAttendeeId === item.attendee_id;
+                    return (
+                        <div key={item.order_item_id} className="card" style={{ marginBottom: '1rem', borderLeft: '4px solid var(--accent-color)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+                                <div style={{ flex: 1, minWidth: '250px' }}>
+                                    <div style={{
+                                        textTransform: 'uppercase',
+                                        fontSize: '0.8rem',
+                                        fontWeight: 'bold',
+                                        color: '#888',
+                                        marginBottom: '0.25rem'
+                                    }}>
+                                        {item.ticket_name}
+                                        {item.is_pilot && <span style={{ marginLeft: '0.5rem', color: '#007bff' }}>✈️ Pilot</span>}
+                                        {item.is_pit_crew && <span style={{ marginLeft: '0.5rem', color: '#ff9800' }}>🛠️ Crew</span>}
                                     </div>
-                                )}
-                            </div>
 
-                            <div style={{ flex: 1, minWidth: '200px' }}>
-                                <div style={{ fontSize: '0.9rem', color: '#666', marginBottom: '0.5rem' }}>Email</div>
-                                <div>{item.email || '-'}</div>
-                            </div>
+                                    {isEditing ? (
+                                        <div style={{ display: 'grid', gap: '0.5rem', marginTop: '0.5rem' }}>
+                                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                                <input
+                                                    type="text"
+                                                    className="attendee-input"
+                                                    placeholder="First Name"
+                                                    value={editFormData.firstName}
+                                                    onChange={e => setEditFormData({ ...editFormData, firstName: e.target.value })}
+                                                />
+                                                <input
+                                                    type="text"
+                                                    className="attendee-input"
+                                                    placeholder="Last Name"
+                                                    value={editFormData.lastName}
+                                                    onChange={e => setEditFormData({ ...editFormData, lastName: e.target.value })}
+                                                />
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <h3 style={{ margin: 0 }}>
+                                            {item.first_name || item.last_name
+                                                ? `${item.first_name} ${item.last_name}`.trim()
+                                                : <span style={{ fontStyle: 'italic', color: '#999' }}>Unassigned Ticket</span>
+                                            }
+                                        </h3>
+                                    )}
 
-                            <div style={{ flex: 0, minWidth: '150px', whiteSpace: 'nowrap', textAlign: 'right' }}>
-                                <span className="status-badge" style={{ backgroundColor: '#e0f7fa', color: '#006064' }}>
-                                    {item.attendee_status}
-                                </span>
-                                <div style={{ marginTop: '0.5rem' }}>
-                                    {/* Future: Edit Button */}
-                                    {/* <button className="secondary-button" style={{ fontSize: '0.8rem', padding: '0.25rem 0.5rem' }}>Edit Details</button> */}
+                                    {item.ticket_code && (
+                                        <div style={{ marginTop: '0.5rem', fontFamily: 'monospace', background: '#eee', display: 'inline-block', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
+                                            CODE: {item.ticket_code}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div style={{ flex: 1, minWidth: '200px' }}>
+                                    {isEditing ? (
+                                        <div>
+                                            <div style={{ fontSize: '0.9rem', color: '#666', marginBottom: '0.25rem' }}>Email</div>
+                                            <input
+                                                type="email"
+                                                className="attendee-input"
+                                                style={{ width: '100%' }}
+                                                value={editFormData.email}
+                                                onChange={e => setEditFormData({ ...editFormData, email: e.target.value })}
+                                            />
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <div style={{ fontSize: '0.9rem', color: '#666', marginBottom: '0.5rem' }}>Email</div>
+                                            <div>{item.email || '-'}</div>
+                                        </>
+                                    )}
+                                </div>
+
+                                <div style={{ flex: 0, width: '120px', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                    <span className="status-badge" style={{ backgroundColor: '#e0f7fa', color: '#006064', width: '100%', alignSelf: 'stretch', textAlign: 'center' }}>
+                                        {item.attendee_status}
+                                    </span>
+
+                                    {isEditing ? (
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                            <button
+                                                className="primary-button"
+                                                onClick={() => handleSave(item.attendee_id)}
+                                                disabled={saving}
+                                                style={{ width: '100%', fontSize: '0.75rem', padding: '4px 0', fontWeight: 'bold', textTransform: 'uppercase' }}
+                                            >
+                                                {saving ? 'Saving' : 'Save'}
+                                            </button>
+                                            <button
+                                                className="secondary-button"
+                                                onClick={handleCancelEdit}
+                                                disabled={saving}
+                                                style={{ width: '100%', fontSize: '0.75rem', padding: '4px 0', fontWeight: 'bold', textTransform: 'uppercase' }}
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <button
+                                            className="secondary-button"
+                                            onClick={() => handleEditClick(item)}
+                                            style={{
+                                                width: '100%',
+                                                fontSize: '0.75rem',
+                                                padding: '4px 0',
+                                                fontWeight: 'bold',
+                                                textTransform: 'uppercase',
+                                                letterSpacing: '0.5px'
+                                            }}
+                                        >
+                                            Edit Details
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
 
         </div>
