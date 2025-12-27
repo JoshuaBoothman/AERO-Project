@@ -201,6 +201,23 @@
     *   **Logic:** Implemented dynamic fetching of campground data (removes hardcoded IDs).
 
 ### Next Steps
-*   **Admin Map Tool:** Debug "Click to Save" functionality (User reported unresponsive click).
 *   **User Booking:** Build the frontend interface for users to book specific sites.
+
+## [2025-12-28] - Admin Map Tool Enhancements
+**Milestone:** Campsite Admin Map Tool (v1)
+
+### Completed Items
+*   **Features (Backend)**
+    *   **Bulk Create:**  `createCampsites.js` (POST /api/campgrounds/{id}/sites) handles bulk addition with prefixes.
+    *   **Update Site:** `updateCampsite.js` (PUT /api/campsites/{id}) handles renaming and unmapping.
+    *   **Delete Site:** `deleteCampsite.js` (DELETE /api/campsites/{id}).
+*   **UI/UX (Frontend)**
+    *   **Grid Layout:**  `AdminMapTool.jsx` sites list converted to a responsive CSS grid.
+    *   **Bulk Add UI:** Added inputs for Qty and Prefix to quickly generate sites.
+    *   **Interaction Refinement:** 
+        *   Maintained selection focus after pinning for rapid mapping.
+        *   Added "click pin to select" functionality.
+        *   Fixed map container offset issues for accurate pin placement.
+    *   **Theming:** integrated `organization_settings` colors (Primary, Accent) for dynamic button and pin styling.
+
 

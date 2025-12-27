@@ -19,7 +19,7 @@
 
 ## 📋 Next Up (Ready for Dev)
 - [x] **QR Code Generation:** Display unique QR code for each ticket (for gate scanning).
-- [/] **Campsite Booking:** Interactive map/list for booking camping spots (Backend & Admin Tool mostly done).
+- [x] **Campsite Booking:** Interactive map/list for booking camping spots (Backend & Admin Tool Complete).
 - [ ] **Merchandise Store:** E-commerce flow for pre-purchasing gear.
 
 ## 📦 Backlog (Future)
