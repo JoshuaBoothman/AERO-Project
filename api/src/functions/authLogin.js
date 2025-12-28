@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const { query, sql } = require('../lib/db');
 
 // Use a fallback for dev, but ensure this is in your App Settings in Azure
-const SECRET_KEY = process.env.JWT_SECRET || "dev-secret-key-change-me"; 
+const SECRET_KEY = process.env.JWT_SECRET || "dev-secret-key-change-me";
 
 app.http('authLogin', {
     methods: ['POST'],
@@ -13,35 +13,46 @@ app.http('authLogin', {
         try {
             const { email, password } = await request.json();
 
-            // 1. Fetch User
-            const sqlQuery = "SELECT user_id, password_hash, first_name, last_name, role FROM users WHERE email = @email";
-            // Note: 'role' isn't in your schema.sql for 'users', only 'admin_users'. 
-            // If you want roles for public users, we need to add it. For now, we skip it.
-            
-            const result = await query("SELECT user_id, password_hash, first_name, last_name FROM users WHERE email = @email", [
+            let user = null;
+            let role = 'user';
+
+            // 1. Check Admin Users first
+            const adminRes = await query("SELECT admin_user_id, password_hash, first_name, last_name, role FROM admin_users WHERE email = @email", [
                 { name: 'email', type: sql.NVarChar, value: email }
             ]);
 
-            if (result.length === 0) {
+            if (adminRes.length > 0) {
+                user = adminRes[0];
+                role = user.role || 'admin'; // Use DB role or default
+                user.user_id = user.admin_user_id; // Normalize ID
+            } else {
+                // 2. Check Regular Users
+                const userRes = await query("SELECT user_id, password_hash, first_name, last_name FROM users WHERE email = @email", [
+                    { name: 'email', type: sql.NVarChar, value: email }
+                ]);
+                if (userRes.length > 0) {
+                    user = userRes[0];
+                }
+            }
+
+            if (!user) {
                 return { status: 401, body: "Invalid credentials" };
             }
 
-            const user = result[0];
-
-            // 2. Compare Password
+            // 3. Compare Password
             const isMatch = await bcrypt.compare(password, user.password_hash);
             if (!isMatch) {
                 return { status: 401, body: "Invalid credentials" };
             }
 
-            // 3. Generate Token
+            // 4. Generate Token
             const token = jwt.sign(
-                { userId: user.user_id, email: user.email },
+                { userId: user.user_id, email: email, role },
                 SECRET_KEY,
                 { expiresIn: '8h' }
             );
 
-            // 4. Return Token & User Info (excluding hash)
+            // 5. Return Token & User Info
             return {
                 status: 200,
                 body: JSON.stringify({
@@ -49,7 +60,8 @@ app.http('authLogin', {
                     user: {
                         id: user.user_id,
                         firstName: user.first_name,
-                        lastName: user.last_name
+                        lastName: user.last_name,
+                        role
                     }
                 })
             };

@@ -1,8 +1,10 @@
 import { Outlet, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 
 function Layout({ orgSettings, loading, error }) {
   const { user, logout } = useAuth(); // <--- Get user state
+  const { cart } = useCart();
 
   if (loading) return <div>Loading settings...</div>;
   if (error) return <div>Error: {error}</div>;
@@ -34,12 +36,31 @@ function Layout({ orgSettings, loading, error }) {
         <nav style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
           <Link to="/" style={{ color: 'inherit', textDecoration: 'none' }}>Home</Link>
           <Link to="/events" style={{ color: 'inherit', textDecoration: 'none' }}>Events</Link>
+          <Link to="/camping" style={{ color: 'inherit', textDecoration: 'none' }}>Camping</Link>
 
           {/* Auth Logic */}
           {user ? (
             <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', borderLeft: '1px solid rgba(255,255,255,0.3)', paddingLeft: '1rem' }}>
               <span>Hi, {user.firstName}</span>
-              <Link to="/my-orders" style={{ color: 'inherit', textDecoration: 'none', fontWeight: 'bold' }}>My Orders</Link>
+
+              {user.role === 'admin' ? (
+                /* Admin Menu */
+                <Link to="/admin/map" style={{ color: 'inherit', textDecoration: 'none', fontWeight: 'bold' }}>Admin Map</Link>
+              ) : (
+                /* User Menu */
+                <>
+                  <Link to="/checkout" style={{ color: 'inherit', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <span>🛒</span>
+                    {cart.length > 0 && (
+                      <span style={{ background: 'var(--accent-color)', color: 'black', borderRadius: '50%', padding: '2px 6px', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                        {cart.length}
+                      </span>
+                    )}
+                  </Link>
+                  <Link to="/my-orders" style={{ color: 'inherit', textDecoration: 'none', fontWeight: 'bold' }}>My Orders</Link>
+                </>
+              )}
+
               <button
                 onClick={logout}
                 style={{

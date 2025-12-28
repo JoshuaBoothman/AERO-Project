@@ -13,6 +13,9 @@ import EventPurchase from './pages/EventPurchase';
 import MyOrders from './pages/MyOrders';
 import AdminMapTool from './pages/camping/AdminMapTool';
 import OrderDetail from './pages/OrderDetail';
+import CampingPage from './pages/camping/CampingPage';
+import Checkout from './pages/Checkout';
+import { CartProvider } from './context/CartContext';
 
 function App() {
   const [orgSettings, setOrgSettings] = useState(null);
@@ -38,30 +41,27 @@ function App() {
 
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          {/* The Layout wraps all routes inside it */}
-          <Route path="/" element={<Layout orgSettings={orgSettings} loading={loading} error={error} />}>
+      <CartProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Layout orgSettings={orgSettings} loading={loading} error={error} />}>
+              <Route index element={<Home />} />
+              <Route path="events" element={<Events />} />
+              <Route path="events/:slug" element={<EventDetails />} />
+              <Route path="login" element={<Login />} />
+              <Route path="register" element={<Register />} />
+              <Route path="events/:slug/purchase" element={<EventPurchase />} />
+              <Route path="camping" element={<CampingPage />} /> {/* Generic Camping Route */}
+              <Route path="events/:slug/camping" element={<CampingPage />} />
+              <Route path="checkout" element={<Checkout />} /> {/* Added Checkout Route */}
 
-            {/* The "index" route is what renders when you visit "/" */}
-            <Route index element={<Home />} />
-
-            <Route path="events" element={<Events />} />
-
-            <Route path="events/:slug" element={<EventDetails />} />
-
-            <Route path="login" element={<Login />} />
-            <Route path="register" element={<Register />} />
-
-            <Route path="events/:slug/purchase" element={<EventPurchase />} />
-
-            <Route path="my-orders" element={<MyOrders />} />
-            <Route path="orders/:orderId" element={<OrderDetail />} />
-
-            <Route path="admin/map" element={<AdminMapTool />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+              <Route path="my-orders" element={<MyOrders />} />
+              <Route path="orders/:orderId" element={<OrderDetail />} />
+              <Route path="admin/map" element={<AdminMapTool />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </CartProvider>
     </AuthProvider>
   );
 }

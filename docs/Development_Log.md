@@ -221,3 +221,23 @@
     *   **Theming:** integrated `organization_settings` colors (Primary, Accent) for dynamic button and pin styling.
 
 
+
+## [2025-12-28] - Admin UX & Role Logic
+**Milestone:** Role-Based Navigation & Enhanced Admin Tools
+
+### Completed Items
+*   **Backend (API)**
+    *   **Auth Logic:** Updated `authLogin.js` to correctly authenticate against the `admin_users` table before falling back to `users`.
+    *   **New Endpoint:** Created `createCampground.js` (POST /api/campgrounds) to allow Admins to generate new campground entities.
+    *   **Fix:** Aligned `authLogin` and `createCampground` queries with the actual SQL Schema (corrected column names `admin_user_id` and removed non-existent `capacity`).
+*   **Frontend (Client)**
+    *   **Navigation:** Updated `Layout.jsx` to implement Role-Based Access Control (RBAC) in the header.
+        *   **Admins:** See "Admin Map", "Cart" is hidden.
+        *   **Users:** See "Cart", "Admin Map" is hidden.
+    *   **Admin Map Tool:** 
+        *   **UX Fix:** Solved Map Image overflow issue with responsive CSS.
+        *   **Feature:** Added "Create Campground" button and Modal to the Admin interface.
+        *   **Security:** Added Route Protection to redirect unauthorized users to Login.
+*   **Verification**
+    *   Verified End-to-End Admin flow (Login -> Create Campground -> View Map).
+    *   Verified User flow (Login -> Restricted Access).
