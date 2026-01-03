@@ -33,7 +33,8 @@ function AdminMapTool() {
     // Create Campground Modal State
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [newCampName, setNewCampName] = useState('');
-    const [newCampMapUrl, setNewCampMapUrl] = useState('');
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [uploading, setUploading] = useState(false);
 
     // Initial Load: Fetch Events & Settings
     useEffect(() => {
@@ -124,30 +125,86 @@ function AdminMapTool() {
         finally { setLoading(false); }
     };
 
+    const handleDeleteCampground = async (id) => {
+        if (!window.confirm("Are you sure you want to delete this campground? This cannot be undone.")) return;
+        try {
+            const res = await fetch(`/api/campgrounds/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                setCampgrounds(prev => prev.filter(c => c.campground_id !== id));
+                if (selectedCampgroundId === id) {
+                    setSelectedCampgroundId(null);
+                    setCampground(null);
+                }
+            } else {
+                const err = await res.json();
+                alert(err.error || 'Failed to delete campground');
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Error deleting campground');
+        }
+    };
+
     const handleCreateCampground = async () => {
         if (!newCampName || !selectedEventId) {
             alert('Name and Event are required');
             return;
         }
+
+        if (!selectedFile) {
+            alert('Please select a map image');
+            return;
+        }
+
+        setUploading(true);
         try {
+            // 1. Upload Image
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            const uploadRes = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!uploadRes.ok) {
+                const err = await uploadRes.json();
+                throw new Error(err.error || 'Upload failed');
+            }
+
+            const { url } = await uploadRes.json();
+
+            // 2. Create Campground
             const res = await fetch('/api/campgrounds', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({
                     event_id: selectedEventId,
                     name: newCampName,
-                    map_image_url: newCampMapUrl
+                    map_image_url: url
                 })
             });
             if (res.ok) {
+                const data = await res.json();
                 setShowCreateModal(false);
                 setNewCampName('');
-                setNewCampMapUrl('');
-                fetchCampgrounds(selectedEventId); // Refresh list
+                setSelectedFile(null);
+                await fetchCampgrounds(selectedEventId);
+                if (data.campground_id) {
+                    setSelectedCampgroundId(data.campground_id);
+                }
             } else {
                 alert('Failed to create campground');
             }
-        } catch (e) { console.error(e); }
+        } catch (e) {
+            console.error(e);
+            alert('Error: ' + e.message);
+        } finally {
+            setUploading(false);
+        }
     };
 
     // --- Editor Handlers (Same as before) ---
@@ -261,24 +318,42 @@ function AdminMapTool() {
                 {selectedEventId && (
                     <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
                         {campgrounds.length > 0 && campgrounds.map(cg => (
-                            <button
-                                key={cg.campground_id}
-                                onClick={() => setSelectedCampgroundId(cg.campground_id)}
-                                style={{
-                                    padding: '8px 16px',
-                                    background: selectedCampgroundId === cg.campground_id ? 'var(--primary-color, black)' : '#eee',
-                                    color: selectedCampgroundId === cg.campground_id ? 'white' : 'black',
-                                    border: 'none',
-                                    borderRadius: '4px',
-                                    cursor: 'pointer'
-                                }}
-                            >
-                                {cg.name}
-                            </button>
+                            <div key={cg.campground_id} style={{ position: 'relative', display: 'flex' }}>
+                                <button
+                                    onClick={() => setSelectedCampgroundId(cg.campground_id)}
+                                    style={{
+                                        padding: '8px 16px',
+                                        background: selectedCampgroundId === cg.campground_id ? 'var(--primary-color, black)' : '#eee',
+                                        color: selectedCampgroundId === cg.campground_id ? 'white' : 'black',
+                                        border: 'none',
+                                        borderRadius: '4px 0 0 4px',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    {cg.name}
+                                </button>
+                                {selectedCampgroundId === cg.campground_id && (
+                                    <button
+                                        onClick={() => handleDeleteCampground(cg.campground_id)}
+                                        style={{
+                                            padding: '8px 10px',
+                                            background: '#dc3545',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '0 4px 4px 0',
+                                            cursor: 'pointer',
+                                            borderLeft: '1px solid rgba(0,0,0,0.1)'
+                                        }}
+                                        title="Delete Campground"
+                                    >
+                                        🗑️
+                                    </button>
+                                )}
+                            </div>
                         ))}
                         <button
                             onClick={() => setShowCreateModal(true)}
-                            style={{ padding: '8px 12px', background: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '1.2rem', lineHeight: '1' }}
+                            style={{ padding: '8px 12px', background: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '1.2rem', lineHeight: '1', marginLeft: '5px' }}
                             title="Add Campground"
                         >
                             +
@@ -298,7 +373,25 @@ function AdminMapTool() {
                 <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
 
                     {/* Sidebar Editor */}
-                    <div style={{ width: '320px', borderRight: '1px solid #eee', display: 'flex', flexDirection: 'column', background: '#fafafa' }}>
+                    <div style={{ width: '320px', minWidth: '320px', borderRight: '1px solid #eee', display: 'flex', flexDirection: 'column', background: '#fafafa', flexShrink: 0, zIndex: 20, position: 'relative', boxShadow: '2px 0 5px rgba(0,0,0,0.1)' }}>
+
+                        {/* Bulk Add (Moved to Top) */}
+                        <div style={{ padding: '15px', borderBottom: '1px solid #ddd', background: '#fff', overflow: 'hidden' }}>
+                            <h4 style={{ margin: '0 0 10px 0' }}>Bulk Create</h4>
+                            <div style={{ display: 'flex', gap: '5px' }}>
+                                <input id="addQty" type="number" placeholder="Qty" style={{ width: '50px', padding: '5px', boxSizing: 'border-box' }} />
+                                <input id="addPrefix" type="text" placeholder="Prefix" defaultValue="Site " style={{ flex: 1, padding: '5px', minWidth: '0', boxSizing: 'border-box' }} />
+                                <button
+                                    onClick={() => handleBulkAdd(
+                                        document.getElementById('addQty').value,
+                                        document.getElementById('addPrefix').value
+                                    )}
+                                    style={{ background: 'black', color: 'white', border: 'none', padding: '0 10px', cursor: 'pointer', whiteSpace: 'nowrap' }}
+                                >
+                                    Add
+                                </button>
+                            </div>
+                        </div>
 
                         {/* Selected Site Editor */}
                         {selectedSiteId && (
@@ -361,30 +454,12 @@ function AdminMapTool() {
                                 })}
                             </div>
                         </div>
-
-                        {/* Bulk Add */}
-                        <div style={{ padding: '15px', borderTop: '1px solid #ddd', background: '#fff' }}>
-                            <h4 style={{ margin: '0 0 10px 0' }}>Bulk Create</h4>
-                            <div style={{ display: 'flex', gap: '5px' }}>
-                                <input id="addQty" type="number" placeholder="Qty" style={{ width: '60px', padding: '5px' }} />
-                                <input id="addPrefix" type="text" placeholder="Prefix" defaultValue="Site " style={{ flex: 1, padding: '5px' }} />
-                                <button
-                                    onClick={() => handleBulkAdd(
-                                        document.getElementById('addQty').value,
-                                        document.getElementById('addPrefix').value
-                                    )}
-                                    style={{ background: 'black', color: 'white', border: 'none', padding: '0 15px', cursor: 'pointer' }}
-                                >
-                                    Add
-                                </button>
-                            </div>
-                        </div>
                     </div>
 
                     {/* Map Area */}
                     <div style={{ flex: 1, position: 'relative', background: '#ccc', overflow: 'hidden' }}>
                         <div style={{ width: '100%', height: '100%', overflow: 'auto', position: 'relative' }}>
-                            <div style={{ position: 'relative', display: 'inline-block' }}>
+                            <div style={{ position: 'relative', display: 'block', width: '100%' }}>
                                 <img
                                     src={campground.map_image_url}
                                     onClick={handleMapClick}
@@ -392,8 +467,8 @@ function AdminMapTool() {
                                     style={{
                                         display: 'block',
                                         cursor: selectedSiteId ? 'crosshair' : 'default',
-                                        maxWidth: '100%',  // Fix overflow
-                                        // height: 'auto'     // Maintain aspect ratio
+                                        width: '100%',
+                                        height: 'auto'
                                     }}
                                 />
                                 {sites.map(site => {
@@ -452,17 +527,19 @@ function AdminMapTool() {
                                 />
                             </div>
                             <div style={{ marginBottom: '10px' }}>
-                                <label>Map Image URL:</label>
+                                <label>Map Image:</label>
                                 <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={e => setSelectedFile(e.target.files[0])}
                                     style={{ width: '100%', padding: '5px' }}
-                                    value={newCampMapUrl}
-                                    onChange={e => setNewCampMapUrl(e.target.value)}
-                                    placeholder="/path/to/image.png"
                                 />
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
-                                <button onClick={() => setShowCreateModal(false)} style={{ padding: '8px 16px' }}>Cancel</button>
-                                <button onClick={handleCreateCampground} style={{ padding: '8px 16px', background: 'var(--primary-color, black)', color: 'white', border: 'none' }}>Create</button>
+                                <button onClick={() => setShowCreateModal(false)} disabled={uploading} style={{ padding: '8px 16px' }}>Cancel</button>
+                                <button onClick={handleCreateCampground} disabled={uploading} style={{ padding: '8px 16px', background: 'var(--primary-color, black)', color: 'white', border: 'none' }}>
+                                    {uploading ? 'Uploading...' : 'Create'}
+                                </button>
                             </div>
                         </div>
                     </div>

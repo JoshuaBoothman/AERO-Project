@@ -1,10 +1,16 @@
-import { Outlet, Link } from 'react-router-dom';
+import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 
 function Layout({ orgSettings, loading, error }) {
   const { user, logout } = useAuth(); // <--- Get user state
   const { cart } = useCart();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
 
   if (loading) return <div>Loading settings...</div>;
   if (error) return <div>Error: {error}</div>;
@@ -62,7 +68,7 @@ function Layout({ orgSettings, loading, error }) {
               )}
 
               <button
-                onClick={logout}
+                onClick={handleLogout}
                 style={{
                   background: 'rgba(0,0,0,0.2)',
                   border: 'none',

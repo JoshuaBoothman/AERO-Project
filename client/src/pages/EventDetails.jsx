@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import CampsiteModal from '../components/CampsiteModal';
 
 function EventDetails() {
     const { slug } = useParams();
@@ -16,7 +17,11 @@ function EventDetails() {
     // Purchase State
     const [showTicketModal, setShowTicketModal] = useState(false);
     const [showAttendeeModal, setShowAttendeeModal] = useState(false);
+    const [showCampsiteModal, setShowCampsiteModal] = useState(false);
+
     const [cart, setCart] = useState({}); // { ticket_type_id: quantity }
+    const [campsiteCart, setCampsiteCart] = useState([]); // [{ campsite_id, site_number, checkIn, checkOut, price_per_night, campgroundName }]
+
     const [attendeeDetails, setAttendeeDetails] = useState({}); // { "ticketId_index": { firstName, lastName, email } }
     const [purchasing, setPurchasing] = useState(false);
     const [purchaseSuccess, setPurchaseSuccess] = useState(null);
@@ -77,6 +82,27 @@ function EventDetails() {
         });
     };
 
+    const handleAddToCartCampsites = (sites) => {
+        // Merge with existing cart, avoiding duplicates
+        setCampsiteCart(prev => {
+            const newSites = [...prev];
+            sites.forEach(site => {
+                if (!newSites.some(s => s.campsite_id === site.campsite_id)) {
+                    newSites.push(site);
+                }
+            });
+            return newSites;
+        });
+        // Automatically open ticket modal to review cart
+        setShowTicketModal(true);
+    };
+
+    const removeCampsiteFromCart = (index) => {
+        setCampsiteCart(prev => prev.filter((_, i) => i !== index));
+    };
+
+
+
     const handleInitialCheckout = () => {
         // 1. Close ticket modal, Open Attendee modal
         setShowTicketModal(false);
@@ -126,6 +152,15 @@ function EventDetails() {
             return { ticketTypeId: parseInt(ticketTypeId), quantity, attendees };
         });
 
+        // Prepare campsites payload
+        const campsitesPayload = campsiteCart.map(site => ({
+            campsiteId: site.campsite_id,
+            checkIn: site.checkIn,
+            checkOut: site.checkOut,
+            price: site.price_per_night
+            // link to attendee? Backend handles this default
+        }));
+
         try {
             const token = localStorage.getItem('token');
             const res = await fetch('/api/createOrder', {
@@ -136,7 +171,8 @@ function EventDetails() {
                 },
                 body: JSON.stringify({
                     eventId: event.event_id,
-                    items: itemsPayload
+                    items: itemsPayload,
+                    campsites: campsitesPayload
                 })
             });
 
@@ -145,6 +181,7 @@ function EventDetails() {
             if (res.ok) {
                 setPurchaseSuccess(data);
                 setCart({});
+                setCampsiteCart([]);
                 setAttendeeDetails({});
                 setShowAttendeeModal(false);
             } else {
@@ -163,9 +200,13 @@ function EventDetails() {
     if (error) return <div className="container error">{error}</div>;
     if (!event) return <div className="container">Event not found</div>;
 
-    const cartTotal = tickets.reduce((sum, t) => {
+    const ticketsTotal = tickets.reduce((sum, t) => {
         return sum + (t.price * (cart[t.ticket_type_id] || 0));
     }, 0);
+
+    const campsitesTotal = campsiteCart.reduce((sum, site) => sum + site.price_per_night, 0);
+
+    const cartTotal = ticketsTotal + campsitesTotal;
 
     // Helper to get pilots currently in the cart
     const getPilotsInCart = () => {
@@ -209,12 +250,20 @@ function EventDetails() {
             <div className="event-hero">
                 <h1>{event.name}</h1>
                 <p>{event.description}</p>
-                <button
-                    className="primary-button"
-                    onClick={() => setShowTicketModal(true)}
-                >
-                    Get Tickets
-                </button>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                    <button
+                        className="primary-button"
+                        onClick={() => setShowTicketModal(true)}
+                    >
+                        Get Tickets
+                    </button>
+                    <button
+                        className="secondary-button"
+                        onClick={() => setShowCampsiteModal(true)}
+                    >
+                        ⛺ Book Campsite
+                    </button>
+                </div>
             </div>
 
             {purchaseSuccess && (
@@ -230,50 +279,93 @@ function EventDetails() {
                 <div className="modal-overlay">
                     <div className="modal-content">
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                            <h2>Select Tickets</h2>
+                            <h2>Your Cart</h2>
                             <button className="secondary-button" onClick={() => setShowTicketModal(false)}>Close</button>
                         </div>
 
+                        {/* Tickets Section */}
+                        <h3>Tickets</h3>
                         {tickets.length === 0 ? (
                             <p>No tickets available for this event.</p>
                         ) : (
-                            <>
-                                <div className="ticket-list">
-                                    {tickets.map(t => (
-                                        <div key={t.ticket_type_id} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: '1px solid #eee' }}>
-                                            <div>
-                                                <strong>{t.name}</strong>
-                                                <div>${t.price}</div>
-                                            </div>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                <button
-                                                    style={{ width: '30px', height: '30px', padding: 0 }}
-                                                    onClick={() => updateCart(t.ticket_type_id, -1)}
-                                                >-</button>
-                                                <span style={{ width: '20px', textAlign: 'center' }}>{cart[t.ticket_type_id] || 0}</span>
-                                                <button
-                                                    style={{ width: '30px', height: '30px', padding: 0 }}
-                                                    onClick={() => updateCart(t.ticket_type_id, 1)}
-                                                >+</button>
-                                            </div>
+                            <div className="ticket-list">
+                                {tickets.map(t => (
+                                    <div key={t.ticket_type_id} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: '1px solid #eee' }}>
+                                        <div>
+                                            <strong>{t.name}</strong>
+                                            <div>${t.price}</div>
                                         </div>
-                                    ))}
-                                </div>
-
-                                <div style={{ marginTop: '2rem', paddingTop: '1rem', borderTop: '2px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <h3>Total: ${cartTotal.toFixed(2)}</h3>
-                                    <button
-                                        className="primary-button"
-                                        disabled={purchasing || cartTotal === 0}
-                                        onClick={handleInitialCheckout}
-                                    >
-                                        Next: Attendee Details
-                                    </button>
-                                </div>
-                            </>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                            <button
+                                                style={{ width: '30px', height: '30px', padding: 0 }}
+                                                onClick={() => updateCart(t.ticket_type_id, -1)}
+                                            >-</button>
+                                            <span style={{ width: '20px', textAlign: 'center' }}>{cart[t.ticket_type_id] || 0}</span>
+                                            <button
+                                                style={{ width: '30px', height: '30px', padding: 0 }}
+                                                onClick={() => updateCart(t.ticket_type_id, 1)}
+                                            >+</button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         )}
+
+                        {/* Campsites Section */}
+                        {campsiteCart.length > 0 && (
+                            <div style={{ marginTop: '1.5rem' }}>
+                                <h3>Campsites</h3>
+                                {campsiteCart.map((site, index) => (
+                                    <div key={index} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: '1px solid #eee', alignItems: 'center' }}>
+                                        <div>
+                                            <strong>{site.campgroundName} - {site.site_number}</strong>
+                                            <div style={{ fontSize: '0.8rem', color: '#666' }}>{site.checkIn} to {site.checkOut}</div>
+                                            <div>${site.price_per_night}</div>
+                                        </div>
+                                        <button
+                                            onClick={() => removeCampsiteFromCart(index)}
+                                            style={{ background: 'none', border: 'none', color: 'red', cursor: 'pointer', fontSize: '1.2rem' }}
+                                        >
+                                            ×
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* Empty State Help */}
+                        {Object.keys(cart).length === 0 && campsiteCart.length === 0 && (
+                            <div style={{ padding: '20px', textAlign: 'center', color: '#888' }}>
+                                <p>Your cart is empty.</p>
+                                <button onClick={() => setShowCampsiteModal(true)} style={{ textDecoration: 'underline', border: 'none', background: 'none', color: 'blue', cursor: 'pointer' }}>
+                                    Add a Campsite?
+                                </button>
+                            </div>
+                        )}
+
+                        <div style={{ marginTop: '2rem', paddingTop: '1rem', borderTop: '2px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <h3>Total: ${cartTotal.toFixed(2)}</h3>
+                            <button
+                                className="primary-button"
+                                disabled={purchasing || cartTotal === 0}
+                                onClick={handleInitialCheckout}
+                            >
+                                Next: Attendee Details
+                            </button>
+                        </div>
                     </div>
                 </div>
+            )}
+
+            {/* Campsite Modal */}
+            {showCampsiteModal && (
+                <CampsiteModal
+                    event={event}
+                    onClose={() => setShowCampsiteModal(false)}
+                    onAddToCart={handleAddToCartCampsites}
+                // Pass org settings if available globally, or rely on defaults
+                // orgSettings={...}
+                />
             )}
 
             {/* Attendee Details Modal */}

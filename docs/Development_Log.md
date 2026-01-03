@@ -234,6 +234,201 @@
     *   **Navigation:** Updated `Layout.jsx` to implement Role-Based Access Control (RBAC) in the header.
         *   **Admins:** See "Admin Map", "Cart" is hidden.
         *   **Users:** See "Cart", "Admin Map" is hidden.
+* **Authentication:** Build Login/Register flow to enable Ticket Purchasing.
+
+## [2025-12-22] - UI Polish & Images
+**Milestone:** Implemented Images and Refined Visual Hierarchy
+
+### Completed Items
+* **Database**
+    * Added `banner_url` column to `events` table.
+    * Seeded placeholder images for existing events.
+* **Backend (API)**
+    * Updated `getEvents` and `getEventDetail` to return image URLs.
+* **Frontend (UI/UX)**
+    * **Global Styles:** Switched background to soft blue-grey (`#f5f7fa`) to reduce contrast.
+    * **Events List:** Refactored cards into a "Thumbnail + Content" row layout.
+    * **Event Details:** Added full-width Hero Banner image.
+    * **Buttons:** Established clear hierarchy with `.primary-button` (Active) and `.secondary-button` (View Only).
+
+### Next Steps
+* **Authentication:** Build Login/Register flow to enable Ticket Purchasing.
+
+## [2025-12-22] - Authentication Infrastructure
+**Milestone:** User Registration & Login Flow
+
+### Completed Items
+* **Backend (API)**
+    * Installed `bcryptjs` and `jsonwebtoken`.
+    * Hardened `db.js` to use parameterized queries (SQL Injection protection).
+    * Created `authRegister` endpoint (Hashes password, creates User).
+    * Created `authLogin` endpoint (Validates credentials, returns JWT).
+* **Frontend (Client)**
+    * Implemented `AuthContext` for global user state management.
+    * Created `Login.jsx` and `Register.jsx` pages.
+    * Updated `Layout.jsx` to show "Login" vs "User Profile" based on state.
+
+### Next Steps
+* **Ticket Purchasing:** Connect the "Get Tickets" button in Event Details to a secure purchase flow.
+
+## [2025-12-23] - Ticket Purchasing MVP
+**Milestone:** End-to-End Ticket Purchase Flow (Mock Payment)
+
+### Completed Items
+* **Database**
+    * Seeded `event_ticket_types` for the active event.
+* **Backend (API)**
+    * **Refactor:** Upgraded `db.js` to use Singleton Connection Pool pattern (Performance/Stability).
+    * **Feature:** Created `createOrder` endpoint with atomic SQL Transactions (Orders + OrderItems + Attendees + Transactions).
+    * **Update:** Modified `getEventDetail` to fetch and return available ticket types.
+* **Frontend (Client)**
+    * **UX:** Implemented "Ticket Selector" Modal in `EventDetails.jsx`.
+    * **Logic:** Connected Checkout button to `createOrder` API.
+    * **State:** Removed broken navigation flow; replaced with instant feedback Modal.
+
+### Next Steps
+* **Attendee Management:** Allow purchasers to assign specific names/emails to their tickets.
+* **My Orders:** Create a User Profile view to see purchase history.
+
+## [2025-12-23] - Attendee Management & UI Polish
+**Milestone:** Attendee Data Capture & Visual Consistency
+
+### Completed Items
+* **Backend (API)**
+    * **Feature:** Updated `createOrder` endpoint to process `attendees` array within the main transaction.
+    * **Logic:** Implemented automatic 8-character `ticket_code` generation for each registered attendee.
+    * **Data:** Verified insertion into `attendees` table linking to specific `order_items`.
+* **Frontend (Client)**
+    * **UX:** Implemented `AttendeeModal` workflow in `EventDetails.jsx`, intercepting checkout to collect Names/Emails per ticket.
+    * **UI Core:** Implemented Global Box-Sizing Reset (`box-sizing: border-box`) to fix layout overflows.
+    * **Visuals:** Standardized "Status Badges" to use Brand/Accent colors consistently across Events List and Details views.
+    * **Fix:** Enforced strict aspect ratio and dimensions for Event Hero images to prevent layout shifts.
+
+## [2025-12-25] - Registration Logic & Crew Linking
+**Milestone:** Verified Registration Flow Recommendation & Implemented Post-Payment Crew Linking
+
+### Completed Items
+* **Database**
+    * Verified `persons.user_id` is nullable.
+    * Added `ticket_code` to `attendees` table (Unique identifier for linking).
+    * Added `is_pit_crew` to `event_ticket_types`.
+    * Seeded "Winter Warbirds 2026" with Pilot/Crew tickets for verification.
+* **Backend (API)**
+    * **Feature:** Implemented automatic 8-char `ticket_code` generation in `createOrder`.
+    * **Logic:** Implemented "Pilot-Crew Linking" allowing crew to link to an existing Pilot via their `ticket_code`.
+    * **Update:** Modified `getEventDetail` to return `is_pit_crew`.
+* **Frontend (Client)**
+    * **UX:** Updated `AttendeeModal` in `EventDetails.jsx` to show "Pilot Ticket Code" field for Crew tickets.
+* **Verification**
+    * Successfully tested manual Pilot creation (Code: `0URN9WME`).
+    * Successfully tested manual Crew creation (Code: `1STM26T0`).
+    * Confirmed database link in `pilot_pit_crews`.
+    * Archived `Registration_Flow_Recommendation.md`.
+
+### Next Steps
+* **Attendee Assignment Flow:** Allow users to view purchased tickets and assign names/emails after purchase.
+
+## [2025-12-26] - Enhanced Registration & Linking
+**Milestone:** In-Cart Pilot-Crew Linking & Legacy Pilot Lookup
+
+### Completed Items
+* **Backend (API)**
+    * **Feature:** Created `getUserEventAttendees` to fetch a user's previously registered pilots.
+    * **Logic:** Refactored `createOrder.js` to support "In-Cart Linking" using temporary IDs.
+    * **Fix:** Patched `createOrder.js` to ensure `persons` records are correctly linked to the authenticated `user_id`.
+* **Frontend (Client)**
+    * **UI:** Enhanced Pit Crew section in `EventDetails.jsx` with a smart Pilot Selector (In-Cart vs Registered vs Manual).
+    * **State:** Implemented `myPilots` fetching and local state management.
+* **Verification**
+    * Validated In-Cart linking (Pilot + Crew in same order).
+    * Validated Cross-Order linking (Crew linking to previously registered Pilot).
+    * Fixed data issue where Pilot "Maverick" was unlinked from User.
+
+### Documentation (Planning)
+*   **Created:** `docs/Future_Feature_Requirements.md` - Roadmap for Campsites, Mechandise, Asset Hire.
+*   **Created:** `docs/Pilot_Logic_Deep_Dive.md` - Specifications for "My Hangar" and Flight Line Duties.
+
+## [2025-12-27] - Order History & Attendee Management (Part 1)
+**Milestone:** Implemented "My Orders" and "Order Details" Views
+
+### Completed Items
+* **Backend (API)**
+    *   **Feature:** Created `getUserOrders` endpoint (fetches user's purchase history securely).
+    *   **Feature:** Created `getOrderDetail` endpoint (fetches specific order with tickets/attendees).
+    *   **Security:** Implemented specific `user_id` checks to ensure users can only view their own orders.
+* **Frontend (Client)**
+    *   **Page:** Created `MyOrders.jsx` - List view of past transactions.
+    *   **Page:** Created `OrderDetail.jsx` - Detailed view showing Ticket Types, and assigned Pilots/Crew.
+    *   **Navigation:** Added "My Orders" link to `Layout.jsx` (User Menu).
+    *   **Routing:** Registered new routes in `App.jsx`.
+
+
+### [2025-12-27] - Order History & Attendee Management (Part 2)
+**Milestone:** Attendee Assignment Logic
+
+### Completed Items
+* **Backend (API)**
+    *   **Feature:** Created `updateAttendee` endpoint (`PUT /api/attendees/:id`).
+    *   **Security:** Added ownership validation (User -> Order -> OrderItem -> Attendee).
+* **Frontend (Client)**
+    *   **Feature:** Implemented Inline Edit Mode in `OrderDetail.jsx`.
+    *   **UI/UX:** Aligned "Edit Details" button with "Registered" status badge for visual consistency.
+    *   **Refactor:** Converted `tickets-list` item actions to a flex-column layout.
+    *   **Feature:** Added `react-qr-code` to `OrderDetail.jsx` for scannable gate entry.
+
+### Next Steps
+*   **Campsite Booking:** Interactive map/list for booking spots.
+*   **Merchandise:** E-commerce store.
+
+## [2025-12-27] - Campsite Admin Map Tool
+**Milestone:** Campground Mapping Foundation
+
+### Completed Items
+* **Database**
+    *   **Seeding:** Seeded "North Field" campground (`test-map.jpg`) and 5 campsites.
+    *   **Tooling:** Created temporary seeding endpoint to bypass direct connection issues.
+* **Backend (API)**
+    *   **Features:** Implemented `getCampgrounds`, `getCampsites`, and `updateCampsiteCoords`.
+    *   **Fix:** Resolved API crash (500 Error) by fixing `recordset` property access on array results.
+* **Frontend (Client)**
+    *   **Feature:** Created `AdminMapTool.jsx` for defining campsite locations on a map image.
+    *   **Navigation:** Added `/admin/map` route.
+    *   **Logic:** Implemented dynamic fetching of campground data (removes hardcoded IDs).
+
+### Next Steps
+*   **User Booking:** Build the frontend interface for users to book specific sites.
+
+## [2025-12-28] - Admin Map Tool Enhancements
+**Milestone:** Campsite Admin Map Tool (v1)
+
+### Completed Items
+*   **Features (Backend)**
+    *   **Bulk Create:**  `createCampsites.js` (POST /api/campgrounds/{id}/sites) handles bulk addition with prefixes.
+    *   **Update Site:** `updateCampsite.js` (PUT /api/campsites/{id}) handles renaming and unmapping.
+    *   **Delete Site:** `deleteCampsite.js` (DELETE /api/campsites/{id}).
+*   **UI/UX (Frontend)**
+    *   **Grid Layout:**  `AdminMapTool.jsx` sites list converted to a responsive CSS grid.
+    *   **Bulk Add UI:** Added inputs for Qty and Prefix to quickly generate sites.
+    *   **Interaction Refinement:** 
+        *   Maintained selection focus after pinning for rapid mapping.
+        *   Added "click pin to select" functionality.
+        *   Fixed map container offset issues for accurate pin placement.
+    *   **Theming:** integrated `organization_settings` colors (Primary, Accent) for dynamic button and pin styling.
+
+
+
+## [2025-12-28] - Admin UX & Role Logic
+**Milestone:** Role-Based Navigation & Enhanced Admin Tools
+
+### Completed Items
+*   **Backend (API)**
+    *   **Auth Logic:** Updated `authLogin.js` to correctly authenticate against the `admin_users` table before falling back to `users`.
+    *   **New Endpoint:** Created `createCampground.js` (POST /api/campgrounds) to allow Admins to generate new campground entities.
+    *   **Fix:** Aligned `authLogin` and `createCampground` queries with the actual SQL Schema (corrected column names `admin_user_id` and removed non-existent `capacity`).
+*   **Frontend (Client)**
+    *   **Navigation:** Updated `Layout.jsx` to implement Role-Based Access Control (RBAC) in the header.
+        *   **Admins:** See "Admin Map", "Cart" is hidden.
+        *   **Users:** See "Cart", "Admin Map" is hidden.
     *   **Admin Map Tool:** 
         *   **UX Fix:** Solved Map Image overflow issue with responsive CSS.
         *   **Feature:** Added "Create Campground" button and Modal to the Admin interface.
@@ -241,3 +436,30 @@
 *   **Verification**
     *   Verified End-to-End Admin flow (Login -> Create Campground -> View Map).
     *   Verified User flow (Login -> Restricted Access).
+
+## [2026-01-04] - Campsite Booking & Admin Map Refinement
+**Milestone:** End-to-End Campsite Booking & Admin Layout Polish
+
+### Completed Items
+*   **Backend (API)**
+    *   **Feature:** Updated `getCampsites` to accept `startDate`/`endDate` query params and return `is_booked` status.
+    *   **Delete Logic:** Implemented `deleteCampground.js` to allow admins to remove campgrounds (and associated sites).
+    *   **Image Upload:** Implemented `uploadImage` function for campground maps.
+*   **Frontend (Admin Map)**
+    *   **UI Polish:** Fixed layout issues where the "Bulk Add" inputs were overlapping the map.
+    *   **Feature:** Implemented Campground Auto-Selection after creation.
+    *   **Feature:** Added Delete Campground functionality.
+    *   **Fix:** Resolved logout redirection issue (now redirects to Home).
+*   **Frontend (User Booking)**
+    *   **Feature:** Integrated `CampsiteModal` into `EventDetails.jsx` for user-facing booking.
+    *   **State:** Implemented `campsiteCart` to handle multiple site bookings in one order.
+    *   **Logic:** Implemented date-based availability checking (Green/Red pins).
+    *   **Fix:** Resolved "Flickering" issue where campground selection reset on date change (Stabilized `useEffect` dependencies).
+    *   **Fix:** Resolved "Confirm Button Disabled" issue by adding missing `handleAddToCartCampsites` function.
+*   **Verification**
+    *   Verified Admin Map image uploading and site plotting.
+    *   Verified User flow: Login -> Event -> Book Site -> Change Date -> Confirm -> Checkout.
+
+### Next Steps
+*   **Payment Integration:** Connect Stripe/PayPal for real payments.
+*   **Mobile Optimization:** Ensure the Map Modal works smoothly on touch devices.
