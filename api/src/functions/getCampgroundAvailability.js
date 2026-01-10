@@ -14,10 +14,6 @@ app.http('getCampgroundAvailability', {
             return { status: 400, body: JSON.stringify({ error: "Missing event ID" }) };
         }
 
-        // If dates are not provided, we should probably return all sites but without specific availability info,
-        // OR default to the event's start/end dates? 
-        // Let's require dates for now to keep logic simple, or handle "no date" as "check event defaults".
-
         try {
             const pool = await getPool();
 
@@ -32,20 +28,15 @@ app.http('getCampgroundAvailability', {
 
                 if (eventRes.recordset.length === 0) return { status: 404, body: "Event not found" };
 
-                // Default to event duration
                 if (!checkIn) checkIn = eventRes.recordset[0].start_date.toISOString().split('T')[0];
                 if (!checkOut) checkOut = eventRes.recordset[0].end_date.toISOString().split('T')[0];
             }
 
             // 2. Fetch Campgrounds & Sites with Availability Calc
-            // We want: All sites for this event's campgrounds.
-            // AND a flag 'is_available' if NO booking overlaps [checkIn, checkOut).
-            // Overlap logic: (BookStart < ReqEnd) AND (BookEnd > ReqStart)
-
             const query = `
                 SELECT 
                     cg.campground_id, cg.name as campground_name, cg.map_image_url,
-                    c.campsite_id, c.site_number, c.is_powered, c.price_per_night, c.map_coordinates, c.is_active,
+                    c.campsite_id, c.name as site_number, c.is_powered, c.price_per_night, c.map_coordinates, c.is_active,
                     CASE 
                         WHEN EXISTS (
                             SELECT 1 FROM campsite_bookings cb
@@ -56,7 +47,8 @@ app.http('getCampgroundAvailability', {
                         ELSE 1 
                     END as is_available
                 FROM campgrounds cg
-                JOIN campsites c ON c.campground_id = cg.campground_id
+                JOIN campground_sections cs ON cs.campground_id = cg.campground_id
+                JOIN campsites c ON c.campground_section_id = cs.campground_section_id
                 WHERE cg.event_id = @eid
                 AND c.is_active = 1
             `;
@@ -98,7 +90,7 @@ app.http('getCampgroundAvailability', {
             };
 
         } catch (error) {
-            context.log.error(`Error fetching availability for event ${eventId}:`, error);
+            context.logOrError ? context.logOrError(error) : console.error(error); // Safe logging
             return { status: 500, body: JSON.stringify({ error: "Internal Server Error" }) };
         }
     }

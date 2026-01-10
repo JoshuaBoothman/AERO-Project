@@ -10,18 +10,25 @@ app.http('getCampsites', {
         const startDate = request.query.get('startDate'); // YYYY-MM-DD
         const endDate = request.query.get('endDate');     // YYYY-MM-DD
 
+        context.log(`Fetching sites for campground param id: ${campgroundId}`);
+
         if (!campgroundId) {
             return { status: 400, body: JSON.stringify({ error: "Missing Campground ID" }) };
         }
 
         try {
+            // Validate SQL Types
+            if (!sql || !sql.Int) {
+                throw new Error("SQL Types (sql.Int) not loaded correctly from db module");
+            }
+
             // Fetch Campground Info
             const campground = await query(
                 "SELECT * FROM campgrounds WHERE campground_id = @id",
                 [{ name: 'id', type: sql.Int, value: campgroundId }]
             );
 
-            if (campground.length === 0) {
+            if (!campground || campground.length === 0) {
                 return { status: 404, body: JSON.stringify({ error: "Campground not found" }) };
             }
 
@@ -41,8 +48,6 @@ app.http('getCampsites', {
             const params = [{ name: 'id', type: sql.Int, value: campgroundId }];
 
             if (startDate && endDate) {
-                // Availability Logic: Overlap definition: (StartA < EndB) and (EndA > StartB)
-                // We want to mark as booked if ANY booking overlaps.
                 sitesQuery = `
                     SELECT 
                         c.campsite_id, 
@@ -75,8 +80,9 @@ app.http('getCampsites', {
             };
 
         } catch (error) {
-            context.log.error(`Error fetching campground ${campgroundId}:`, error);
-            return { status: 500, body: JSON.stringify({ error: "Internal Server Error" }) };
+            context.log(`Error fetching campground ${campgroundId}: ${error.message}`);
+            // Return specific error for debugging
+            return { status: 500, body: JSON.stringify({ error: `Internal Server Error: ${error.message}` }) };
         }
     }
 });

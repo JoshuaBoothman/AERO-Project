@@ -21,10 +21,10 @@ app.http('deleteCampground', {
 
         } catch (error) {
             context.log.error('Delete error:', error);
-            if (error.message.includes('REFERENCE constraint')) {
+            if (error && error.message && error.message.includes('REFERENCE constraint')) {
                 return { status: 400, body: JSON.stringify({ error: "Cannot delete: Campground has active bookings." }) };
             }
-            return { status: 500, body: JSON.stringify({ error: "Delete failed" }) };
+            return { status: 500, body: JSON.stringify({ error: `Delete failed: ${error.message}` }) };
         }
     }
 });

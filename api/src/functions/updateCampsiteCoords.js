@@ -17,7 +17,7 @@ app.http('updateCampsiteCoords', {
         const body = await request.json();
         const { map_coordinates } = body;
 
-        if (!campsiteId || !map_coordinates) {
+        if (!campsiteId || map_coordinates === undefined) {
             return { status: 400, body: JSON.stringify({ error: "Missing campsite ID or coordinates" }) };
         }
 

@@ -1,15 +1,23 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 function Events() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { user, token } = useAuth();
+  const isAdmin = user?.role === 'admin';
 
   useEffect(() => {
     async function fetchEvents() {
       try {
-        const response = await fetch('/api/getEvents');
+        const headers = {};
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+        const response = await fetch('/api/getEvents', { headers });
+
         if (!response.ok) throw new Error('Failed to fetch events');
         const data = await response.json();
         setEvents(data);
@@ -20,7 +28,7 @@ function Events() {
       }
     }
     fetchEvents();
-  }, []);
+  }, [token]);
 
   if (loading) return <div>Loading events...</div>;
   if (error) return <div>Error loading events: {error}</div>;
@@ -34,7 +42,14 @@ function Events() {
 
   return (
     <div className="events-page">
-      <h2>Events</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h2>Events</h2>
+        {isAdmin && (
+          <Link to="/events/new">
+            <button className="primary-button">New Event</button>
+          </Link>
+        )}
+      </div>
 
       {/* CURRENT EVENTS */}
       {current.length > 0 && (
@@ -42,7 +57,7 @@ function Events() {
           <h3>HAPPENING NOW</h3>
           <div className="event-grid">
             {current.map(event => (
-              <EventCard key={event.event_id} event={event} type="current" formatDate={formatDate} />
+              <EventCard key={event.event_id} event={event} type="current" formatDate={formatDate} isAdmin={isAdmin} />
             ))}
           </div>
         </section>
@@ -53,7 +68,7 @@ function Events() {
         <h3>Upcoming Events</h3>
         <div className="event-grid">
           {upcoming.map(event => (
-            <EventCard key={event.event_id} event={event} formatDate={formatDate} />
+            <EventCard key={event.event_id} event={event} formatDate={formatDate} isAdmin={isAdmin} />
           ))}
           {upcoming.length === 0 && <p>No upcoming events scheduled.</p>}
         </div>
@@ -64,7 +79,7 @@ function Events() {
         <h3>Past Events</h3>
         <div className="event-grid">
           {past.map(event => (
-            <EventCard key={event.event_id} event={event} formatDate={formatDate} isPast />
+            <EventCard key={event.event_id} event={event} formatDate={formatDate} isPast isAdmin={isAdmin} />
           ))}
         </div>
       </section>
@@ -74,7 +89,7 @@ function Events() {
 
 // ... imports and Event function remain the same ...
 
-function EventCard({ event, type, formatDate, isPast }) {
+function EventCard({ event, type, formatDate, isPast, isAdmin }) {
   const isCurrent = type === 'current';
 
   // Card Container
@@ -117,39 +132,39 @@ function EventCard({ event, type, formatDate, isPast }) {
 
   return (
     <div className="card event-card" style={cardStyle}>
-      
+
       {/* 1. THUMBNAIL IMAGE (Left Side) */}
       {event.banner_url ? (
         <img src={event.banner_url} alt={event.name} style={imageStyle} />
       ) : (
         // Fallback grey box if no image
-        <div style={{...imageStyle, background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#aaa'}}>
-            No Image
+        <div style={{ ...imageStyle, background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#aaa' }}>
+          No Image
         </div>
       )}
 
       {/* 2. CONTENT (Right Side) */}
       <div style={contentStyle}>
-        
+
         {/* Header Row */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '0.5rem' }}>
           <h3 style={{ margin: 0 }}>{event.name}</h3>
           {isCurrent && <span style={badgeStyle}>ACTIVE</span>}
         </div>
-        
+
         <p className="event-date" style={{ margin: '0 0 0.5rem 0', color: '#666', fontSize: '0.9rem' }}>
           {formatDate(event.start_date)} - {formatDate(event.end_date)}
         </p>
-        
+
         <p style={{ margin: '0 0 1rem 0' }}>{event.description}</p>
-        
+
         <div style={{ marginTop: 'auto' }}>
-            <Link to={`/events/${event.slug}`}>
-                {/* Apply styling to ALL buttons now */}
-                <button className={isCurrent ? 'primary-button' : 'secondary-button'}>
-                    {isPast ? 'View Recap' : 'View Details'}
-                </button>
-            </Link>
+          <Link to={isAdmin ? `/events/${event.slug}/edit` : `/events/${event.slug}`}>
+            {/* Apply styling to ALL buttons now */}
+            <button className={isCurrent ? 'primary-button' : 'secondary-button'}>
+              {isAdmin ? 'Edit Details' : (isPast ? 'View Recap' : 'View Details')}
+            </button>
+          </Link>
         </div>
       </div>
     </div>

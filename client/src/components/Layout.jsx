@@ -45,8 +45,8 @@ function Layout({ orgSettings, loading, error }) {
                 {user.role === 'admin' ? (
                   /* Admin Menu */
                   <>
-                    <Link to="/admin/map" className="font-bold hover:text-accent">Map</Link>
                     <Link to="/admin/orders" className="font-bold hover:text-accent">Orders</Link>
+                    <Link to="/admin/merchandise" className="font-bold hover:text-accent">Merchandise</Link>
                   </>
                 ) : (
                   /* User Menu */

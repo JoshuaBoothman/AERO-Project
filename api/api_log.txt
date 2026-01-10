@@ -1,0 +1,78 @@
+'local.settings.json' found in root directory (C:\laragon\www\AERO-Project\api).
+Resolving worker runtime to 'node'.
+
+
+Azure Functions Core Tools
+Core Tools Version:       4.6.0+ab90faafcab539d63cd3d0ce5faf1bca4395fccc (64-bit)
+Function Runtime Version: 4.1045.200.25556
+
+[2026-01-10T02:29:47.221Z] __dirname: C:\laragon\www\AERO-Project\api\src\functions
+[2026-01-10T02:29:47.225Z] Resolved: C:\laragon\www\client\public\uploads
+[2026-01-10T02:29:47.274Z] Worker process started and initialized.
+
+Functions:
+
+	authLogin: [POST] http://localhost:7071/api/authLogin
+
+	authRegister: [POST] http://localhost:7071/api/authRegister
+
+	createCampground: [POST] http://localhost:7071/api/campgrounds
+
+	createCampsites: [POST] http://localhost:7071/api/campgrounds/{id}/sites
+
+	createOrder: [POST] http://localhost:7071/api/createOrder
+
+	debug_test: [GET] http://localhost:7071/api/debug_test
+
+	deleteCampground: [DELETE] http://localhost:7071/api/campgrounds/{id}
+
+	deleteCampsite: [DELETE] http://localhost:7071/api/campsites/{id}
+
+	getAdminOrders: [GET] http://localhost:7071/api/getAdminOrders
+
+	getCampgroundAvailability: [GET] http://localhost:7071/api/events/{eventId}/campgrounds
+
+	getCampgrounds: [GET] http://localhost:7071/api/campgrounds
+
+	getCampsites: [GET] http://localhost:7071/api/campgrounds/{id}/sites
+
+	getEventDetail: [GET] http://localhost:7071/api/events/{slug}
+
+	getEvents: [GET] http://localhost:7071/api/getEvents
+
+	getEventTicketTypes: [GET] http://localhost:7071/api/getEventTicketTypes
+
+	getOrderDetail: [GET] http://localhost:7071/api/orders/{orderId}
+
+	getOrganization: [GET] http://localhost:7071/api/getOrganization
+
+	getStoreItems: [GET] http://localhost:7071/api/getStoreItems
+
+	getUserEventAttendees: [GET] http://localhost:7071/api/events/{slug}/my-attendees
+
+	getUserOrders: [GET] http://localhost:7071/api/orders
+
+	setupTest: [GET] http://localhost:7071/api/setupTest
+
+	testDb: [GET] http://localhost:7071/api/testDb
+
+	updateAttendee: [PUT] http://localhost:7071/api/attendees/{attendeeId}
+
+	updateCampsite: [PUT] http://localhost:7071/api/campsites/{id}
+
+	updateCampsiteCoords: [PUT] http://localhost:7071/api/campsites/{id}/coords
+
+	uploadImage: [POST] http://localhost:7071/api/upload
+
+For detailed output, run func with --verbose flag.
+[2026-01-10T02:35:45.179Z] Executing 'Functions.getOrganization' (Reason='This function was programmatically called via the host APIs.', Id=a5901719-9c30-4f92-96ee-2104d887b869)
+[2026-01-10T02:35:45.887Z] Connected to SQL Server
+[2026-01-10T02:35:46.630Z] Executed 'Functions.getOrganization' (Succeeded, Id=a5901719-9c30-4f92-96ee-2104d887b869, Duration=1470ms)
+[2026-01-10T02:35:46.651Z] Executing 'Functions.getOrganization' (Reason='This function was programmatically called via the host APIs.', Id=4bde3148-194a-4dc8-9afb-6e7bb29f9b27)
+[2026-01-10T02:35:46.662Z] Executing 'Functions.getAdminOrders' (Reason='This function was programmatically called via the host APIs.', Id=1bd93e29-f6b7-41d9-8186-51965aaf01bd)
+[2026-01-10T02:35:46.820Z] Executed 'Functions.getOrganization' (Succeeded, Id=4bde3148-194a-4dc8-9afb-6e7bb29f9b27, Duration=169ms)
+[2026-01-10T02:35:47.298Z] Executed 'Functions.getAdminOrders' (Succeeded, Id=1bd93e29-f6b7-41d9-8186-51965aaf01bd, Duration=636ms)
+[2026-01-10T02:35:47.304Z] Executing 'Functions.getAdminOrders' (Reason='This function was programmatically called via the host APIs.', Id=c5e3f2d0-0ae2-4b8d-8165-b3b70da7f927)
+[2026-01-10T02:35:47.655Z] Executed 'Functions.getAdminOrders' (Succeeded, Id=c5e3f2d0-0ae2-4b8d-8165-b3b70da7f927, Duration=351ms)
+[2026-01-10T02:38:21.124Z] Executing 'Functions.getCampgrounds' (Reason='This function was programmatically called via the host APIs.', Id=315f5bf4-9010-4f2b-ac3e-4078f306c82a)
+[2026-01-10T02:38:21.911Z] Executed 'Functions.getCampgrounds' (Succeeded, Id=315f5bf4-9010-4f2b-ac3e-4078f306c82a, Duration=786ms)

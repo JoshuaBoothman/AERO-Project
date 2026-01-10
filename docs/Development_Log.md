@@ -514,3 +514,69 @@
     *   Build dedicated "Browse" views for Products, Subevents, and Assets (currently hidden behind "Add to Cart").
     *   Create a cohesive end-to-end experience for Users (Discovery -> Cart -> Checkout) and Admins (Setup -> Management).
 
+## [2026-01-10] - Fresh Start (API Recovered)
+**Milestone:** Database Reset Complete, API Restored & Functional
+
+### State of play
+*   **Database**: 
+    *   Successfully purged all transactional data (while preserving Users/Admins).
+    *   Previously incompatible tables ('campsites', 'campground_sections') were dropped and recreated with new schema structure.
+    *   Successfully seeded "Festival of Aeromodelling 2026" event, including Products, Assets, Subevents, and Campgrounds.
+    *   Verified via script output that seeding completed (Exit Code 0).
+*   **API (Backend)**:
+    *   The API service is currently failing to serve requests (returning 404 for all endpoints, including basic debug routes).
+    *   `npm start` executes successfully, and the Functions Runtime (func.exe) launches.
+    *   However, no functions are being registered/loaded by the runtime, despite correct file placement in `src/functions/`.
+    *   `debug_test_v4.js` was created to test isolation; `node` can execute it without syntax errors, but `func` ignores it.
+    *   `npm install` was re-run cleanly.
+*   **Frontend (Client)**:
+    *   `npm run dev` is operational.
+    *   Camping Page UI verification was blocked by the API unavailability.
+
+
+
+### API Recovery (Resolved)
+*   [x] **Debug API Environment**: Investigated failure to load functions.
+    *   **Root Cause:** `src/functions/dummy.js` was saved with unsupported encoding (**UTF-16LE**), causing the Node.js Worker to crash silently or with opaque syntax errors (`SyntaxError: Invalid or unexpected token`).
+    *   **Investigation Path:**
+        1.  Verified `local.settings.json` format (found valid).
+        2.  Attempted `npm install` and `func start --verbose` (failed to show clear error due to crash).
+        3.  Isolating using `debug_test_v4.js` (initially failed to load).
+        4.  Captured `std_err` to a log file which revealed the encoding error pointing to `dummy.js`.
+    *   **Fix:** Deleted `dummy.js`.
+    *   **Verification:** `func start` now successfully loads all functions. `GET /api/campgrounds` returns 200 OK.
+    *   **Lesson Learned:** **Always ensure files in the API directory are saved as UTF-8.** The Azure Functions Node.js worker is extremely sensitive to file encoding and crashes the entire worker process if it encounters a UTF-16/UCS-2 file, often masking the error unless logs are explicitly captured.
+
+### Next Steps (Resuming)
+*   **Camping Page:** Verify UI integration with the now-working backend.
+*   **Discovery UI:** Continue building Browse views.
+
+## [2026-01-10] - Admin Merchandise & Global UI Enhancements
+**Milestone:** SKU Management Refinement, Image Uploads, and Global Notification System
+
+### Completed Items
+*   **Backend (API)**
+    *   **SKU Management:**
+        *   Fixed `getProductDetails` to return `image_url` for SKUs, resolving thumbnail display issues.
+        *   Updated `deleteSKU` to safely handle deletion by first removing `event_skus` links (Availability).
+        *   Refined Error Handling in `deleteSKU` to return transparent error messages (e.g., blocking deletion if SKU is purchased).
+        *   Fixed logging syntax error (`context.log.error` -> `context.error`) in Azure Functions v4.
+*   **Frontend (Client)**
+    *   **Product Editor:**
+        *   **Image Upload:** Implemented seamless image upload for both Base Product and Individual SKUs via `api/upload`.
+        *   **SKU List:** Added "Delete" button (Red X) to SKU rows.
+        *   **UX:** Removed unused "Barcode" column for cleaner layout.
+        *   **Feedback:** Replaced `alert()` and `window.confirm()` with custom global notifications.
+    *   **Global UI System:**
+        *   **NotificationContext:** Created a global context provider for managing Toast Notifications and Confirmation Modals.
+        *   **ToastContainer:** Implemented a sleek, animated toast notification system (Success/Error/Info) replacing browser alerts.
+        *   **ConfirmationModal:** Implemented a styled modal for critical actions (e.g., "Delete SKU").
+    *   **Fixes:**
+        *   Resolved `App.jsx` "White Screen" regression caused by duplicate `BrowserRouter` tags and improper Provider nesting.
+        *   Fixed `index.css` syntax error (missing closing brace).
+
+### Next Steps
+*   **Admin Asset Hires:** Implement the admin side of asset management.
+
+
+

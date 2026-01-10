@@ -12,12 +12,16 @@ import EventPurchase from './pages/EventPurchase';
 
 import MyOrders from './pages/MyOrders';
 import AdminOrders from './pages/admin/AdminOrders';
+import EventForm from './pages/admin/EventForm';
 import AdminMapTool from './pages/camping/AdminMapTool';
+import MerchandiseList from './pages/admin/MerchandiseList';
+import ProductEditor from './pages/admin/ProductEditor';
 import OrderDetail from './pages/OrderDetail';
 import CampingPage from './pages/camping/CampingPage';
 import StorePage from './pages/StorePage';
 import Checkout from './pages/Checkout';
 import { CartProvider } from './context/CartContext';
+import { NotificationProvider } from './context/NotificationContext';
 
 function App() {
   const [orgSettings, setOrgSettings] = useState(null);
@@ -43,29 +47,35 @@ function App() {
 
   return (
     <AuthProvider>
-      <CartProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Layout orgSettings={orgSettings} loading={loading} error={error} />}>
-              <Route index element={<Home />} />
-              <Route path="events" element={<Events />} />
-              <Route path="events/:slug" element={<EventDetails />} />
-              <Route path="login" element={<Login />} />
-              <Route path="register" element={<Register />} />
-              <Route path="events/:slug/purchase" element={<EventPurchase />} />
-              <Route path="events/:slug/shop" element={<StorePage />} /> {/* New Store Page */}
-              <Route path="camping" element={<CampingPage />} /> {/* Generic Camping Route */}
-              <Route path="events/:slug/camping" element={<CampingPage />} />
-              <Route path="checkout" element={<Checkout />} /> {/* Added Checkout Route */}
+      <NotificationProvider>
+        <CartProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Layout orgSettings={orgSettings} loading={loading} error={error} />}>
+                <Route index element={<Home />} />
+                <Route path="events" element={<Events />} />
+                <Route path="events/new" element={<EventForm />} />
+                <Route path="events/:slug" element={<EventDetails />} />
+                <Route path="events/:slug/edit" element={<EventForm />} />
+                <Route path="login" element={<Login />} />
+                <Route path="register" element={<Register />} />
+                <Route path="events/:slug/purchase" element={<EventPurchase />} />
+                <Route path="events/:slug/shop" element={<StorePage />} /> {/* New Store Page */}
+                <Route path="camping" element={<CampingPage />} /> {/* Generic Camping Route */}
+                <Route path="events/:slug/camping" element={<CampingPage />} />
+                <Route path="checkout" element={<Checkout />} /> {/* Added Checkout Route */}
 
-              <Route path="my-orders" element={<MyOrders />} />
-              <Route path="orders/:orderId" element={<OrderDetail />} />
-              <Route path="admin/map" element={<AdminMapTool />} />
-              <Route path="admin/orders" element={<AdminOrders />} />
-            </Route>
-          </Routes>
-        </BrowserRouter>
-      </CartProvider>
+                <Route path="my-orders" element={<MyOrders />} />
+                <Route path="orders/:orderId" element={<OrderDetail />} />
+                <Route path="admin/map" element={<AdminMapTool />} />
+                <Route path="admin/orders" element={<AdminOrders />} />
+                <Route path="admin/merchandise" element={<MerchandiseList />} />
+                <Route path="admin/merchandise/:id" element={<ProductEditor />} />
+              </Route>
+            </Routes>
+          </BrowserRouter>
+        </CartProvider>
+      </NotificationProvider>
     </AuthProvider>
   );
 }

@@ -1,6 +1,7 @@
 const { app } = require('@azure/functions');
 const db = require('../lib/db');
 const { sql } = require('../lib/db'); // Destructure sql types
+const { validateToken } = require('../lib/auth');
 
 app.http('getEventDetail', {
     methods: ['GET'],
@@ -10,16 +11,41 @@ app.http('getEventDetail', {
         const { slug } = request.params;
 
         try {
+            // Check if loading user is an admin
+            let isAdmin = false;
+            try {
+                const user = validateToken(request);
+                if (user && user.role === 'admin') {
+                    isAdmin = true;
+                }
+            } catch (e) {
+                // Token might be missing or invalid, treat as public
+            }
+
             // 1. Fetch Event & Venue (Parameterized)
-            const eventQuery = `
-                SELECT TOP 1
-                    e.event_id, e.name, e.slug, e.description, e.banner_url,
-                    e.start_date, e.end_date, e.status, e.is_purchasing_enabled,
-                    v.name as venue_name, v.address_line_1, v.city, v.state, v.postcode, v.map_url
-                FROM events e
-                JOIN venues v ON e.venue_id = v.venue_id
-                WHERE e.slug = @slug AND e.is_public_viewable = 1
-            `;
+            let eventQuery;
+
+            if (isAdmin) {
+                eventQuery = `
+                    SELECT TOP 1
+                        e.event_id, e.name, e.slug, e.description, e.banner_url,
+                        e.start_date, e.end_date, e.status, e.is_purchasing_enabled, e.venue_id,
+                        v.name as venue_name, v.address_line_1, v.city, v.state, v.postcode, v.map_url
+                    FROM events e
+                    LEFT JOIN venues v ON e.venue_id = v.venue_id
+                    WHERE e.slug = @slug
+                `;
+            } else {
+                eventQuery = `
+                    SELECT TOP 1
+                        e.event_id, e.name, e.slug, e.description, e.banner_url,
+                        e.start_date, e.end_date, e.status, e.is_purchasing_enabled, e.venue_id,
+                        v.name as venue_name, v.address_line_1, v.city, v.state, v.postcode, v.map_url
+                    FROM events e
+                    JOIN venues v ON e.venue_id = v.venue_id
+                    WHERE e.slug = @slug AND e.is_public_viewable = 1
+                `;
+            }
 
             const eventResult = await db.query(eventQuery, [
                 { name: 'slug', type: sql.NVarChar, value: slug }

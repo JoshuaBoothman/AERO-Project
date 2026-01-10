@@ -3,14 +3,21 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 
+import AdminMapTool from './AdminMapTool';
+
 function CampingPage() {
     const { slug } = useParams();
     const navigate = useNavigate();
-    const { token } = useAuth();
+    const { user, token } = useAuth();
     const { addToCart, cart, cartTotal } = useCart();
 
     // Mode: "Index" (no slug) vs "Detail" (slug)
     const isIndex = !slug;
+
+    // Admin View Redirect (Dashboard)
+    if (isIndex && user?.role === 'admin') {
+        return <AdminMapTool />;
+    }
 
     // Index State
     const [allEvents, setAllEvents] = useState([]);
@@ -34,7 +41,7 @@ function CampingPage() {
         } else {
             fetchEventDetails();
         }
-    }, [slug]);
+    }, [slug, isIndex]); // Added isIndex dependency which was missing in original code, though essentially static per route.
 
     // --- EFFECT: Load Availability (Detail Mode) ---
     useEffect(() => {

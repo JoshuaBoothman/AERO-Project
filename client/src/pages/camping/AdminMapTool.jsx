@@ -72,7 +72,10 @@ function AdminMapTool() {
 
     const fetchEvents = async () => {
         try {
-            const res = await fetch('/api/getEvents');
+            const headers = {};
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+
+            const res = await fetch('/api/getEvents', { headers });
             if (res.ok) {
                 const list = await res.json();
                 setEvents(list);
@@ -112,17 +115,30 @@ function AdminMapTool() {
         } catch (e) { console.error(e); }
     };
 
+    const [error, setError] = useState(null);
+
+    // ... (existing code)
+
     const fetchCampgroundData = async (id) => {
         setLoading(true);
+        setError(null);
         try {
             const res = await fetch(`/api/campgrounds/${id}/sites`);
             if (res.ok) {
                 const data = await res.json();
                 setCampground(data.campground);
                 setSites(data.sites);
+            } else {
+                const err = await res.json().catch(() => ({}));
+                setError(err.error || `Failed to load data (Status: ${res.status})`);
+                setCampground(null);
             }
-        } catch (err) { console.error(err); }
-        finally { setLoading(false); }
+        } catch (err) {
+            console.error(err);
+            setError("Network error: " + err.message);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleDeleteCampground = async (id) => {
@@ -139,8 +155,15 @@ function AdminMapTool() {
                     setCampground(null);
                 }
             } else {
-                const err = await res.json();
-                alert(err.error || 'Failed to delete campground');
+                const text = await res.text();
+                let errMsg = 'Failed to delete campground';
+                try {
+                    const json = JSON.parse(text);
+                    errMsg = json.error || errMsg;
+                } catch (e) {
+                    errMsg += ` (${res.status} ${res.statusText})`;
+                }
+                alert(errMsg);
             }
         } catch (e) {
             console.error(e);
@@ -215,7 +238,7 @@ function AdminMapTool() {
             const res = await fetch(`/api/campgrounds/${selectedCampgroundId}/sites`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ count: parseInt(qty), prefix })
+                body: JSON.stringify({ count: parseInt(qty), prefix, price: parseFloat(document.getElementById('addPrice').value) || 0 })
             });
             if (res.ok) {
                 fetchCampgroundData(selectedCampgroundId);
@@ -252,10 +275,7 @@ function AdminMapTool() {
         } catch (e) { console.error(e); }
     };
 
-    const handleUnmap = async (id) => {
-        if (!window.confirm('Unmap this site?')) return;
-        saveCoords(id, null);
-    };
+
 
     const handleDelete = async (id) => {
         if (!window.confirm('Delete this site?')) return;
@@ -290,7 +310,7 @@ function AdminMapTool() {
                 body: JSON.stringify({ map_coordinates: coords })
             });
             if (res.ok) {
-                setSites(prev => prev.map(s => s.campsite_id === siteId ? { ...s, map_coordinates: JSON.stringify(coords) } : s));
+                setSites(prev => prev.map(s => s.campsite_id === siteId ? { ...s, map_coordinates: coords ? JSON.stringify(coords) : null } : s));
                 setTempCoords(null);
             } else {
                 const err = await res.json();
@@ -303,7 +323,7 @@ function AdminMapTool() {
         <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
             {/* Top Toolbar */}
             <div style={{ padding: '15px', borderBottom: '1px solid #ddd', background: '#fff', display: 'flex', gap: '20px', alignItems: 'center' }}>
-                <h2>Admin Map Tool</h2>
+                <h2 style={{ margin: 0 }}>Admin Map Tool</h2>
                 <select
                     value={selectedEventId}
                     onChange={e => setSelectedEventId(e.target.value)}
@@ -367,26 +387,61 @@ function AdminMapTool() {
                 <div style={{ padding: '50px', textAlign: 'center', color: '#666' }}>
                     {selectedEventId ? 'Select a campground to edit.' : 'Please select an event to get started.'}
                 </div>
-            ) : loading || !campground ? (
+            ) : loading ? (
                 <div style={{ padding: '50px' }}>Loading Data...</div>
+            ) : error ? (
+                <div style={{ padding: '50px', color: 'red' }}>
+                    <h3>Error</h3>
+                    <p>{error}</p>
+                </div>
+            ) : !campground ? (
+                <div style={{ padding: '50px' }}>Campground not found.</div>
             ) : (
                 <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
 
                     {/* Sidebar Editor */}
                     <div style={{ width: '320px', minWidth: '320px', borderRight: '1px solid #eee', display: 'flex', flexDirection: 'column', background: '#fafafa', flexShrink: 0, zIndex: 20, position: 'relative', boxShadow: '2px 0 5px rgba(0,0,0,0.1)' }}>
 
-                        {/* Bulk Add (Moved to Top) */}
+                        {/* Bulk Add (Styled with Labels) */}
                         <div style={{ padding: '15px', borderBottom: '1px solid #ddd', background: '#fff', overflow: 'hidden' }}>
                             <h4 style={{ margin: '0 0 10px 0' }}>Bulk Create</h4>
-                            <div style={{ display: 'flex', gap: '5px' }}>
-                                <input id="addQty" type="number" placeholder="Qty" style={{ width: '50px', padding: '5px', boxSizing: 'border-box' }} />
-                                <input id="addPrefix" type="text" placeholder="Prefix" defaultValue="Site " style={{ flex: 1, padding: '5px', minWidth: '0', boxSizing: 'border-box' }} />
+                            <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                    <label style={{ fontSize: '0.75rem', fontWeight: 'bold' }}>Number</label>
+                                    <input
+                                        id="addQty"
+                                        type="number"
+                                        defaultValue="1"
+                                        style={{ width: '60px', padding: '5px', border: '1px solid #ccc', borderRadius: '4px' }}
+                                    />
+                                </div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flex: 1 }}>
+                                    <label style={{ fontSize: '0.75rem', fontWeight: 'bold' }}>Suffix</label>
+                                    <input
+                                        id="addPrefix"
+                                        type="text"
+                                        defaultValue="Site "
+                                        style={{ width: '100%', padding: '5px', border: '1px solid #ccc', borderRadius: '4px' }}
+                                    />
+                                </div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                    <label style={{ fontSize: '0.75rem', fontWeight: 'bold' }}>Price</label>
+                                    <div style={{ position: 'relative' }}>
+                                        <span style={{ position: 'absolute', left: '5px', top: '50%', transform: 'translateY(-50%)', color: '#666' }}>$</span>
+                                        <input
+                                            id="addPrice"
+                                            type="number"
+                                            defaultValue="0"
+                                            style={{ width: '80px', padding: '5px 5px 5px 15px', border: '1px solid #ccc', borderRadius: '4px' }}
+                                        />
+                                    </div>
+                                </div>
                                 <button
                                     onClick={() => handleBulkAdd(
                                         document.getElementById('addQty').value,
                                         document.getElementById('addPrefix').value
                                     )}
-                                    style={{ background: 'black', color: 'white', border: 'none', padding: '0 10px', cursor: 'pointer', whiteSpace: 'nowrap' }}
+                                    style={{ background: 'black', color: 'white', border: 'none', padding: '8px 12px', borderRadius: '4px', cursor: 'pointer', height: '32px' }}
                                 >
                                     Add
                                 </button>
@@ -398,26 +453,28 @@ function AdminMapTool() {
                             <div style={{ padding: '20px', background: '#eef', borderBottom: '1px solid #dde' }}>
                                 <h4 style={{ marginTop: 0 }}>Editing Site</h4>
                                 <div style={{ marginBottom: '10px' }}>
-                                    <label style={{ fontSize: '0.8rem' }}>Name</label>
+                                    <label style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>Name</label>
                                     <input
-                                        style={{ width: '100%', padding: '5px' }}
+                                        style={{ width: '100%', padding: '5px', border: '1px solid #ced4da', borderRadius: '4px' }}
                                         value={sites.find(s => s.campsite_id === selectedSiteId)?.site_number || ''}
                                         onChange={e => handleRename(selectedSiteId, e.target.value)}
                                         onBlur={e => handleNameBlur(selectedSiteId, e.target.value)}
                                     />
                                 </div>
                                 <div style={{ marginBottom: '10px' }}>
-                                    <label style={{ fontSize: '0.8rem' }}>Price</label>
-                                    <input
-                                        type="number"
-                                        style={{ width: '100%', padding: '5px' }}
-                                        value={sites.find(s => s.campsite_id === selectedSiteId)?.price_per_night || ''}
-                                        onChange={e => handlePriceChange(selectedSiteId, e.target.value)}
-                                        onBlur={e => handlePriceBlur(selectedSiteId, e.target.value)}
-                                    />
+                                    <label style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>Price</label>
+                                    <div style={{ position: 'relative' }}>
+                                        <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#666' }}>$</span>
+                                        <input
+                                            type="number"
+                                            style={{ width: '100%', padding: '5px 5px 5px 25px', border: '1px solid #ced4da', borderRadius: '4px' }}
+                                            value={sites.find(s => s.campsite_id === selectedSiteId)?.price_per_night || ''}
+                                            onChange={e => handlePriceChange(selectedSiteId, e.target.value)}
+                                            onBlur={e => handlePriceBlur(selectedSiteId, e.target.value)}
+                                        />
+                                    </div>
                                 </div>
                                 <div style={{ display: 'flex', gap: '10px' }}>
-                                    <button onClick={() => handleUnmap(selectedSiteId)} style={{ cursor: 'pointer', padding: '5px 10px' }}>Unmap</button>
                                     <button onClick={() => handleDelete(selectedSiteId)} style={{ cursor: 'pointer', padding: '5px 10px', color: 'red' }}>Delete</button>
                                 </div>
                             </div>
@@ -475,6 +532,7 @@ function AdminMapTool() {
                                     if (!site.map_coordinates) return null;
                                     let c;
                                     try { c = JSON.parse(site.map_coordinates); } catch (e) { return null; }
+                                    if (!c) return null;
                                     return (
                                         <div
                                             key={site.campsite_id}

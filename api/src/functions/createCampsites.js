@@ -15,13 +15,14 @@ app.http('createCampsites', {
 
         const campgroundId = request.params.id;
         const body = await request.json();
-        const { count, prefix } = body;
+        const { count, prefix, price } = body;
 
         if (!count || count < 1) {
             return { status: 400, body: JSON.stringify({ error: "Invalid count" }) };
         }
 
         const sitePrefix = prefix || 'Site ';
+        const sitePrice = parseFloat(price) || 0;
 
         try {
             const pool = await getPool();
@@ -45,9 +46,10 @@ app.http('createCampsites', {
                     await transaction.request()
                         .input('cid', sql.Int, campgroundId)
                         .input('name', sql.NVarChar, siteName)
+                        .input('price', sql.Decimal(10, 2), sitePrice)
                         .query(`
                             INSERT INTO campsites (campground_id, site_number, is_active, is_powered, price_per_night)
-                            VALUES (@cid, @name, 1, 0, 0)
+                            VALUES (@cid, @name, 1, 0, @price)
                         `);
                 }
 
