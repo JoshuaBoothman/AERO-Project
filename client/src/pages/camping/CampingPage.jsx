@@ -53,7 +53,7 @@ function CampingPage() {
     // --- API: Index ---
     const fetchEventsIndex = async () => {
         try {
-            const res = await fetch('/api/getEvents');
+            const res = await fetch('/api/events');
             if (res.ok) {
                 const data = await res.json();
                 // Filter for Current & Upcoming

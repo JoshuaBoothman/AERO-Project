@@ -620,3 +620,17 @@
 
 ### Next Steps
 *   **User Flow:** Allow users to select these merchandise options during the booking flow.
+
+## [2026-01-11] - Campground Management
+**Milestone:** Implemented Campground Renaming Logic in Admin Map Tool
+
+### Completed Items
+*   **Backend (API)**
+    *   **Feature:** Created `updateCampground.js` (PUT /api/campgrounds/{id}) to handle renaming campgrounds.
+*   **Frontend (Client)**
+    *   **Admin Map Tool:**
+        *   **UI:** Replaced browser prompt with a custom, styled Modal for renaming campgrounds.
+        *   **Feedback:** Added visual border to modal input to improve usability.
+        *   **Logic:** Implemented seamless state updates to reflect name changes instantly on the tab bar.
+*   **Verification**
+    *   Verified renaming flow (Open Modal -> Edit -> Save -> Update) persists correctly via API.

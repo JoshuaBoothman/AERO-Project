@@ -16,7 +16,7 @@ function Events() {
         if (token) {
           headers['Authorization'] = `Bearer ${token}`;
         }
-        const response = await fetch('/api/getEvents', { headers });
+        const response = await fetch('/api/events', { headers });
 
         if (!response.ok) throw new Error('Failed to fetch events');
         const data = await response.json();

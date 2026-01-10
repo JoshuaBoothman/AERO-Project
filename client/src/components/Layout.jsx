@@ -1,4 +1,4 @@
-import { Outlet, Link, useNavigate } from 'react-router-dom';
+import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 
@@ -6,6 +6,7 @@ function Layout({ orgSettings, loading, error }) {
   const { user, logout } = useAuth(); // <--- Get user state
   const { cart } = useCart();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = () => {
     logout();
@@ -45,9 +46,9 @@ function Layout({ orgSettings, loading, error }) {
                 {user.role === 'admin' ? (
                   /* Admin Menu */
                   <>
-                    <Link to="/admin/orders" className="font-bold hover:text-accent">Orders</Link>
-                    <Link to="/admin/merchandise" className="font-bold hover:text-accent">Merchandise</Link>
-                    <Link to="/admin/assets" className="font-bold hover:text-accent">Assets</Link>
+                    <Link to="/admin/orders" className={`font-bold ${location.pathname.startsWith('/admin/orders') ? 'text-accent' : 'hover:text-accent'}`}>Orders</Link>
+                    <Link to="/admin/merchandise" className={`font-bold ${location.pathname.startsWith('/admin/merchandise') ? 'text-accent' : 'hover:text-accent'}`}>Merchandise</Link>
+                    <Link to="/admin/assets" className={`font-bold ${location.pathname.startsWith('/admin/assets') ? 'text-accent' : 'hover:text-accent'}`}>Assets</Link>
                   </>
                 ) : (
                   /* User Menu */

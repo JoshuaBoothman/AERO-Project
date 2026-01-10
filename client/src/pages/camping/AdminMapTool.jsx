@@ -36,6 +36,10 @@ function AdminMapTool() {
     const [selectedFile, setSelectedFile] = useState(null);
     const [uploading, setUploading] = useState(false);
 
+    // Rename Modal State
+    const [showRenameModal, setShowRenameModal] = useState(false);
+    const [renameData, setRenameData] = useState({ id: null, name: '' });
+
     // Initial Load: Fetch Events & Settings
     useEffect(() => {
         fetchSettings();
@@ -75,7 +79,7 @@ function AdminMapTool() {
             const headers = {};
             if (token) headers['Authorization'] = `Bearer ${token}`;
 
-            const res = await fetch('/api/getEvents', { headers });
+            const res = await fetch('/api/events', { headers });
             if (res.ok) {
                 const list = await res.json();
                 setEvents(list);
@@ -168,6 +172,34 @@ function AdminMapTool() {
         } catch (e) {
             console.error(e);
             alert('Error deleting campground');
+        }
+    };
+
+    const handleRenameCampground = (id, currentName) => {
+        setRenameData({ id, name: currentName });
+        setShowRenameModal(true);
+    };
+
+    const submitRename = async () => {
+        if (!renameData.name || !renameData.id) return;
+
+        try {
+            const res = await fetch(`/api/campgrounds/${renameData.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ name: renameData.name })
+            });
+
+            if (res.ok) {
+                setCampgrounds(prev => prev.map(c => c.campground_id === renameData.id ? { ...c, name: renameData.name } : c));
+                setShowRenameModal(false);
+            } else {
+                const err = await res.json();
+                alert('Failed to rename: ' + (err.error || 'Unknown error'));
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Error renaming campground');
         }
     };
 
@@ -353,21 +385,37 @@ function AdminMapTool() {
                                     {cg.name}
                                 </button>
                                 {selectedCampgroundId === cg.campground_id && (
-                                    <button
-                                        onClick={() => handleDeleteCampground(cg.campground_id)}
-                                        style={{
-                                            padding: '8px 10px',
-                                            background: '#dc3545',
-                                            color: 'white',
-                                            border: 'none',
-                                            borderRadius: '0 4px 4px 0',
-                                            cursor: 'pointer',
-                                            borderLeft: '1px solid rgba(0,0,0,0.1)'
-                                        }}
-                                        title="Delete Campground"
-                                    >
-                                        🗑️
-                                    </button>
+                                    <>
+                                        <button
+                                            onClick={() => handleRenameCampground(cg.campground_id, cg.name)}
+                                            style={{
+                                                padding: '8px 10px',
+                                                background: '#ffc107',
+                                                color: 'black',
+                                                border: 'none',
+                                                cursor: 'pointer',
+                                                borderLeft: '1px solid rgba(0,0,0,0.1)'
+                                            }}
+                                            title="Rename Campground"
+                                        >
+                                            ✏️
+                                        </button>
+                                        <button
+                                            onClick={() => handleDeleteCampground(cg.campground_id)}
+                                            style={{
+                                                padding: '8px 10px',
+                                                background: '#dc3545',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '0 4px 4px 0',
+                                                cursor: 'pointer',
+                                                borderLeft: '1px solid rgba(0,0,0,0.1)'
+                                            }}
+                                            title="Delete Campground"
+                                        >
+                                            🗑️
+                                        </button>
+                                    </>
                                 )}
                             </div>
                         ))}
@@ -597,6 +645,33 @@ function AdminMapTool() {
                                 <button onClick={() => setShowCreateModal(false)} disabled={uploading} style={{ padding: '8px 16px' }}>Cancel</button>
                                 <button onClick={handleCreateCampground} disabled={uploading} style={{ padding: '8px 16px', background: 'var(--primary-color, black)', color: 'white', border: 'none' }}>
                                     {uploading ? 'Uploading...' : 'Create'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+            {/* Rename Campground Modal */}
+            {
+                showRenameModal && (
+                    <div style={{
+                        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                        background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
+                    }}>
+                        <div style={{ background: 'white', padding: '20px', borderRadius: '8px', width: '400px' }}>
+                            <h3>Rename Campground</h3>
+                            <div style={{ marginBottom: '10px' }}>
+                                <label>Name:</label>
+                                <input
+                                    style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
+                                    value={renameData.name}
+                                    onChange={e => setRenameData({ ...renameData, name: e.target.value })}
+                                />
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
+                                <button onClick={() => setShowRenameModal(false)} style={{ padding: '8px 16px' }}>Cancel</button>
+                                <button onClick={submitRename} style={{ padding: '8px 16px', background: 'var(--primary-color, black)', color: 'white', border: 'none' }}>
+                                    Save
                                 </button>
                             </div>
                         </div>
