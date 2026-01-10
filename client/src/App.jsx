@@ -11,9 +11,11 @@ import Register from './pages/Register';
 import EventPurchase from './pages/EventPurchase';
 
 import MyOrders from './pages/MyOrders';
+import AdminOrders from './pages/admin/AdminOrders';
 import AdminMapTool from './pages/camping/AdminMapTool';
 import OrderDetail from './pages/OrderDetail';
 import CampingPage from './pages/camping/CampingPage';
+import StorePage from './pages/StorePage';
 import Checkout from './pages/Checkout';
 import { CartProvider } from './context/CartContext';
 
@@ -51,6 +53,7 @@ function App() {
               <Route path="login" element={<Login />} />
               <Route path="register" element={<Register />} />
               <Route path="events/:slug/purchase" element={<EventPurchase />} />
+              <Route path="events/:slug/shop" element={<StorePage />} /> {/* New Store Page */}
               <Route path="camping" element={<CampingPage />} /> {/* Generic Camping Route */}
               <Route path="events/:slug/camping" element={<CampingPage />} />
               <Route path="checkout" element={<Checkout />} /> {/* Added Checkout Route */}
@@ -58,6 +61,7 @@ function App() {
               <Route path="my-orders" element={<MyOrders />} />
               <Route path="orders/:orderId" element={<OrderDetail />} />
               <Route path="admin/map" element={<AdminMapTool />} />
+              <Route path="admin/orders" element={<AdminOrders />} />
             </Route>
           </Routes>
         </BrowserRouter>

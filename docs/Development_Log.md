@@ -461,5 +461,34 @@
     *   Verified User flow: Login -> Event -> Book Site -> Change Date -> Confirm -> Checkout.
 
 ### Next Steps
-*   **Payment Integration:** Connect Stripe/PayPal for real payments.
-*   **Mobile Optimization:** Ensure the Map Modal works smoothly on touch devices.
+
+*   **Merchandise Integration:**
+    *   **Plan:** Follow [Merchandise_Implementation_Plan.md](Merchandise_Implementation_Plan.md).
+    *   **Phase 1 (Admin):** Schema updates, Product/Variant Management, Image Uploads, Event Pricing.
+    *   **Phase 2 (User):** Storefront UI, Cart Logic, Order Processing.
+*   **Payment Integration:** (Deferred) Connect Stripe/PayPal.
+## [2026-01-10] - Shopping Cart Skeleton & Admin Dashboard
+**Milestone:** Complete Shopping Cart Functionality & Admin Order Management
+
+### Completed Items
+*   **Backend (API)**
+    *   **Unified Checkout:** Updated `createOrder.js` to handle `Merchandise`, `Asset`, and `Subevent` item types in a single transaction.
+    *   **Admin API:** Created `getAdminOrders.js` to fetch all orders with event details (RESTRICTED to admins).
+    *   **Asset Logic:** Implemented `getAssetAvailability.js` and `getAssetTypes.js` for hireable items.
+    *   **Fix:** Resolved `CK_AttendeeStatus` constraint violation by defaulting attendee status to 'Registered'.
+    *   **Fix:** Corrected `seed_demo_data.js` to properly populate Asset Inventory.
+*   **Database**
+    *   **Seeding:** Added `product_variants` (Sizes), `asset_items` (Generators), and `subevents` (Gala Dinner).
+    *   **Constraints:** Verified foreign key relationships and status constraints.
+*   **Frontend (Client)**
+    *   **Store Page:** Created unified `StorePage.jsx` with tabs for Merchandise, Hire, and Program.
+    *   **Checkout:** Implemented centralized `CartContext` and `Checkout.jsx` handling mixed baskets.
+    *   **Admin Dashboard:** Created `AdminOrders.jsx` table view with status filtering and details link.
+    *   **UX:** Added context-aware "Back" navigation (Admins -> All Orders, Users -> My Orders).
+*   **Verification**
+    *   Verified end-to-end flow: Add T-Shirt + Generator + Dinner -> Mock Pay -> Order Created -> Admin View.
+    *   Verified "No Assets Available" error was resolved by fixing seeding logic.
+
+### Next Steps
+*   **UI/UX Polish:** Styling overhaul for Store, Cart, and Admin Dashboard.
+*   **Real Payments:** Stripe Integration.

@@ -51,7 +51,10 @@ function Layout({ orgSettings, loading, error }) {
 
               {user.role === 'admin' ? (
                 /* Admin Menu */
-                <Link to="/admin/map" style={{ color: 'inherit', textDecoration: 'none', fontWeight: 'bold' }}>Admin Map</Link>
+                <>
+                  <Link to="/admin/map" style={{ color: 'inherit', textDecoration: 'none', fontWeight: 'bold' }}>Map</Link>
+                  <Link to="/admin/orders" style={{ color: 'inherit', textDecoration: 'none', fontWeight: 'bold' }}>Orders</Link>
+                </>
               ) : (
                 /* User Menu */
                 <>

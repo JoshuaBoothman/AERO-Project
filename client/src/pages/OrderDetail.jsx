@@ -108,7 +108,9 @@ function OrderDetail() {
 
     if (error) return (
         <div className="container" style={{ padding: '2rem' }}>
-            <Link to="/my-orders" className="back-link">← Back to Orders</Link>
+            <Link to={user?.role === 'admin' ? "/admin/orders" : "/my-orders"} className="back-link">
+                ← Back to {user?.role === 'admin' ? "All Orders" : "My Orders"}
+            </Link>
             <div className="error-message" style={{ marginTop: '1rem' }}>{error}</div>
         </div>
     );
@@ -122,7 +124,9 @@ function OrderDetail() {
     return (
         <div className="container" style={{ padding: '2rem' }}>
             <div style={{ marginBottom: '2rem' }}>
-                <Link to="/my-orders" className="back-link">← Back to Orders</Link>
+                <Link to={user?.role === 'admin' ? "/admin/orders" : "/my-orders"} className="back-link">
+                    ← Back to {user?.role === 'admin' ? "All Orders" : "My Orders"}
+                </Link>
             </div>
 
             <div className="order-header" style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>

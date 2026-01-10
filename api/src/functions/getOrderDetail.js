@@ -38,8 +38,8 @@ app.http('getOrderDetail', {
 
             const order = orderResult[0];
 
-            // 2. Security Check
-            if (order.user_id !== decoded.userId) {
+            // 2. Security Check (Owner or Admin)
+            if (order.user_id !== decoded.userId && decoded.role !== 'admin' && decoded.role !== 'Operational') {
                 return { status: 403, body: "Forbidden: You do not own this order." };
             }
 

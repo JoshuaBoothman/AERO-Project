@@ -1,0 +1,119 @@
+const { app } = require('@azure/functions');
+const { getPool, sql } = require('../lib/db');
+
+app.http('getStoreItems', {
+    methods: ['GET'],
+    authLevel: 'anonymous',
+    handler: async (request, context) => {
+        const eventIdParam = request.query.get('eventId');
+        const slug = request.query.get('slug');
+
+        if (!eventIdParam && !slug) {
+            return { status: 400, body: JSON.stringify({ error: "Missing eventId or slug" }) };
+        }
+
+        try {
+            const pool = await getPool();
+
+            // 1. Resolve Event ID
+            let eventId = eventIdParam;
+            if (slug && !eventId) {
+                const eRes = await pool.request()
+                    .input('slug', sql.NVarChar, slug)
+                    .query("SELECT event_id FROM events WHERE slug = @slug");
+                if (eRes.recordset.length === 0) return { status: 404, body: JSON.stringify({ error: "Event not found" }) };
+                eventId = eRes.recordset[0].event_id;
+            }
+
+            // 2. Fetch Merch (Products linked via Event Skus)
+            // Join products, variants, skus, event_skus to get full structure.
+            // Simplified: Get Event Skus -> Products.
+            const merchQuery = `
+                SELECT 
+                    es.event_sku_id, es.price, 
+                    ps.sku_code, ps.current_stock,
+                    p.product_id, p.name as product_name, p.base_image_url, p.description,
+                    v.name as variant_category, vo.value as variant_value
+                FROM event_skus es
+                JOIN product_skus ps ON es.product_sku_id = ps.product_sku_id
+                JOIN products p ON ps.product_id = p.product_id
+                LEFT JOIN sku_option_links sol ON ps.product_sku_id = sol.product_sku_id
+                LEFT JOIN variant_options vo ON sol.variant_option_id = vo.variant_option_id
+                LEFT JOIN variants var ON vo.variant_id = var.variant_id
+                LEFT JOIN variant_categories v ON var.variant_category_id = v.variant_category_id
+                WHERE es.event_id = @eid AND es.is_enabled = 1
+            `;
+            const merchRes = await pool.request().input('eid', sql.Int, eventId).query(merchQuery);
+
+            // Group by Product
+            const merchandise = [];
+            const productMap = new Map();
+
+            merchRes.recordset.forEach(row => {
+                let prod = productMap.get(row.product_id);
+                if (!prod) {
+                    prod = {
+                        id: row.product_id,
+                        name: row.product_name,
+                        description: row.description,
+                        image: row.base_image_url,
+                        skus: []
+                    };
+                    productMap.set(row.product_id, prod);
+                    merchandise.push(prod);
+                }
+                prod.skus.push({
+                    id: row.event_sku_id, // This is what we buy!
+                    code: row.sku_code,
+                    price: row.price,
+                    stock: row.current_stock,
+                    variant: row.variant_value
+                });
+            });
+
+
+            // 3. Fetch Assets
+            const assetRes = await pool.request().input('eid', sql.Int, eventId).query(`
+                SELECT asset_type_id, name, description, base_hire_cost
+                FROM asset_types
+                WHERE event_id = @eid
+            `);
+            const assets = assetRes.recordset.map(a => ({
+                id: a.asset_type_id,
+                name: a.name,
+                description: a.description,
+                price: a.base_hire_cost
+            }));
+
+            // 4. Fetch Subevents
+            const subRes = await pool.request().input('eid', sql.Int, eventId).query(`
+                SELECT subevent_id, name, description, start_time, end_time, capacity, cost
+                FROM subevents
+                WHERE event_id = @eid
+            `);
+            const subevents = subRes.recordset.map(s => ({
+                id: s.subevent_id,
+                name: s.name,
+                description: s.description,
+                startTime: s.start_time,
+                endTime: s.end_time,
+                price: s.cost,
+                capacity: s.capacity
+            }));
+
+            return {
+                status: 200,
+                body: JSON.stringify({
+                    eventId,
+                    merchandise, // Grouped
+                    assets,
+                    subevents
+                })
+            };
+
+        } catch (err) {
+            context.log(err);
+            return { status: 500, body: JSON.stringify({ error: err.message }) };
+        }
+    }
+});
