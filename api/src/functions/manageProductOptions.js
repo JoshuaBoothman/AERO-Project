@@ -66,6 +66,7 @@ app.http('manageProductOptions', {
                     }
 
                     // 3. Add Option Value if provided
+                    let newOptionId = null;
                     if (value) {
                         // Check for duplicate
                         const checkOpt = await transaction.request()
@@ -74,15 +75,29 @@ app.http('manageProductOptions', {
                             .query("SELECT variant_option_id FROM variant_options WHERE variant_id = @vid AND value = @val");
 
                         if (checkOpt.recordset.length === 0) {
-                            await transaction.request()
+                            const insertOpt = await transaction.request()
                                 .input('vid', sql.Int, variantId)
                                 .input('val', sql.NVarChar, value)
-                                .query("INSERT INTO variant_options (variant_id, value) VALUES (@vid, @val)");
+                                .query("INSERT INTO variant_options (variant_id, value) OUTPUT INSERTED.variant_option_id VALUES (@vid, @val)");
+                            newOptionId = insertOpt.recordset[0].variant_option_id;
+                        } else {
+                            newOptionId = checkOpt.recordset[0].variant_option_id;
                         }
                     }
 
                     await transaction.commit();
-                    return { status: 200, jsonBody: { message: "Option updated/added" } };
+                    return {
+                        status: 200,
+                        jsonBody: {
+                            message: "Option updated/added",
+                            option: {
+                                id: newOptionId,
+                                value: value,
+                                variant_id: variantId,
+                                category_name: categoryName
+                            }
+                        }
+                    };
 
                 } catch (err) {
                     await transaction.rollback();

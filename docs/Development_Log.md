@@ -593,3 +593,30 @@
     *   Verified "Event Context" dropdown in Asset Types now populates correctly.
     *   Verified "Publicly Viewable" checkbox state persists after saving.
     *   Verified `/api/events` endpoint responds with 200 OK.
+
+
+## [2026-01-11] - Merchandise Enhancements
+**Milestone:** End-to-End Option & Category Management with Optimistic UX
+
+### Completed Items
+*   **Backend (API)**
+    *   **Feature:** Implemented `deleteVariantOption.js` (DELETE /api/options/{id}).
+        *   **Logic:** Enforced cascading deletion: Deleting an option ("Small") automatically deletes all associated SKUs from `product_skus`, `sku_option_links`, and `event_skus`.
+        *   **Response:** Returns `deletedSkuIds` to enable frontend optimistic updates.
+    *   **Feature:** Implemented `deleteProductVariant.js` (DELETE /api/variants/{id}).
+        *   **Safeguard:** Enforced `409 Conflict` if the category is not empty. Users must manually delete options first.
+        *   **Cleanup:** Automatically deletes the global `variant_categories` record if the deleted category was the last usage of that name (orphan cleanup).
+    *   **Enhancement:** Updated `manageProductOptions.js` to return the full option object (including the new ID) upon creation, enabling instant UI updates.
+*   **Frontend (Client)**
+    *   **Product Editor:**
+        *   **UX (Options):** Added "Delete" (X) button to option pills.
+        *   **UX (Categories):** Added "Remove Category" button to Variant Card headers.
+        *   **Optimistic UI:** Implemented local state management for Add/Delete actions. Updates appear instantly without triggering a page reload (`fetchDetails`), improving perceived performance.
+        *   **Feedback:** Integrated `NotificationContext` to handle confirmation prompts and error messages (e.g., "Delete all options first").
+*   **Verification**
+    *   **Backend:** Verified cascading delete logic via custom database script `test_cascade_logic.js`.
+    *   **Frontend:** Verified optimistic updates for adding/deleting options and categories.
+    *   **Safeguards:** Verified that trying to delete a populated category triggers the correct warning.
+
+### Next Steps
+*   **User Flow:** Allow users to select these merchandise options during the booking flow.

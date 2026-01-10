@@ -75,12 +75,89 @@ function ProductEditor() {
                 body: JSON.stringify({ categoryName, value })
             });
             if (res.ok) {
-                fetchDetails(); // Reload to see changes
+                const data = await res.json();
+
+                // Update Local State without Refetch
+                // 1. Check if variant category exists in state
+                setVariants(prev => {
+                    const existingVarIndex = prev.findIndex(v => v.name === categoryName);
+                    if (existingVarIndex >= 0) {
+                        // Add option to existing category
+                        const updated = [...prev];
+                        const existingVar = updated[existingVarIndex];
+                        // Avoid duplicates in UI if backend returned existing ID
+                        if (!existingVar.options.find(o => o.id === data.option.id)) {
+                            updated[existingVarIndex] = {
+                                ...existingVar,
+                                options: [...existingVar.options, { id: data.option.id, value: data.option.value }]
+                            };
+                        }
+                        return updated;
+                    } else {
+                        // Create new category
+                        return [...prev, {
+                            variant_id: data.option.variant_id,
+                            name: categoryName,
+                            options: data.option.value ? [{ id: data.option.id, value: data.option.value }] : []
+                        }];
+                    }
+                });
+
                 setNewCatName('');
                 setNewOptValue('');
                 notify('Option added', 'success');
             }
         } catch (e) { notify('Error adding option', 'error'); }
+    };
+
+    const handleDeleteOption = async (optionId) => {
+        confirm('Deleting this option will delete ALL SKUs that use it. This cannot be undone. Are you sure?', async () => {
+            try {
+                const res = await fetch(`/api/options/${optionId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    notify(data.message || 'Option deleted', 'success');
+
+                    // Local Update
+                    setVariants(prev => prev.map(v => ({
+                        ...v,
+                        options: v.options.filter(o => o.id !== optionId)
+                    })));
+
+                    if (data.deletedSkuIds && data.deletedSkuIds.length > 0) {
+                        setSkus(prev => prev.filter(s => !data.deletedSkuIds.includes(s.id)));
+                    }
+                } else {
+                    notify('Failed to delete option', 'error');
+                }
+            } catch (e) { notify('Error deleting option', 'error'); }
+        });
+    };
+
+    const handleDeleteVariant = async (variantId) => {
+        confirm('Are you sure you want to remove this category from the product? You must delete all options first.', async () => {
+            try {
+                const res = await fetch(`/api/variants/${variantId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    notify(data.message || 'Category removed', 'success');
+                    // Local Update
+                    setVariants(prev => prev.filter(v => v.variant_id !== variantId));
+                } else if (res.status === 409) {
+                    const data = await res.json();
+                    notify(data.error, 'error');
+                } else {
+                    notify('Failed to delete category', 'error');
+                }
+            } catch (e) { notify('Error deleting category', 'error'); }
+        });
     };
 
     const handleGenerateSKUs = async () => {
@@ -237,11 +314,23 @@ function ProductEditor() {
                         {/* Existing Options */}
                         {variants.map(v => (
                             <div key={v.variant_id} style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '15px', minWidth: '250px', background: '#fff' }}>
-                                <h3 style={{ marginTop: 0 }}>{v.name}</h3>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                                    <h3 style={{ margin: 0 }}>{v.name}</h3>
+                                    <button
+                                        onClick={() => handleDeleteVariant(v.variant_id)}
+                                        style={{ color: '#999', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', padding: '0 5px' }}
+                                        title="Remove Category"
+                                    >×</button>
+                                </div>
                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginBottom: '10px' }}>
                                     {v.options.map(opt => (
-                                        <span key={opt.id} style={{ background: '#eee', padding: '4px 8px', borderRadius: '12px', fontSize: '0.9rem' }}>
+                                        <span key={opt.id} style={{ background: '#eee', padding: '4px 8px', borderRadius: '12px', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '5px' }}>
                                             {opt.value}
+                                            <button
+                                                onClick={() => handleDeleteOption(opt.id)}
+                                                style={{ border: 'none', background: 'none', color: '#999', cursor: 'pointer', padding: 0, fontSize: '1rem', lineHeight: 1 }}
+                                                title="Delete Option"
+                                            >×</button>
                                         </span>
                                     ))}
                                 </div>
