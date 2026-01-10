@@ -1,14 +1,22 @@
-*, *::before, *::after {
-  box-sizing: border-box;
+@import "tailwindcss";
+
+@theme {
+  --color-primary: var(--primary-color);
+  --color-secondary: var(--secondary-color);
+  --color-accent: var(--accent-color);
 }
 
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  
-  /* Default to a clean white background for all clubs */
-  background-color: #f5f7fa; 
+
+  /* Default Theming Setup - Overridden by Layout.jsx */
+  --primary-color: #000000;
+  --secondary-color: #ffffff;
+  --accent-color: #FFD700;
+
+  background-color: #f5f7fa;
   color: #333333;
 
   font-synthesis: none;
@@ -24,7 +32,12 @@ body {
   min-height: 100vh;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   margin: 0 0 0.5rem 0;
 }
 
@@ -36,18 +49,22 @@ button {
 /* --- Event Details Hero Fix --- */
 .event-banner {
   width: 100%;
-  height: 350px; /* Fixed height to create the "Hero" strip effect */
-  border-radius: 12px; /* Soften corners */
+  height: 350px;
+  /* Fixed height to create the "Hero" strip effect */
+  border-radius: 12px;
+  /* Soften corners */
   overflow: hidden;
   margin-bottom: 2rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  background-color: #e2e8f0; /* Placeholder color while loading */
+  background-color: #e2e8f0;
+  /* Placeholder color while loading */
 }
 
 .event-banner img {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* CRITICAL: Crops image to fill container */
+  object-fit: cover;
+  /* CRITICAL: Crops image to fill container */
   object-position: center;
   display: block;
 }
@@ -65,18 +82,18 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  
+
   /* Geometry matching your snippet */
   padding: 4px 10px;
   border-radius: 4px;
-  
+
   /* Typography matching your snippet */
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   line-height: 1.2;
-  
+
   /* Layout prevention */
   align-self: flex-start;
   white-space: nowrap;
@@ -85,11 +102,12 @@ button {
 /* Status: Active & Planned 
    Matches the "Badge in Events" style: Accent Background + Primary Text
 */
-.status-active, 
+.status-active,
 .status-planned {
   background-color: var(--accent-color);
   color: var(--primary-color);
-  border: 1px solid rgba(0,0,0,0.05); /* Subtle depth */
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  /* Subtle depth */
 }
 
 /* Status: Past 
@@ -99,7 +117,8 @@ button {
 .status-past {
   background-color: #e5e7eb;
   color: #6b7280;
-  text-decoration: line-through; /* Clear visual cue */
+  text-decoration: line-through;
+  /* Clear visual cue */
 }
 
 /* Attendee Form Styling */

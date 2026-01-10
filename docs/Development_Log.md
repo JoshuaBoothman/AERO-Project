@@ -491,4 +491,26 @@
 
 ### Next Steps
 *   **UI/UX Polish:** Styling overhaul for Store, Cart, and Admin Dashboard.
-*   **Real Payments:** Stripe Integration.
+
+## [2026-01-10] - UI/UX Polish & Tailwind Migration
+**Milestone:** Implemented Tailwind CSS v4 and established a cohesive Design System
+
+### Completed Items
+*   **Tech Stack (Frontend)**
+    *   **Migration:** Installed **Tailwind CSS v4** and configured `@tailwindcss/vite` plugin.
+    *   **Theming:** Implemented Dynamic Branding using CSS variables (`--primary-color`, `--accent-color`) injected from `orgSettings`.
+    *   **Refactor:** Removed legacy `index.css` manual styles in favor of utility classes.
+*   **UI/UX (Client)**
+    *   **Layout:** Built responsive Navigation Bar with Sticky Header and mobile-friendly spacing.
+    *   **Store:** Refactored `StorePage.jsx` with a clean Tabbed Interface (Merch/Hire/Program) and responsive Grid layouts.
+    *   **Checkout:** Designed a modern "Order Summary" card with clear typography and interactions.
+    *   **Admin Dashboard:** Styled the Orders Table with consistent padding and color-coded Status Badges (Paid/Pending/Failed).
+
+### Next Steps
+*   **Fresh Start:**
+    *   Purge Database (retain Admin/User logins).
+    *   Seed new event: **"Festival of Aeromodelling 2026"** (Inglewood, QLD, 4th-12th July 2026).
+*   **Discovery UI:**
+    *   Build dedicated "Browse" views for Products, Subevents, and Assets (currently hidden behind "Add to Cart").
+    *   Create a cohesive end-to-end experience for Users (Discovery -> Cart -> Checkout) and Admins (Setup -> Management).
+

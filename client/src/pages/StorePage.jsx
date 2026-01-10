@@ -87,25 +87,25 @@ function StorePage({ orgSettings }) {
     if (error) return <div className="p-10 text-center text-red-500">Error: {error}</div>;
 
     return (
-        <div className="max-w-6xl mx-auto p-4">
-            <h1 className="text-3xl font-bold mb-6">Event Store: {slug}</h1>
+        <div className="max-w-6xl mx-auto p-4 md:p-8">
+            <h1 className="text-3xl font-bold mb-8 text-primary">Event Store: {slug}</h1>
 
             {/* Tabs */}
-            <div className="flex border-b mb-6">
+            <div className="flex border-b border-gray-200 mb-8 overflow-x-auto">
                 <button
-                    className={`px-6 py-3 font-semibold ${activeTab === 'merch' ? 'border-b-2 border-black text-black' : 'text-gray-500'}`}
+                    className={`px-6 py-3 font-semibold transition-colors whitespace-nowrap ${activeTab === 'merch' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-primary'}`}
                     onClick={() => setActiveTab('merch')}
                 >
                     Merchandise
                 </button>
                 <button
-                    className={`px-6 py-3 font-semibold ${activeTab === 'hire' ? 'border-b-2 border-black text-black' : 'text-gray-500'}`}
+                    className={`px-6 py-3 font-semibold transition-colors whitespace-nowrap ${activeTab === 'hire' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-primary'}`}
                     onClick={() => setActiveTab('hire')}
                 >
                     Hire Assets
                 </button>
                 <button
-                    className={`px-6 py-3 font-semibold ${activeTab === 'program' ? 'border-b-2 border-black text-black' : 'text-gray-500'}`}
+                    className={`px-6 py-3 font-semibold transition-colors whitespace-nowrap ${activeTab === 'program' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-primary'}`}
                     onClick={() => setActiveTab('program')}
                 >
                     Program / Subevents
@@ -117,22 +117,22 @@ function StorePage({ orgSettings }) {
 
                 {/* MERCHANDISE */}
                 {activeTab === 'merch' && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {data.merchandise.length === 0 && <p>No merchandise available.</p>}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {data.merchandise.length === 0 && <p className="text-gray-500 italic">No merchandise available.</p>}
                         {data.merchandise.map(prod => (
-                            <div key={prod.id} className="border rounded-lg p-4 shadow-sm">
-                                <img src={prod.image} alt={prod.name} className="w-full h-48 object-cover mb-4 rounded bg-gray-100" />
-                                <h3 className="font-bold text-lg">{prod.name}</h3>
-                                <p className="text-sm text-gray-600 mb-4">{prod.description}</p>
+                            <div key={prod.id} className="bg-white border border-gray-100 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+                                <img src={prod.image} alt={prod.name} className="w-full h-48 object-cover mb-4 rounded bg-gray-50" />
+                                <h3 className="font-bold text-lg text-gray-800">{prod.name}</h3>
+                                <p className="text-sm text-gray-600 mb-4 h-10 overflow-hidden">{prod.description}</p>
 
-                                <div className="space-y-2">
+                                <div className="space-y-2 mt-auto">
                                     {prod.skus.map(sku => (
-                                        <div key={sku.id} className="flex justify-between items-center bg-gray-50 p-2 rounded">
-                                            <span>{sku.variant}</span>
-                                            <span className="font-bold">${sku.price}</span>
+                                        <div key={sku.id} className="flex justify-between items-center bg-gray-50 p-2 rounded border border-gray-100">
+                                            <span className="text-sm font-medium text-gray-700">{sku.variant}</span>
+                                            <span className="font-bold text-primary">${sku.price}</span>
                                             <button
                                                 onClick={() => handleAddMerch(prod, sku)}
-                                                className="bg-black text-white px-3 py-1 rounded text-sm hover:bg-gray-800"
+                                                className="bg-primary text-secondary px-3 py-1 rounded text-sm hover:brightness-110 transition-all font-medium"
                                             >
                                                 Add
                                             </button>
@@ -147,31 +147,35 @@ function StorePage({ orgSettings }) {
                 {/* ASSETS */}
                 {activeTab === 'hire' && (
                     <div>
-                        <div className="bg-gray-100 p-4 rounded mb-6 flex gap-4 items-end">
-                            <div>
-                                <label className="block text-sm font-bold mb-1">Hire Start</label>
-                                <input type="date" className="p-2 border rounded" value={hireDates.start} onChange={e => setHireDates({ ...hireDates, start: e.target.value })} />
+                        <div className="bg-gray-100 p-6 rounded-lg mb-8 flex flex-col md:flex-row gap-6 items-end shadow-inner">
+                            <div className="w-full md:w-auto">
+                                <label className="block text-sm font-bold mb-1 text-gray-700">Hire Start</label>
+                                <input type="date" className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary focus:border-transparent outline-none" value={hireDates.start} onChange={e => setHireDates({ ...hireDates, start: e.target.value })} />
                             </div>
-                            <div>
-                                <label className="block text-sm font-bold mb-1">Hire End</label>
-                                <input type="date" className="p-2 border rounded" value={hireDates.end} onChange={e => setHireDates({ ...hireDates, end: e.target.value })} />
+                            <div className="w-full md:w-auto">
+                                <label className="block text-sm font-bold mb-1 text-gray-700">Hire End</label>
+                                <input type="date" className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary focus:border-transparent outline-none" value={hireDates.end} onChange={e => setHireDates({ ...hireDates, end: e.target.value })} />
                             </div>
-                            <div className="text-sm text-gray-500 pb-2">Select dates to view pricing</div>
+                            <div className="text-sm text-gray-500 pb-2 italic">Select dates to view pricing</div>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {data.assets.length === 0 && <p>No assets available for hire.</p>}
+                            {data.assets.length === 0 && <p className="text-gray-500 italic">No assets available for hire.</p>}
                             {data.assets.map(asset => (
-                                <div key={asset.id} className="border rounded-lg p-4 shadow-sm">
-                                    <h3 className="font-bold text-lg">{asset.name}</h3>
-                                    <p className="text-sm text-gray-600 mb-2">{asset.description}</p>
-                                    <p className="font-bold text-xl mb-4">${asset.price} <span className="text-sm font-normal text-gray-500">/ day</span></p>
-                                    <button
-                                        onClick={() => handleAddAsset(asset)}
-                                        className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
-                                    >
-                                        Add to Cart
-                                    </button>
+                                <div key={asset.id} className="bg-white border border-gray-100 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+                                    <div>
+                                        <h3 className="font-bold text-lg text-gray-800 mb-1">{asset.name}</h3>
+                                        <p className="text-sm text-gray-600 mb-4">{asset.description}</p>
+                                    </div>
+                                    <div>
+                                        <p className="font-bold text-xl mb-4 text-primary">${asset.price} <span className="text-sm font-normal text-gray-500">/ day</span></p>
+                                        <button
+                                            onClick={() => handleAddAsset(asset)}
+                                            className="w-full bg-primary text-secondary py-2 rounded hover:brightness-110 transition-all font-bold"
+                                        >
+                                            Add to Cart
+                                        </button>
+                                    </div>
                                 </div>
                             ))}
                         </div>
@@ -180,22 +184,22 @@ function StorePage({ orgSettings }) {
 
                 {/* SUBEVENTS */}
                 {activeTab === 'program' && (
-                    <div className="space-y-4">
-                        {data.subevents.length === 0 && <p>No program items available.</p>}
+                    <div className="space-y-4 max-w-3xl">
+                        {data.subevents.length === 0 && <p className="text-gray-500 italic">No program items available.</p>}
                         {data.subevents.map(sub => (
-                            <div key={sub.id} className="border rounded-lg p-6 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center">
+                            <div key={sub.id} className="bg-white border border-gray-100 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col md:flex-row justify-between items-start md:items-center">
                                 <div>
-                                    <h3 className="font-bold text-xl">{sub.name}</h3>
+                                    <h3 className="font-bold text-xl text-primary">{sub.name}</h3>
                                     <p className="text-gray-600 mb-2">{sub.description}</p>
-                                    <div className="text-sm text-gray-500">
+                                    <div className="text-sm font-medium bg-gray-100 inline-block px-2 py-1 rounded text-gray-700">
                                         {new Date(sub.startTime).toLocaleString()} - {new Date(sub.endTime).toLocaleTimeString()}
                                     </div>
                                 </div>
-                                <div className="mt-4 md:mt-0 text-right">
-                                    <div className="text-2xl font-bold mb-2">${sub.price}</div>
+                                <div className="mt-4 md:mt-0 text-right min-w-[120px]">
+                                    <div className="text-2xl font-bold mb-2 text-gray-800">${sub.price}</div>
                                     <button
                                         onClick={() => handleAddSubevent(sub)}
-                                        className="bg-purple-600 text-white px-6 py-2 rounded hover:bg-purple-700"
+                                        className="w-full bg-accent text-primary px-6 py-2 rounded hover:brightness-110 transition-all font-bold shadow-sm"
                                     >
                                         Register
                                     </button>

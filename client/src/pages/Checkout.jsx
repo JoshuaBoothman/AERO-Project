@@ -90,43 +90,85 @@ function Checkout() {
         }
     };
 
-    if (cart.length === 0) return <div style={{ padding: '20px' }}>Cart is empty</div>;
+    if (cart.length === 0) return (
+        <div className="max-w-4xl mx-auto p-8 text-center bg-white rounded-lg shadow-sm mt-12">
+            <div className="text-6xl mb-4">🛒</div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Your Cart is Empty</h2>
+            <p className="text-gray-500">Looks like you haven't added anything yet.</p>
+        </div>
+    );
 
     const renderItem = (item, idx) => (
-        <div key={idx} style={{ padding: '10px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between' }}>
-            <div>
-                <strong>{item.name}</strong> <br />
-                <small className="text-gray-500">
-                    {item.type === 'CAMPSITE' && `${item.checkIn} to ${item.checkOut}`}
-                    {item.type === 'ASSET' && `${item.checkIn} to ${item.checkOut}`}
-                    {item.type === 'SUBEVENT' && new Date(item.startTime).toLocaleString()}
-                </small>
+        <div key={idx} className="flex justify-between items-start p-6 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors group">
+            <div className="flex-grow">
+                <div className="flex items-center gap-2">
+                    <strong className="text-lg text-gray-800">{item.name}</strong>
+                    <span className="text-xs font-bold uppercase tracking-wider bg-gray-100 text-gray-500 px-2 py-0.5 rounded">{item.type}</span>
+                </div>
+                {(item.type === 'CAMPSITE' || item.type === 'ASSET') && (
+                    <small className="block text-gray-500 mt-1">
+                        {new Date(item.checkIn).toLocaleDateString()} &rarr; {new Date(item.checkOut).toLocaleDateString()}
+                    </small>
+                )}
+                {item.type === 'SUBEVENT' && (
+                    <small className="block text-gray-500 mt-1">
+                        {new Date(item.startTime).toLocaleString()}
+                    </small>
+                )}
             </div>
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                <span>${item.price.toFixed(2)}</span>
-                <button onClick={() => removeFromCart(idx)} style={{ color: 'red' }}>x</button>
+            <div className="flex items-center gap-6">
+                <span className="font-bold text-lg text-gray-900">${item.price.toFixed(2)}</span>
+                <button
+                    onClick={() => removeFromCart(idx)}
+                    className="text-gray-400 hover:text-red-600 bg-transparent hover:bg-red-50 rounded-full w-8 h-8 flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
+                    aria-label="Remove item"
+                >
+                    ✕
+                </button>
             </div>
         </div>
     );
 
     return (
-        <div style={{ maxWidth: '800px', margin: '20px auto', padding: '20px' }}>
-            <h1 className="text-2xl font-bold mb-4">Checkout</h1>
+        <div className="max-w-4xl mx-auto p-4 md:p-8">
+            <h1 className="text-3xl font-bold mb-8 text-gray-900 border-b pb-4">Checkout</h1>
 
-            <div className="bg-white shadow rounded p-4 mb-4">
-                {cart.map((item, idx) => renderItem(item, idx))}
-            </div>
+            <div className="bg-white shadow-lg rounded-xl overflow-hidden mb-8 border border-gray-100">
+                <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                    <span className="text-sm font-bold uppercase text-gray-500 tracking-wider">Order Summary</span>
+                    <span className="text-sm font-semibold text-gray-600">{cart.length} Items</span>
+                </div>
 
-            <div style={{ fontSize: '1.2rem', fontWeight: 'bold', textAlign: 'right', marginBottom: '20px' }}>
-                Total: ${cartTotal.toFixed(2)}
+                {/* Cart Items List */}
+                <div className="divide-y divide-gray-50">
+                    {cart.map((item, idx) => renderItem(item, idx))}
+                </div>
+
+                {/* Total Section */}
+                <div className="bg-gray-50 p-8 border-t border-gray-200">
+                    <div className="flex justify-between items-center mb-8">
+                        <span className="text-xl font-medium text-gray-600">Total Amount</span>
+                        <span className="text-4xl font-bold text-primary">${cartTotal.toFixed(2)}</span>
+                    </div>
+
+                    <button
+                        onClick={handleCheckout}
+                        disabled={loading}
+                        className="w-full bg-primary text-secondary py-4 rounded-lg text-xl font-bold hover:brightness-110 shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-3"
+                    >
+                        {loading ? (
+                            <>
+                                <span className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></span>
+                                Processing...
+                            </>
+                        ) : (
+                            <>
+                                🔒 Secure Pay Now
+                            </>
+                        )}
+                    </button>
+                </div>
             </div>
-            <button
-                onClick={handleCheckout}
-                disabled={loading}
-                className="w-full bg-black text-white p-4 rounded text-xl font-bold hover:bg-gray-800 disabled:bg-gray-400"
-            >
-                {loading ? 'Processing...' : 'Pay Now'}
-            </button>
         </div>
     );
 }

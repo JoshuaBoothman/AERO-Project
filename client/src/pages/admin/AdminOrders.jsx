@@ -35,64 +35,78 @@ function AdminOrders() {
         }
     }, [user]);
 
-    if (loading) return <div className="container" style={{ padding: '2rem' }}>Loading Admin Orders...</div>;
-    if (error) return <div className="container" style={{ padding: '2rem', color: 'red' }}>Error: {error}</div>;
+    const getStatusColor = (status) => {
+        switch (status?.toLowerCase()) {
+            case 'paid': return 'bg-green-100 text-green-800 border-green-200';
+            case 'pending': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+            case 'failed': return 'bg-red-100 text-red-800 border-red-200';
+            default: return 'bg-gray-100 text-gray-800 border-gray-200';
+        }
+    };
+
+    if (loading) return <div className="container mx-auto p-8 text-center text-gray-500">Loading Admin Orders...</div>;
+    if (error) return <div className="container mx-auto p-8 text-center text-red-500">Error: {error}</div>;
 
     return (
-        <div className="container" style={{ padding: '2rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                <h1>Admin: All Orders</h1>
+        <div className="container mx-auto p-4 md:p-8">
+            <div className="flex justify-between items-center mb-8">
+                <h1 className="text-3xl font-bold text-gray-900">Admin: All Orders</h1>
                 <div>
                     {/* Placeholder for future filters */}
                 </div>
             </div>
 
-            <div className="orders-table-container">
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                    <thead>
-                        <tr style={{ background: '#f5f5f5', textAlign: 'left' }}>
-                            <th style={{ padding: '1rem' }}>ID</th>
-                            <th style={{ padding: '1rem' }}>Date</th>
-                            <th style={{ padding: '1rem' }}>Event</th>
-                            <th style={{ padding: '1rem' }}>Customer</th>
-                            <th style={{ padding: '1rem' }}>Items</th>
-                            <th style={{ padding: '1rem' }}>Total</th>
-                            <th style={{ padding: '1rem' }}>Status</th>
-                            <th style={{ padding: '1rem' }}>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {orders.map(order => (
-                            <tr key={order.order_id} style={{ borderBottom: '1px solid #eee' }}>
-                                <td style={{ padding: '1rem' }}>#{order.order_id}</td>
-                                <td style={{ padding: '1rem' }}>
-                                    {new Date(order.order_date).toLocaleDateString()}
-                                    <div style={{ fontSize: '0.8rem', color: '#888' }}>{new Date(order.order_date).toLocaleTimeString()}</div>
-                                </td>
-                                <td style={{ padding: '1rem' }}>
-                                    {order.event_name || 'N/A'}
-                                </td>
-                                <td style={{ padding: '1rem' }}>
-                                    <div style={{ fontWeight: 'bold' }}>{order.user_first_name} {order.user_last_name}</div>
-                                    <div style={{ fontSize: '0.9rem', color: '#666' }}>{order.user_email}</div>
-                                </td>
-                                <td style={{ padding: '1rem' }}>{order.item_count} items</td>
-                                <td style={{ padding: '1rem' }}>${order.total_amount.toFixed(2)}</td>
-                                <td style={{ padding: '1rem' }}>
-                                    <span className={`status-badge status-${order.payment_status?.toLowerCase()}`}>
-                                        {order.payment_status}
-                                    </span>
-                                </td>
-                                <td style={{ padding: '1rem' }}>
-                                    <Link to={`/orders/${order.order_id}`} className="secondary-button" style={{ fontSize: '0.8rem', padding: '0.25rem 0.5rem' }}>
-                                        View
-                                    </Link>
-                                </td>
+            <div className="bg-white rounded-lg shadow overflow-hidden">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500 font-semibold tracking-wider">
+                                <th className="p-4">ID</th>
+                                <th className="p-4">Date</th>
+                                <th className="p-4">Event</th>
+                                <th className="p-4">Customer</th>
+                                <th className="p-4">Items</th>
+                                <th className="p-4">Total</th>
+                                <th className="p-4">Status</th>
+                                <th className="p-4">Action</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-                {orders.length === 0 && <div style={{ padding: '2rem', textAlign: 'center', color: '#888' }}>No orders found.</div>}
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            {orders.map(order => (
+                                <tr key={order.order_id} className="hover:bg-gray-50 transition-colors">
+                                    <td className="p-4 font-mono text-sm text-gray-600">#{order.order_id}</td>
+                                    <td className="p-4">
+                                        <div className="font-medium text-gray-900">{new Date(order.order_date).toLocaleDateString()}</div>
+                                        <div className="text-xs text-gray-500">{new Date(order.order_date).toLocaleTimeString()}</div>
+                                    </td>
+                                    <td className="p-4 text-gray-700">
+                                        {order.event_name || <span className="text-gray-400 italic">N/A</span>}
+                                    </td>
+                                    <td className="p-4">
+                                        <div className="font-bold text-gray-900">{order.user_first_name} {order.user_last_name}</div>
+                                        <div className="text-sm text-gray-500">{order.user_email}</div>
+                                    </td>
+                                    <td className="p-4 text-sm text-gray-600">{order.item_count} items</td>
+                                    <td className="p-4 font-bold text-gray-900">${order.total_amount.toFixed(2)}</td>
+                                    <td className="p-4">
+                                        <span className={`inline-block px-2 py-1 rounded text-xs font-bold uppercase border ${getStatusColor(order.payment_status)}`}>
+                                            {order.payment_status}
+                                        </span>
+                                    </td>
+                                    <td className="p-4">
+                                        <Link
+                                            to={`/orders/${order.order_id}`}
+                                            className="inline-block px-3 py-1 bg-white border border-gray-300 rounded text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm"
+                                        >
+                                            View
+                                        </Link>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+                {orders.length === 0 && <div className="p-8 text-center text-gray-500">No orders found.</div>}
             </div>
         </div>
     );
