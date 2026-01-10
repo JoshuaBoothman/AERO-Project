@@ -47,6 +47,7 @@ function Layout({ orgSettings, loading, error }) {
                   <>
                     <Link to="/admin/orders" className="font-bold hover:text-accent">Orders</Link>
                     <Link to="/admin/merchandise" className="font-bold hover:text-accent">Merchandise</Link>
+                    <Link to="/admin/assets" className="font-bold hover:text-accent">Assets</Link>
                   </>
                 ) : (
                   /* User Menu */

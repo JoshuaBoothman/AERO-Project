@@ -16,6 +16,7 @@ import EventForm from './pages/admin/EventForm';
 import AdminMapTool from './pages/camping/AdminMapTool';
 import MerchandiseList from './pages/admin/MerchandiseList';
 import ProductEditor from './pages/admin/ProductEditor';
+import AssetDashboard from './pages/admin/AssetDashboard';
 import OrderDetail from './pages/OrderDetail';
 import CampingPage from './pages/camping/CampingPage';
 import StorePage from './pages/StorePage';
@@ -71,6 +72,7 @@ function App() {
                 <Route path="admin/orders" element={<AdminOrders />} />
                 <Route path="admin/merchandise" element={<MerchandiseList />} />
                 <Route path="admin/merchandise/:id" element={<ProductEditor />} />
+                <Route path="admin/assets" element={<AssetDashboard />} />
               </Route>
             </Routes>
           </BrowserRouter>

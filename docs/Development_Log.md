@@ -580,3 +580,16 @@
 
 
 
+## [2026-01-10] - Event Visibility & Asset Admin Fixes
+**Milestone:** Resolved Asset Management Event Dropdown & API Routing
+
+### Completed Items
+*   **Backend (API)**
+    *   **Fix:** `getEvents.js` - Changed `INNER JOIN` to `LEFT JOIN` on `venues`. This fixed the issue where events without venues were hidden from the public/dropdown list.
+    *   **Fix:** `getEvents.js` - Added missing `route: 'events'` configuration. This resolved the 404 error when accessing `/api/events`.
+    *   **Fix:** `getEvents.js` & `getEventDetail.js` - Added `is_public_viewable` to the SELECT columns. This resolved the issue where the "Publicly Viewable" checkbox state was not persisting or being respected.
+    *   **Enhancement:** Added better logging to `getEvents.js` to assist in debugging admin vs public context execution.
+*   **Verification**
+    *   Verified "Event Context" dropdown in Asset Types now populates correctly.
+    *   Verified "Publicly Viewable" checkbox state persists after saving.
+    *   Verified `/api/events` endpoint responds with 200 OK.
