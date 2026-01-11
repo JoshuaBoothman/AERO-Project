@@ -17,7 +17,10 @@ function AdminSubevents() {
     useEffect(() => {
         async function fetchEvents() {
             try {
-                const res = await fetch('/api/events');
+                const headers = {};
+                if (token) headers['Authorization'] = `Bearer ${token}`;
+
+                const res = await fetch('/api/events', { headers });
                 if (res.ok) {
                     const data = await res.json();
                     setEvents(data);
@@ -28,8 +31,8 @@ function AdminSubevents() {
                 console.error("Failed to load events", err);
             }
         }
-        fetchEvents();
-    }, []);
+        if (token) fetchEvents();
+    }, [token]);
 
     // Fetch Subevents when Event changes
     useEffect(() => {
@@ -38,7 +41,10 @@ function AdminSubevents() {
         async function fetchSubevents() {
             setLoading(true);
             try {
-                const res = await fetch(`/api/events/${selectedEventId}/subevents`);
+                const headers = {};
+                if (token) headers['Authorization'] = `Bearer ${token}`;
+
+                const res = await fetch(`/api/events/${selectedEventId}/subevents`, { headers });
                 if (res.ok) {
                     const data = await res.json();
                     setSubevents(data);
@@ -52,8 +58,8 @@ function AdminSubevents() {
                 setLoading(false);
             }
         }
-        fetchSubevents();
-    }, [selectedEventId, showNotification]);
+        if (token) fetchSubevents();
+    }, [selectedEventId, token, showNotification]);
 
     const handleAddClick = () => {
         setEditingSubevent(null);

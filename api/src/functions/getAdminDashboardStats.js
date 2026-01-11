@@ -7,14 +7,21 @@ app.http('getAdminDashboardStats', {
     authLevel: 'anonymous',
     route: 'dashboard/admin-stats',
     handler: async (request, context) => {
+        context.log('[Dashboard] Request received');
+
         // 1. Auth Check - Admin Only
         const user = validateToken(request);
         if (!user || user.role !== 'admin') {
+            context.log('[Dashboard] Auth failed');
             return { status: 403, body: JSON.stringify({ error: "Unauthorized. Admin access required." }) };
         }
+        context.log('[Dashboard] Auth success for user:', user.email);
 
         try {
+            context.log('[Dashboard] Connecting to DB pool...');
             const pool = await getPool();
+            context.log('[Dashboard] DB Connected');
+
             const queryEventId = request.query.get('eventId');
 
             // 2. Determine Event to Show
@@ -22,8 +29,10 @@ app.http('getAdminDashboardStats', {
             let eventDetails = null;
 
             // Fetch list of all events for dropdown
+            context.log('[Dashboard] Fetching events list...');
             const eventsListRes = await pool.request().query("SELECT event_id, name, start_date, end_date FROM events ORDER BY start_date DESC");
             const allEvents = eventsListRes.recordset;
+            context.log(`[Dashboard] Found ${allEvents.length} events`);
 
             if (!eventId) {
                 // Find next upcoming or current event
@@ -42,6 +51,8 @@ app.http('getAdminDashboardStats', {
                 }
             }
 
+            context.log('[Dashboard] Selected Event ID:', eventId);
+
             // Get Details for Selected Event
             if (eventId) {
                 // Ensure eventId is int
@@ -58,6 +69,7 @@ app.http('getAdminDashboardStats', {
             }
 
             if (!eventDetails) {
+                context.log('[Dashboard] No event details found');
                 return { status: 404, body: JSON.stringify({ error: "No events found" }) };
             }
 
@@ -72,6 +84,7 @@ app.http('getAdminDashboardStats', {
             };
 
             // 3. Attendee Stats (Breakdown by Ticket Type)
+            context.log('[Dashboard] Fetching attendees...');
             const attendeeRes = await pool.request()
                 .input('eid', sql.Int, eventId)
                 .query(`
@@ -85,6 +98,7 @@ app.http('getAdminDashboardStats', {
 
             // 4. Camping Stats (Daily Breakdown per Campground)
             // Fetch Campgrounds
+            context.log('[Dashboard] Fetching camping...');
             const campRes = await pool.request()
                 .input('eid', sql.Int, eventId)
                 .query(`
@@ -161,6 +175,7 @@ app.http('getAdminDashboardStats', {
 
 
             // 5. Subevents Stats
+            context.log('[Dashboard] Fetching subevents...');
             const subRes = await pool.request()
                 .input('eid', sql.Int, eventId)
                 .query(`
@@ -178,6 +193,7 @@ app.http('getAdminDashboardStats', {
 
             // 6. Merch & Assets
             // Merch Revenue & Count
+            context.log('[Dashboard] Fetching merch...');
             const merchRes = await pool.request()
                 .input('eid', sql.Int, eventId)
                 .query(`
@@ -197,6 +213,7 @@ app.http('getAdminDashboardStats', {
             }
 
             // Asset Hires Count
+            context.log('[Dashboard] Fetching assets...');
             const assetRes = await pool.request()
                 .input('eid', sql.Int, eventId)
                 .query(`
@@ -212,12 +229,14 @@ app.http('getAdminDashboardStats', {
                 };
             }
 
+            context.log('[Dashboard] Success, returning data.');
             return {
                 status: 200,
                 jsonBody: stats
             };
 
         } catch (error) {
+            context.log.error(`[Dashboard] Error: ${error.message}`);
             context.error(`Error fetching admin dashboard stats: ${error.message}`);
             return { status: 500, body: JSON.stringify({ error: "Internal Server Error" }) };
         }
