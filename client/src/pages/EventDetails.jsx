@@ -240,29 +240,25 @@ function EventDetails() {
                 </div>
             )}
 
-            <div className="event-header">
-                <Link to="/events" className="back-link">← Back to Events</Link>
-                <span className={`status-badge status-${event.status?.toLowerCase()}`}>
-                    {event.status}
-                </span>
-            </div>
+            <div className="event-hero" style={{ textAlign: 'center', maxWidth: '800px', margin: '0 auto' }}>
+                <h1 style={{ fontSize: '2.5rem', margin: '1rem 0' }}>{event.name}</h1>
+                <p style={{ whiteSpace: 'pre-wrap', marginBottom: '2rem' }}>{event.description}</p>
 
-            <div className="event-hero">
-                <h1>{event.name}</h1>
-                <p>{event.description}</p>
-                <div style={{ display: 'flex', gap: '10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '20px' }}>
                     <button
                         className="primary-button"
-                        onClick={() => setShowTicketModal(true)}
+                        style={{ padding: '0.8rem 2rem', fontSize: '1.1rem' }}
+                        onClick={() => {
+                            if (!user) {
+                                navigate('/login', { state: { from: location } });
+                            } else {
+                                setShowTicketModal(true);
+                            }
+                        }}
                     >
                         Get Tickets
                     </button>
-                    <button
-                        className="secondary-button"
-                        onClick={() => setShowCampsiteModal(true)}
-                    >
-                        ⛺ Book Campsite
-                    </button>
+                    {/* Campsite Booking Button Removed as per request */}
                 </div>
             </div>
 

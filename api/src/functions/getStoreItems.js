@@ -17,12 +17,23 @@ app.http('getStoreItems', {
 
             // 1. Resolve Event ID
             let eventId = eventIdParam;
+            let eventName = '';
+
+            // 1. Resolve Event ID & Name
             if (slug && !eventId) {
                 const eRes = await pool.request()
                     .input('slug', sql.NVarChar, slug)
-                    .query("SELECT event_id FROM events WHERE slug = @slug");
+                    .query("SELECT event_id, name FROM events WHERE slug = @slug");
                 if (eRes.recordset.length === 0) return { status: 404, body: JSON.stringify({ error: "Event not found" }) };
                 eventId = eRes.recordset[0].event_id;
+                eventName = eRes.recordset[0].name;
+            } else if (eventId) {
+                // Convert string to int if needed, though SQL driver handles it usually.
+                // Also need to fetch name if we only got ID
+                const eRes = await pool.request()
+                    .input('eid', sql.Int, eventId)
+                    .query("SELECT name FROM events WHERE event_id = @eid");
+                if (eRes.recordset.length > 0) eventName = eRes.recordset[0].name;
             }
 
             // 2. Fetch Merch (Products linked via Event Skus)
@@ -105,6 +116,7 @@ app.http('getStoreItems', {
                 status: 200,
                 body: JSON.stringify({
                     eventId,
+                    eventName,
                     merchandise, // Grouped
                     assets,
                     subevents

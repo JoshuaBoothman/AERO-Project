@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import CampingPage from './camping/CampingPage';
 
 function StorePage({ orgSettings }) {
     const { slug } = useParams();
@@ -88,7 +89,7 @@ function StorePage({ orgSettings }) {
 
     return (
         <div className="max-w-6xl mx-auto p-4 md:p-8">
-            <h1 className="text-3xl font-bold mb-8 text-primary">Event Store: {slug}</h1>
+            <h1 className="text-3xl font-bold mb-8 text-primary">Event Store: {data.eventName || slug}</h1>
 
             {/* Tabs */}
             <div className="flex border-b border-gray-200 mb-8 overflow-x-auto">
@@ -109,6 +110,12 @@ function StorePage({ orgSettings }) {
                     onClick={() => setActiveTab('program')}
                 >
                     Program / Subevents
+                </button>
+                <button
+                    className={`px-6 py-3 font-semibold transition-colors whitespace-nowrap ${activeTab === 'camping' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-primary'}`}
+                    onClick={() => setActiveTab('camping')}
+                >
+                    Camping
                 </button>
             </div>
 
@@ -206,6 +213,13 @@ function StorePage({ orgSettings }) {
                                 </div>
                             </div>
                         ))}
+                    </div>
+                )}
+
+                {/* CAMPING */}
+                {activeTab === 'camping' && (
+                    <div className="mt-4">
+                        <CampingPage embedded={true} />
                     </div>
                 )}
 

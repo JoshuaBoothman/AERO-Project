@@ -654,3 +654,19 @@
 
 ### Next Steps
 *   **Subevents:** Implement CRUD for Subevents (Dinners, etc.) in the Event Form.
+
+## [2026-01-12] - Event Portal UX Refinement
+**Milestone:** Home Page Redirection & Event Details Styling
+
+### Completed Items
+* **Frontend (Client)**
+    *   **Home Page:** Implemented smart redirection. Visiting `/` now auto-redirects to the Next upcoming event (or Current event if active).
+    *   **Event Details UI:**
+        *   **Refactor:** Removed legacy "Back" button and "Status" badge for a cleaner look.
+        *   **Typography:** Centered and enlarged the Event Title.
+        *   **Layout:** Centered key content width for better readability.
+        *   **Buttons:** Removed "Book Campsite" button.
+        *   **CTA:** Styled "Get Tickets" button to be more prominent and centered.
+    *   **Security:** "Get Tickets" button now strictly redirects unauthenticated users to `/login`.
+    *   **Fix:** Resolved CSS `white-space` issue where line breaks in Event Descriptions were being ignored. Applied fix to both List and Details views.
+

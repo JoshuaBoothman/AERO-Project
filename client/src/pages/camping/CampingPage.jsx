@@ -5,7 +5,7 @@ import { useCart } from '../../context/CartContext';
 
 import AdminMapTool from './AdminMapTool';
 
-function CampingPage() {
+function CampingPage({ embedded = false }) {
     const { slug } = useParams();
     const navigate = useNavigate();
     const { user, token } = useAuth();
@@ -34,14 +34,15 @@ function CampingPage() {
     const [cartMessage, setCartMessage] = useState('');
 
     // --- EFFECT: Load Data ---
+    // --- EFFECT: Load Data ---
     useEffect(() => {
         setLoading(true);
-        if (isIndex) {
+        if (isIndex && !embedded) {
             fetchEventsIndex();
         } else {
             fetchEventDetails();
         }
-    }, [slug, isIndex]); // Added isIndex dependency which was missing in original code, though essentially static per route.
+    }, [slug, isIndex, embedded]);
 
     // --- EFFECT: Load Availability (Detail Mode) ---
     useEffect(() => {
@@ -133,7 +134,7 @@ function CampingPage() {
     };
 
     // --- RENDER: Index View ---
-    if (isIndex) {
+    if (isIndex && !embedded) {
         if (loading) return <div style={{ padding: '20px' }}>Loading events...</div>;
         return (
             <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
@@ -176,11 +177,13 @@ function CampingPage() {
     const activeCampground = campgrounds.find(cg => cg.campground_id === activeCampgroundId);
 
     return (
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
-            <div style={{ marginBottom: '20px' }}>
-                <Link to="/camping" style={{ color: '#666', textDecoration: 'none' }}>← Back to Events</Link>
-                <h1>{eventName}: Camping</h1>
-            </div>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: embedded ? '0' : '20px' }}>
+            {!embedded && (
+                <div style={{ marginBottom: '20px' }}>
+                    <Link to="/camping" style={{ color: '#666', textDecoration: 'none' }}>← Back to Events</Link>
+                    <h1>{eventName}: Camping</h1>
+                </div>
+            )}
 
             {/* Date Selector */}
             <div style={{ marginBottom: '20px', padding: '15px', background: '#f5f5f5', borderRadius: '8px', display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap' }}>

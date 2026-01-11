@@ -156,7 +156,7 @@ function EventCard({ event, type, formatDate, isPast, isAdmin }) {
           {formatDate(event.start_date)} - {formatDate(event.end_date)}
         </p>
 
-        <p style={{ margin: '0 0 1rem 0' }}>{event.description}</p>
+        <p style={{ margin: '0 0 1rem 0', whiteSpace: 'pre-wrap' }}>{event.description}</p>
 
         <div style={{ marginTop: 'auto' }}>
           <Link to={isAdmin ? `/events/${event.slug}/edit` : `/events/${event.slug}`}>

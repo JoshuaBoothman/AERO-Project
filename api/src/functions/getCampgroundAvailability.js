@@ -89,8 +89,8 @@ app.http('getCampgroundAvailability', {
             };
 
         } catch (error) {
-            context.logOrError ? context.logOrError(error) : console.error(error); // Safe logging
-            return { status: 500, body: JSON.stringify({ error: "Internal Server Error" }) };
+            context.logOrError ? context.logOrError(error) : console.error(error);
+            return { status: 500, body: JSON.stringify({ error: error.message, stack: error.stack }) };
         }
     }
 });
