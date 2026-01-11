@@ -27,18 +27,31 @@ app.http('authRegister', {
             const salt = await bcrypt.genSalt(10);
             const passwordHash = await bcrypt.hash(password, salt);
 
-            // 3. Insert User
+            // 3. Generate Verification Token
+            const crypto = require('crypto');
+            const { sendVerificationEmail } = require('../lib/emailService');
+
+            const verificationToken = crypto.randomBytes(32).toString('hex');
+            const tokenExpires = new Date();
+            tokenExpires.setHours(tokenExpires.getHours() + 24); // Expires in 24 hours
+
+            // 4. Insert User
             const insertQuery = `
-                INSERT INTO users (email, password_hash, first_name, last_name, is_email_verified)
-                VALUES (@email, @hash, @first, @last, 0)
+                INSERT INTO users (email, password_hash, first_name, last_name, is_email_verified, verification_token, verification_token_expires)
+                VALUES (@email, @hash, @first, @last, 0, @token, @expires)
             `;
-            
+
             await query(insertQuery, [
                 { name: 'email', type: sql.NVarChar, value: email },
                 { name: 'hash', type: sql.NVarChar, value: passwordHash },
                 { name: 'first', type: sql.NVarChar, value: firstName },
-                { name: 'last', type: sql.NVarChar, value: lastName }
+                { name: 'last', type: sql.NVarChar, value: lastName },
+                { name: 'token', type: sql.NVarChar, value: verificationToken },
+                { name: 'expires', type: sql.DateTime, value: tokenExpires }
             ]);
+
+            // 5. Send Verification Email
+            await sendVerificationEmail(email, verificationToken, firstName);
 
             return { status: 201, body: JSON.stringify({ message: "User created successfully" }) };
 

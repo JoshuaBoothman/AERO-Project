@@ -42,6 +42,13 @@ app.http('authLogin', {
                 return { status: 401, body: "Invalid credentials" };
             }
 
+            // 3.1 Check Email Verification
+            // Note: Admins might not have this/could be skipped, but good to enforce generally or just for regular users.
+            // Since user object structure is slightly different for admins/users in DB, check the field existence or role.
+            if (role === 'user' && user.is_email_verified === false) {
+                return { status: 403, body: "Please verify your email address before logging in." };
+            }
+
             // 4. Generate Token
             // Reverted to Env Var now that header issue is resolved
             const SECRET_KEY = process.env.JWT_SECRET || "dev-secret-key-change-me";

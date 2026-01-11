@@ -670,3 +670,35 @@
     *   **Security:** "Get Tickets" button now strictly redirects unauthenticated users to `/login`.
     *   **Fix:** Resolved CSS `white-space` issue where line breaks in Event Descriptions were being ignored. Applied fix to both List and Details views.
 
+
+## [2026-01-12] - Email Verification
+**Milestone:** Secure User Registration with Resend Integration
+
+### Completed Items
+* **Technology Stack**
+    *   **Service:** Integrated **Resend** for transactional emails (Free Tier: 100/day).
+    *   **Library:** Installed `resend` NPM package in API.
+* **Backend (API)**
+    *   **Database:** Added `verification_token` and `verification_token_expires` to `users` table.
+    *   **Registration:** Updated `authRegister` to:
+        *   Generate a secure hex token.
+        *   Create user with `is_email_verified = 0`.
+        *   Send an HTML email containing a verification link.
+    *   **Creation:** Created `api/src/lib/emailService.js` abstraction.
+    *   **Verification:** Created `authVerifyEmail` endpoint to validate token and activate user.
+    *   **Login:** Updated `authLogin` to block unverified users (`403 Forbidden`).
+* **Frontend (Client)**
+    *   **Registration:** Updated `Register.jsx` to show a "Check your email" success state instead of auto-redirecting.
+    *   **Verification:** Created `VerifyEmail.jsx` to handle the `?token=XYZ` link from the email.
+* **Verification**
+    *   Verified end-to-end flow: Register -> Receive Email -> Click Link -> Verification Success -> Login.
+
+### Going Live Instructions (Resend)
+When ready to deploy to production with a real domain:
+1.  **Add Domain:** Go to [Resend Dashboard](https://resend.com/domains) > Add Domain.
+2.  **DNS:** Add the provided DKIM/SPF records to your DNS provider (Cloudflare, GoDaddy, etc.).
+3.  **Verify:** Click "Verify" in Resend (can take up to 48h, usually instant).
+4.  **Update Code:**
+    *   Open `api/src/lib/emailService.js`
+    *   Update the `from` address: `from: 'Aeromodelling <noreply@yourdomain.com>'`
+

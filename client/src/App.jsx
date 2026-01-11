@@ -8,6 +8,7 @@ import './App.css';
 import { AuthProvider } from './context/AuthContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import VerifyEmail from './pages/VerifyEmail';
 import EventPurchase from './pages/EventPurchase';
 
 import MyOrders from './pages/MyOrders';
@@ -88,6 +89,7 @@ function App() {
                 <Route path="events/:slug/edit" element={<EventForm />} />
                 <Route path="login" element={<Login />} />
                 <Route path="register" element={<Register />} />
+                <Route path="verify-email" element={<VerifyEmail />} />
                 <Route path="events/:slug/purchase" element={<EventPurchase />} />
                 <Route path="events/:slug/shop" element={<StorePage />} /> {/* New Store Page */}
                 <Route path="shop" element={<ShopIndex />} />

@@ -11,6 +11,8 @@ function Register() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  const [success, setSuccess] = useState(false);
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -31,12 +33,24 @@ function Register() {
         throw new Error(text || 'Registration failed');
       }
 
-      // On success, redirect to login
-      navigate('/login');
+      // On success, show message
+      setSuccess(true);
     } catch (err) {
       setError(err.message);
     }
   };
+
+  if (success) {
+    return (
+      <div className="auth-container" style={{ maxWidth: '400px', margin: '2rem auto', padding: '2rem', textAlign: 'center' }}>
+        <h1>Registration Successful!</h1>
+        <p>Please check your email ({formData.email}) to verify your account.</p>
+        <p style={{ marginTop: '1rem' }}>
+          <Link to="/login">Go to Login</Link>
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="auth-container" style={{ maxWidth: '400px', margin: '2rem auto', padding: '2rem' }}>
