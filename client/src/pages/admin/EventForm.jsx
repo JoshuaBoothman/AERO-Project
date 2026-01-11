@@ -35,7 +35,18 @@ function EventForm() {
         city: '',
         state: 'QLD',
         postcode: '',
-        map_url: ''
+    });
+
+    // Ticket Types State
+    const [ticketTypes, setTicketTypes] = useState([]);
+    const [showTicketModal, setShowTicketModal] = useState(false);
+    const [editingTicket, setEditingTicket] = useState(null);
+    const [ticketForm, setTicketForm] = useState({
+        name: '',
+        price: '',
+        system_role: 'spectator', // spectator, pilot, staff, etc.
+        is_pilot: false,
+        is_pit_crew: false
     });
 
     useEffect(() => {
@@ -80,6 +91,13 @@ function EventForm() {
                         is_purchasing_enabled: eventData.is_purchasing_enabled,
                         is_public_viewable: eventData.is_public_viewable
                     });
+
+                    // Fetch Ticket Types
+                    const ticketRes = await fetch(`/api/events/${eventData.event_id}/ticket-types`, { headers });
+                    if (ticketRes.ok) {
+                        const tickets = await ticketRes.json();
+                        setTicketTypes(tickets);
+                    }
                 }
             } catch (err) {
                 setError(err.message);
@@ -198,6 +216,95 @@ function EventForm() {
         } catch (err) {
             alert(err.message);
         }
+    };
+
+    // Ticket Handlers
+    const handleTicketChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setTicketForm(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value
+        }));
+    };
+
+    const handleSaveTicket = async () => {
+        if (!ticketForm.name || ticketForm.price === '') {
+            alert("Name and Price are required");
+            return;
+        }
+
+        try {
+            const url = editingTicket
+                ? `/api/ticket-types/${editingTicket.ticket_type_id}`
+                : `/api/events/${formData.event_id}/ticket-types`;
+
+            const method = editingTicket ? 'PUT' : 'POST';
+
+            const res = await fetch(url, {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    'X-Auth-Token': token
+                },
+                body: JSON.stringify(ticketForm)
+            });
+
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || 'Failed to save ticket type');
+            }
+
+            const savedTicket = await res.json();
+
+            if (editingTicket) {
+                setTicketTypes(prev => prev.map(t => t.ticket_type_id === savedTicket.ticket_type_id ? savedTicket : t));
+            } else {
+                setTicketTypes(prev => [...prev, savedTicket]);
+            }
+
+            setShowTicketModal(false);
+            setEditingTicket(null);
+            setTicketForm({ name: '', price: '', system_role: 'spectator', is_pilot: false, is_pit_crew: false });
+
+        } catch (err) {
+            alert(err.message);
+        }
+    };
+
+    const handleDeleteTicket = async (id) => {
+        if (!window.confirm("Delete this ticket type?")) return;
+        try {
+            const res = await fetch(`/api/ticket-types/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}`, 'X-Auth-Token': token }
+            });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.error || 'Delete failed');
+            }
+            setTicketTypes(prev => prev.filter(t => t.ticket_type_id !== id));
+        } catch (err) {
+            alert(err.message);
+        }
+    };
+
+    const openCreateTicket = () => {
+        setEditingTicket(null);
+        setTicketForm({ name: '', price: '', system_role: 'spectator', is_pilot: false, is_pit_crew: false });
+        setShowTicketModal(true);
+    };
+
+    const openEditTicket = (ticket) => {
+        setEditingTicket(ticket);
+        setTicketForm({
+            name: ticket.name,
+            price: ticket.price,
+            system_role: ticket.system_role,
+            is_pilot: ticket.is_pilot,
+            is_pit_crew: ticket.is_pit_crew
+        });
+        setShowTicketModal(true);
     };
 
     if (loading) return <div className="container">Loading...</div>;
@@ -370,6 +477,49 @@ function EventForm() {
                     </div>
                 </div>
 
+                {/* 6. Ticket Types (Only in Edit Mode) */}
+                {isEditMode && (
+                    <div style={{ backgroundColor: '#fff', padding: '1.5rem', borderRadius: '8px', marginBottom: '2rem', border: '1px solid #e5e7eb' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                            <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Ticket Types</h3>
+                            <button type="button" className="primary-button" style={{ fontSize: '0.85rem' }} onClick={openCreateTicket}>+ Add Ticket</button>
+                        </div>
+
+                        {ticketTypes.length === 0 ? (
+                            <p style={{ color: '#666', fontStyle: 'italic' }}>No ticket types configured.</p>
+                        ) : (
+                            <table className="table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                <thead>
+                                    <tr style={{ background: '#f9fafb', fontSize: '0.85rem', textAlign: 'left' }}>
+                                        <th style={{ padding: '0.5rem' }}>Name</th>
+                                        <th style={{ padding: '0.5rem' }}>Price</th>
+                                        <th style={{ padding: '0.5rem' }}>Role</th>
+                                        <th style={{ padding: '0.5rem' }}>Flags</th>
+                                        <th style={{ padding: '0.5rem', textAlign: 'right' }}>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {ticketTypes.map(t => (
+                                        <tr key={t.ticket_type_id} style={{ borderBottom: '1px solid #eee' }}>
+                                            <td style={{ padding: '0.5rem' }}>{t.name}</td>
+                                            <td style={{ padding: '0.5rem' }}>${Number(t.price).toFixed(2)}</td>
+                                            <td style={{ padding: '0.5rem' }}>{t.system_role}</td>
+                                            <td style={{ padding: '0.5rem' }}>
+                                                {t.is_pilot && <span style={{ background: '#e0f2fe', color: '#0369a1', padding: '2px 6px', borderRadius: '4px', fontSize: '0.75rem', marginRight: '4px' }}>Pilot</span>}
+                                                {t.is_pit_crew && <span style={{ background: '#f0fdf4', color: '#15803d', padding: '2px 6px', borderRadius: '4px', fontSize: '0.75rem' }}>Crew</span>}
+                                            </td>
+                                            <td style={{ padding: '0.5rem', textAlign: 'right' }}>
+                                                <button type="button" onClick={() => openEditTicket(t)} style={{ marginRight: '0.5rem', background: 'none', border: 'none', color: '#2563eb', cursor: 'pointer' }}>Edit</button>
+                                                <button type="button" onClick={() => handleDeleteTicket(t.ticket_type_id)} style={{ background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer' }}>Delete</button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
+                    </div>
+                )}
+
                 <div className="form-actions" style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', alignItems: 'center' }}>
                     {isEditMode && (
                         <button
@@ -482,6 +632,73 @@ function EventForm() {
                             <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
                                 <button className="secondary-button" onClick={() => setShowVenueModal(false)}>Cancel</button>
                                 <button className="primary-button" onClick={handleCreateVenue}>Create Venue</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* TICKET TYPE MODAL */}
+            {showTicketModal && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                            <h3 style={{ margin: 0 }}>{editingTicket ? 'Edit Ticket Type' : 'New Ticket Type'}</h3>
+                            <button onClick={() => setShowTicketModal(false)} style={{ background: 'none', border: 'none', fontSize: '1.5rem', padding: 0, color: '#666' }}>×</button>
+                        </div>
+
+                        <div style={{ display: 'grid', gap: '1rem' }}>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.3rem' }}>Name *</label>
+                                <input
+                                    className="form-control" placeholder="e.g. General Admission"
+                                    name="name" value={ticketForm.name} onChange={handleTicketChange}
+                                />
+                            </div>
+
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.3rem' }}>Price ($) *</label>
+                                <input
+                                    type="number" step="0.01" className="form-control" placeholder="0.00"
+                                    name="price" value={ticketForm.price} onChange={handleTicketChange}
+                                />
+                            </div>
+
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.3rem' }}>System Role</label>
+                                <select
+                                    className="form-control"
+                                    name="system_role" value={ticketForm.system_role} onChange={handleTicketChange}
+                                >
+                                    <option value="spectator">Spectator</option>
+                                    <option value="pilot">Pilot</option>
+                                    <option value="staff">Staff</option>
+                                    <option value="volunteer">Volunteer</option>
+                                </select>
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '1rem' }}>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                    <input
+                                        type="checkbox"
+                                        name="is_pilot" checked={ticketForm.is_pilot} onChange={handleTicketChange}
+                                    />
+                                    Is Pilot Ticket
+                                </label>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                    <input
+                                        type="checkbox"
+                                        name="is_pit_crew" checked={ticketForm.is_pit_crew} onChange={handleTicketChange}
+                                    />
+                                    Is Pit Crew Ticket
+                                </label>
+                            </div>
+
+                            <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                                <button className="secondary-button" onClick={() => setShowTicketModal(false)}>Cancel</button>
+                                <button className="primary-button" onClick={handleSaveTicket}>
+                                    {editingTicket ? 'Update Ticket' : 'Create Ticket'}
+                                </button>
                             </div>
                         </div>
                     </div>

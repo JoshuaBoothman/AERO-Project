@@ -634,3 +634,23 @@
         *   **Logic:** Implemented seamless state updates to reflect name changes instantly on the tab bar.
 *   **Verification**
     *   Verified renaming flow (Open Modal -> Edit -> Save -> Update) persists correctly via API.
+
+## [2026-01-11] - Ticket Management & Dev Ops
+**Milestone:** Event Ticket CRUD & Local Environment Fixes
+
+### Completed Items
+*   **Backend (API)**
+    *   **Feature:** Created `ticketTypes.js` (CRUD endpoints for `event_ticket_types`).
+    *   **Logic:** Implemented `GET`, `POST`, `PUT`, `DELETE` operations secured by Admin Role check (via context).
+*   **Frontend (Client)**
+    *   **Event Form:** Added a "Ticket Types" management section to `EventForm.jsx`.
+        *   **UI:** Listed tickets in a table with badges for "Pilot" and "Crew" roles.
+        *   **Interaction:** Created a modal for Adding/Editing ticket details (Name, Price, System Role).
+        *   **Logic:** Implemented API integration for seamless CRUD operations without page reloads.
+*   **Dev Ops (Localhost)**
+    *   **Fix:** Resolved "White Screen / 404" errors on `localhost:5173`.
+    *   **Root Cause:** A stale Service Worker from a previous project version was intercepting requests.
+    *   **Resolution:** Unregistered the "zombie" Service Worker in the browser.
+
+### Next Steps
+*   **Subevents:** Implement CRUD for Subevents (Dinners, etc.) in the Event Form.
