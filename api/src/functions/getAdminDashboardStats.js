@@ -238,7 +238,7 @@ app.http('getAdminDashboardStats', {
         } catch (error) {
             context.log.error(`[Dashboard] Error: ${error.message}`);
             context.error(`Error fetching admin dashboard stats: ${error.message}`);
-            return { status: 500, body: JSON.stringify({ error: "Internal Server Error" }) };
+            return { status: 500, body: JSON.stringify({ error: `Dashboard Error: ${error.message}` }) };
         }
     }
 });
