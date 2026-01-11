@@ -23,7 +23,7 @@ app.http('debugDashboard', {
             }
 
             if (!user) {
-                return { status: 200, jsonBody: { error: "Auth failed", logs } };
+                log("Auth failed or missing (Expected if visiting URL directly). Proceeding with SQL tests...");
             }
 
             // 2. DB Connection
