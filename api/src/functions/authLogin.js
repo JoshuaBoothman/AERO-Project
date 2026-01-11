@@ -43,8 +43,8 @@ app.http('authLogin', {
             }
 
             // 4. Generate Token
-            // NUCLEAR FIX: Hardcoded secret to bypass Env Var issues
-            const SECRET_KEY = "super-secret-azure-fix-2025";
+            // Reverted to Env Var now that header issue is resolved
+            const SECRET_KEY = process.env.JWT_SECRET || "dev-secret-key-change-me";
             const token = jwt.sign(
                 { userId: user.user_id, email: email, role },
                 SECRET_KEY,

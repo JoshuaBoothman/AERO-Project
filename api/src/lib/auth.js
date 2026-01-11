@@ -1,8 +1,8 @@
 const jwt = require('jsonwebtoken');
 
 function validateToken(request) {
-    // NUCLEAR FIX: Hardcoded secret to bypass Env Var issues
-    const SECRET_KEY = "super-secret-azure-fix-2025";
+    // Reverted to Env Var now that we use X-Auth-Token to bypass Azure header issues
+    const SECRET_KEY = process.env.JWT_SECRET || "dev-secret-key-change-me";
 
     // Azure overwrites "Authorization" with its own EasyAuth token.
     // We check "x-auth-token" first to bypass this.
