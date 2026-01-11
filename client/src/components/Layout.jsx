@@ -34,7 +34,11 @@ function Layout({ orgSettings, loading, error }) {
 
           {/* Right Side: Navigation */}
           <nav className="flex gap-6 items-center">
-            <Link to="/" className="hover:text-accent transition-colors">Home</Link>
+            {user && user.role === 'admin' ? (
+              <Link to="/admin" className="hover:text-accent transition-colors">Home</Link>
+            ) : (
+              <Link to="/" className="hover:text-accent transition-colors">Home</Link>
+            )}
             <Link to="/events" className="hover:text-accent transition-colors">Events</Link>
             <Link to="/camping" className="hover:text-accent transition-colors">Camping</Link>
 
@@ -46,6 +50,7 @@ function Layout({ orgSettings, loading, error }) {
                 {user.role === 'admin' ? (
                   /* Admin Menu */
                   <>
+                    {/* <Link to="/admin" className={...}>Dashboard</Link> Removed as per request, handled by Home */}
                     <Link to="/admin/orders" className={`font-bold ${location.pathname.startsWith('/admin/orders') ? 'text-accent' : 'hover:text-accent'}`}>Orders</Link>
                     <Link to="/admin/merchandise" className={`font-bold ${location.pathname.startsWith('/admin/merchandise') ? 'text-accent' : 'hover:text-accent'}`}>Merchandise</Link>
                     <Link to="/admin/assets" className={`font-bold ${location.pathname.startsWith('/admin/assets') ? 'text-accent' : 'hover:text-accent'}`}>Assets</Link>

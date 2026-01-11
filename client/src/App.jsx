@@ -18,6 +18,7 @@ import MerchandiseList from './pages/admin/MerchandiseList';
 import ProductEditor from './pages/admin/ProductEditor';
 import AssetDashboard from './pages/admin/AssetDashboard';
 import AdminSubevents from './pages/admin/AdminSubevents';
+import AdminDashboard from './pages/admin/AdminDashboard';
 
 import OrderDetail from './pages/OrderDetail';
 import CampingPage from './pages/camping/CampingPage';
@@ -70,6 +71,7 @@ function App() {
 
                 <Route path="my-orders" element={<MyOrders />} />
                 <Route path="orders/:orderId" element={<OrderDetail />} />
+                <Route path="admin" element={<AdminDashboard />} />
                 <Route path="admin/map" element={<AdminMapTool />} />
                 <Route path="admin/orders" element={<AdminOrders />} />
                 <Route path="admin/merchandise" element={<MerchandiseList />} />
