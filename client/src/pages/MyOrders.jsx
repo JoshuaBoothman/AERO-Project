@@ -14,7 +14,8 @@ function MyOrders() {
                 const token = localStorage.getItem('token');
                 const response = await fetch('/api/orders', {
                     headers: {
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${token}`,
+                        'X-Auth-Token': token
                     }
                 });
 

@@ -77,7 +77,10 @@ function AdminMapTool() {
     const fetchEvents = async () => {
         try {
             const headers = {};
-            if (token) headers['Authorization'] = `Bearer ${token}`;
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+                headers['X-Auth-Token'] = token;
+            }
 
             const res = await fetch('/api/events', { headers });
             if (res.ok) {
@@ -150,7 +153,10 @@ function AdminMapTool() {
         try {
             const res = await fetch(`/api/campgrounds/${id}`, {
                 method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'X-Auth-Token': token
+                }
             });
             if (res.ok) {
                 setCampgrounds(prev => prev.filter(c => c.campground_id !== id));
@@ -186,7 +192,11 @@ function AdminMapTool() {
         try {
             const res = await fetch(`/api/campgrounds/${renameData.id}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    'X-Auth-Token': token
+                },
                 body: JSON.stringify({ name: renameData.name })
             });
 
@@ -235,7 +245,11 @@ function AdminMapTool() {
             // 2. Create Campground
             const res = await fetch('/api/campgrounds', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    'X-Auth-Token': token
+                },
                 body: JSON.stringify({
                     event_id: selectedEventId,
                     name: newCampName,
@@ -269,7 +283,11 @@ function AdminMapTool() {
         try {
             const res = await fetch(`/api/campgrounds/${selectedCampgroundId}/sites`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    'X-Auth-Token': token
+                },
                 body: JSON.stringify({ count: parseInt(qty), prefix, price: parseFloat(document.getElementById('addPrice').value) || 0 })
             });
             if (res.ok) {
@@ -287,7 +305,11 @@ function AdminMapTool() {
         try {
             await fetch(`/api/campsites/${id}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    'X-Auth-Token': token
+                },
                 body: JSON.stringify({ site_number: newName })
             });
         } catch (e) { console.error(e); }
@@ -301,7 +323,11 @@ function AdminMapTool() {
         try {
             await fetch(`/api/campsites/${id}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    'X-Auth-Token': token
+                },
                 body: JSON.stringify({ price_per_night: parseFloat(newPrice) })
             });
         } catch (e) { console.error(e); }
@@ -314,7 +340,10 @@ function AdminMapTool() {
         try {
             const res = await fetch(`/api/campsites/${id}`, {
                 method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'X-Auth-Token': token
+                }
             });
             if (res.ok) {
                 setSites(prev => prev.filter(s => s.campsite_id !== id));
@@ -338,7 +367,11 @@ function AdminMapTool() {
         try {
             const res = await fetch(`/api/campsites/${siteId}/coords`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    'X-Auth-Token': token
+                },
                 body: JSON.stringify({ map_coordinates: coords })
             });
             if (res.ok) {

@@ -56,7 +56,8 @@ function AdminModal({ admin, onClose, onSave }) {
                 method,
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`,
+                    'X-Auth-Token': token
                 },
                 body: JSON.stringify(body)
             });

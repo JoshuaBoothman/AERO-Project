@@ -58,7 +58,7 @@ function ProductEditor() {
         try {
             const res = await fetch(`/api/products/${id}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'X-Auth-Token': token },
                 body: JSON.stringify(formData)
             });
             if (res.ok) notify('Saved Details successfully!', 'success');
@@ -71,7 +71,7 @@ function ProductEditor() {
         try {
             const res = await fetch(`/api/products/${id}/options`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'X-Auth-Token': token },
                 body: JSON.stringify({ categoryName, value })
             });
             if (res.ok) {
@@ -115,7 +115,7 @@ function ProductEditor() {
             try {
                 const res = await fetch(`/api/options/${optionId}`, {
                     method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: { 'Authorization': `Bearer ${token}`, 'X-Auth-Token': token }
                 });
                 if (res.ok) {
                     const data = await res.json();
@@ -142,7 +142,7 @@ function ProductEditor() {
             try {
                 const res = await fetch(`/api/variants/${variantId}`, {
                     method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: { 'Authorization': `Bearer ${token}`, 'X-Auth-Token': token }
                 });
 
                 if (res.ok) {
@@ -165,7 +165,7 @@ function ProductEditor() {
             try {
                 const res = await fetch(`/api/products/${id}/generate-skus`, {
                     method: 'POST',
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: { 'Authorization': `Bearer ${token}`, 'X-Auth-Token': token }
                 });
                 if (res.ok) {
                     const data = await res.json();
@@ -186,7 +186,11 @@ function ProductEditor() {
         uploadData.append('file', file);
 
         try {
-            const res = await fetch('/api/upload', { method: 'POST', body: uploadData });
+            const res = await fetch('/api/upload', {
+                method: 'POST',
+                body: uploadData,
+                headers: { 'Authorization': `Bearer ${token}`, 'X-Auth-Token': token }
+            });
             if (res.ok) {
                 const data = await res.json();
                 setFormData({ ...formData, base_image_url: data.url });
@@ -202,7 +206,11 @@ function ProductEditor() {
         uploadData.append('file', file);
 
         try {
-            const res = await fetch('/api/upload', { method: 'POST', body: uploadData });
+            const res = await fetch('/api/upload', {
+                method: 'POST',
+                body: uploadData,
+                headers: { 'Authorization': `Bearer ${token}`, 'X-Auth-Token': token }
+            });
             if (res.ok) {
                 const data = await res.json();
                 handleSkuUpdate(skuId, 'image_url', data.url);
@@ -216,7 +224,7 @@ function ProductEditor() {
             try {
                 const res = await fetch(`/api/skus/${skuId}`, {
                     method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: { 'Authorization': `Bearer ${token}`, 'X-Auth-Token': token }
                 });
                 if (res.ok) {
                     setSkus(prev => prev.filter(s => s.id !== skuId));
@@ -237,7 +245,7 @@ function ProductEditor() {
         try {
             await fetch(`/api/skus/${skuId}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'X-Auth-Token': token },
                 body: JSON.stringify({ [field]: value })
             });
         } catch (e) { console.error('Failed to save SKU change', e); }

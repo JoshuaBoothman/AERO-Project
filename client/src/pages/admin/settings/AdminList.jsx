@@ -49,7 +49,10 @@ function AdminList() {
         try {
             const res = await fetch(`/api/manage/admins/${adminId}`, {
                 method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'X-Auth-Token': token
+                }
             });
 
             if (!res.ok) {

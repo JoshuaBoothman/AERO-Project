@@ -35,7 +35,8 @@ function MerchandiseList() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`,
+                    'X-Auth-Token': token
                 },
                 body: JSON.stringify({ name: newProductName })
             });

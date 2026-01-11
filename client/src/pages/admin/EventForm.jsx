@@ -50,6 +50,7 @@ function EventForm() {
                 const headers = {};
                 if (token) {
                     headers['Authorization'] = `Bearer ${token}`;
+                    headers['X-Auth-Token'] = token;
                 }
 
                 const venueRes = await fetch('/api/venues', { headers });
@@ -123,7 +124,8 @@ function EventForm() {
             setSaving(true);
             const res = await fetch('/api/upload', {
                 method: 'POST',
-                body: uploadData
+                body: uploadData,
+                headers: { 'Authorization': `Bearer ${token}`, 'X-Auth-Token': token }
             });
             if (!res.ok) throw new Error('Upload failed');
             const data = await res.json();
@@ -148,7 +150,8 @@ function EventForm() {
                 method,
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`,
+                    'X-Auth-Token': token
                 },
                 body: JSON.stringify(formData)
             });
@@ -177,7 +180,8 @@ function EventForm() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`,
+                    'X-Auth-Token': token
                 },
                 body: JSON.stringify(venueForm)
             });
@@ -377,7 +381,8 @@ function EventForm() {
                                         const res = await fetch(`/api/events/${formData.event_id}`, {
                                             method: 'DELETE',
                                             headers: {
-                                                'Authorization': `Bearer ${token}`
+                                                'Authorization': `Bearer ${token}`,
+                                                'X-Auth-Token': token
                                             }
                                         });
                                         if (!res.ok) {

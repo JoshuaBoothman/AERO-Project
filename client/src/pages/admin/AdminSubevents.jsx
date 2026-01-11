@@ -18,7 +18,10 @@ function AdminSubevents() {
         async function fetchEvents() {
             try {
                 const headers = {};
-                if (token) headers['Authorization'] = `Bearer ${token}`;
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                    headers['X-Auth-Token'] = token;
+                }
 
                 const res = await fetch('/api/events', { headers });
                 if (res.ok) {
@@ -42,7 +45,10 @@ function AdminSubevents() {
             setLoading(true);
             try {
                 const headers = {};
-                if (token) headers['Authorization'] = `Bearer ${token}`;
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                    headers['X-Auth-Token'] = token;
+                }
 
                 const res = await fetch(`/api/events/${selectedEventId}/subevents`, { headers });
                 if (res.ok) {
@@ -78,7 +84,8 @@ function AdminSubevents() {
             const res = await fetch(`/api/subevents/${id}`, {
                 method: 'DELETE',
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`,
+                    'X-Auth-Token': token
                 }
             });
             if (res.ok) {
@@ -105,7 +112,8 @@ function AdminSubevents() {
                 method,
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`,
+                    'X-Auth-Token': token
                 },
                 body: JSON.stringify(payload)
             });
@@ -114,7 +122,8 @@ function AdminSubevents() {
                 showNotification(`Subevent ${isEdit ? 'updated' : 'created'} successfully`, "success");
                 setIsModalOpen(false);
                 // Refresh list
-                const listRes = await fetch(`/api/events/${selectedEventId}/subevents`);
+                const headers = { 'Authorization': `Bearer ${token}`, 'X-Auth-Token': token };
+                const listRes = await fetch(`/api/events/${selectedEventId}/subevents`, { headers });
                 if (listRes.ok) {
                     setSubevents(await listRes.json());
                 }

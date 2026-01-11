@@ -30,7 +30,7 @@ function AssetTypes() {
 
     const fetchEvents = async () => {
         try {
-            const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+            const headers = token ? { 'Authorization': `Bearer ${token}`, 'X-Auth-Token': token } : {};
             const res = await fetch('/api/events', { headers });
             if (res.ok) {
                 const data = await res.json();
@@ -111,7 +111,7 @@ function AssetTypes() {
             try {
                 const res = await fetch(`/api/assets/types/${id}`, {
                     method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: { 'Authorization': `Bearer ${token}`, 'X-Auth-Token': token }
                 });
                 if (res.ok) {
                     notify('Deleted successfully', 'success');
@@ -136,7 +136,8 @@ function AssetTypes() {
                 method,
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`,
+                    'X-Auth-Token': token
                 },
                 body: JSON.stringify(formData)
             });
@@ -162,7 +163,11 @@ function AssetTypes() {
         uploadData.append('file', file);
 
         try {
-            const res = await fetch('/api/upload', { method: 'POST', body: uploadData });
+            const res = await fetch('/api/upload', {
+                method: 'POST',
+                body: uploadData,
+                headers: { 'Authorization': `Bearer ${token}`, 'X-Auth-Token': token }
+            });
             if (res.ok) {
                 const data = await res.json();
                 setFormData(prev => ({ ...prev, image_url: data.url }));

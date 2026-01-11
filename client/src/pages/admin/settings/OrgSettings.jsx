@@ -60,7 +60,8 @@ function OrgSettings() {
                 method: 'POST',
                 body: uploadData,
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`,
+                    'X-Auth-Token': token
                 }
             });
             if (!res.ok) throw new Error('Upload failed');
@@ -84,7 +85,8 @@ function OrgSettings() {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`,
+                    'X-Auth-Token': token
                 },
                 body: JSON.stringify(formData)
             });

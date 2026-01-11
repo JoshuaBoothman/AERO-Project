@@ -67,7 +67,7 @@ function AssetItems() {
         try {
             const res = await fetch('/api/assets/items', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'X-Auth-Token': token },
                 body: JSON.stringify(formData)
             });
             if (res.ok) {
@@ -85,7 +85,7 @@ function AssetItems() {
             try {
                 const res = await fetch(`/api/assets/items/${id}`, {
                     method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: { 'Authorization': `Bearer ${token}`, 'X-Auth-Token': token }
                 });
                 if (res.ok) {
                     notify('Item deleted', 'success');

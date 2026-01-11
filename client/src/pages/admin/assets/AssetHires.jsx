@@ -36,7 +36,7 @@ function AssetHires() {
             // Let's assume there is at least one order_item in the DB.
             // I'll skip the 'fetch orders' step for simplicity and rely on user having data OR fail gracefully.
             // Actually, let's try to fetch orders to get a valid ID.
-            const ordersRes = await fetch('/api/orders/all', { headers: { 'Authorization': `Bearer ${token}` } });
+            const ordersRes = await fetch('/api/orders/all', { headers: { 'Authorization': `Bearer ${token}`, 'X-Auth-Token': token } });
             if (!ordersRes.ok) { notify('Could not fetch orders to link hire to.', 'error'); return; }
             const orders = await ordersRes.json();
             if (orders.length === 0) { notify('No orders found.', 'error'); return; }
@@ -44,7 +44,7 @@ function AssetHires() {
             // We need an *order_item_id*. "orders" usually returns order-level info.
             // We might need to fetch details of an order.
             const orderId = orders[0].order_id;
-            const detailRes = await fetch(`/api/orders/${orderId}`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const detailRes = await fetch(`/api/orders/${orderId}`, { headers: { 'Authorization': `Bearer ${token}`, 'X-Auth-Token': token } });
             const orderDetail = await detailRes.json();
 
             if (!orderDetail.items || orderDetail.items.length === 0) { notify('Chosen order has no items.', 'error'); return; }
@@ -54,7 +54,11 @@ function AssetHires() {
             try {
                 const res = await fetch('/api/assets/hires', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                        'X-Auth-Token': token
+                    },
                     body: JSON.stringify({
                         asset_item_id: randomItem.asset_item_id,
                         order_item_id: randomOrderItem.order_item_id,
