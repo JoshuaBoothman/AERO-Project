@@ -2,21 +2,13 @@ const { app } = require('@azure/functions');
 const db = require('../lib/db');
 const { validateToken } = require('../lib/auth');
 
-const fs = require('fs');
-const path = require('path');
-
-function logToFile(msg) {
-    const logPath = path.join(__dirname, '../../debug.log');
-    fs.appendFileSync(logPath, new Date().toISOString() + ': ' + msg + '\n');
-}
-
 app.http('getEvents', {
     methods: ['GET'],
     authLevel: 'anonymous',
     route: 'events',
     handler: async (request, context) => {
         try {
-            logToFile("getEvents triggered");
+            context.log("getEvents triggered");
             // Check if loading user is an admin
             let isAdmin = false;
             try {
@@ -26,7 +18,7 @@ app.http('getEvents', {
                 }
             } catch (e) {
                 // Token might be missing or invalid, treat as public
-                logToFile(`Admin check failed: ${e.message}`);
+                context.log(`Admin check failed: ${e.message}`);
             }
 
             let query;
@@ -75,15 +67,15 @@ app.http('getEvents', {
                 `;
             }
 
-            logToFile(`Admin: ${isAdmin}`);
+            context.log(`Admin: ${isAdmin}`);
             const events = await db.query(query);
-            logToFile(`Found ${events.length} events`);
+            context.log(`Found ${events.length} events`);
             if (events.length > 0) {
-                logToFile(`First event: ${JSON.stringify(events[0])}`);
+                context.log(`First event: ${JSON.stringify(events[0])}`);
                 // Check if venue is null
-                if (!events[0].venue_name) logToFile('WARN: First event has no venue info (joined).');
+                if (!events[0].venue_name) context.log('WARN: First event has no venue info (joined).');
             } else {
-                logToFile('No events found in query result.');
+                context.log('No events found in query result.');
             }
 
             return {
@@ -92,7 +84,7 @@ app.http('getEvents', {
             };
 
         } catch (error) {
-            logToFile(`Error: ${error.message}`);
+            context.log(`Error: ${error.message}`);
             context.error(`Error fetching events: ${error.message}`);
             return {
                 status: 500,
