@@ -1,7 +1,5 @@
 const jwt = require('jsonwebtoken');
 
-const jwt = require('jsonwebtoken');
-
 function validateToken(request) {
     const SECRET_KEY = process.env.JWT_SECRET || "dev-secret-key-change-me";
     const authHeader = request.headers.get('Authorization');
