@@ -47,8 +47,7 @@ app.http('getCampgroundAvailability', {
                         ELSE 1 
                     END as is_available
                 FROM campgrounds cg
-                JOIN campground_sections cs ON cs.campground_id = cg.campground_id
-                JOIN campsites c ON c.campground_section_id = cs.campground_section_id
+                JOIN campsites c ON c.campground_id = cg.campground_id
                 WHERE cg.event_id = @eid
                 AND c.is_active = 1
             `;
