@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -13,23 +14,35 @@ function Layout({ orgSettings, loading, error }) {
     navigate('/');
   };
 
+  useEffect(() => {
+    if (orgSettings) {
+      const root = document.documentElement;
+      root.style.setProperty('--primary-color', orgSettings.primary_color || '#000000');
+      root.style.setProperty('--secondary-color', orgSettings.secondary_color || '#FFFFFF');
+      root.style.setProperty('--accent-color', orgSettings.accent_color || '#FFD700');
+    }
+  }, [orgSettings]);
+
   if (loading) return <div>Loading settings...</div>;
   if (error) return <div>Error: {error}</div>;
 
-  const themeStyles = {
-    '--primary-color': orgSettings?.primary_color || '#000000',
-    '--secondary-color': orgSettings?.secondary_color || '#FFFFFF',
-    '--accent-color': orgSettings?.accent_color || '#FFD700',
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col" style={themeStyles}>
-      <header className="bg-primary text-secondary p-4 shadow-md sticky top-0 z-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <header className="bg-primary text-secondary p-4 shadow-md sticky top-0 z-50 transition-colors duration-300">
         <div className="container mx-auto flex justify-between items-center">
           {/* Left Side: Logo/Name */}
-          <div>
-            <h1 className="text-xl font-bold m-0 leading-tight">{orgSettings?.organization_name}</h1>
-            <small className="opacity-80 text-xs">Support: {orgSettings?.support_email}</small>
+          <div className="flex items-center gap-4">
+            {orgSettings?.logo_url && (
+              <img
+                src={orgSettings.logo_url}
+                alt="Logo"
+                className="h-10 w-auto object-contain bg-white/10 rounded-sm"
+              />
+            )}
+            <div>
+              <h1 className="text-xl font-bold m-0 leading-tight">{orgSettings?.organization_name}</h1>
+              <small className="opacity-80 text-xs block">Support: {orgSettings?.support_email}</small>
+            </div>
           </div>
 
           {/* Right Side: Navigation */}
@@ -37,13 +50,14 @@ function Layout({ orgSettings, loading, error }) {
             {user && user.role === 'admin' ? (
               /* ================= ADMIN NAVIGATION ================= */
               <div className="flex items-center gap-4">
-                <Link to="/" className="hover:text-accent transition-colors font-medium">Home</Link>
+                <Link to="/admin" className="hover:text-accent transition-colors font-medium">Home</Link>
                 <Link to="/events" className="hover:text-accent transition-colors font-medium">Events</Link>
                 <Link to="/admin/merchandise" className={`font-bold ${location.pathname.startsWith('/admin/merchandise') ? 'text-accent' : 'hover:text-accent'}`}>Merchandise</Link>
                 <Link to="/admin/assets" className={`font-bold ${location.pathname.startsWith('/admin/assets') ? 'text-accent' : 'hover:text-accent'}`}>Assets</Link>
                 <Link to="/admin/subevents" className={`font-bold ${location.pathname.startsWith('/admin/subevents') ? 'text-accent' : 'hover:text-accent'}`}>Subevents</Link>
                 <Link to="/camping" className="hover:text-accent transition-colors font-medium">Camping</Link>
                 <Link to="/admin/orders" className={`font-bold ${location.pathname.startsWith('/admin/orders') ? 'text-accent' : 'hover:text-accent'}`}>Orders</Link>
+                <Link to="/admin/settings" className={`font-bold ${location.pathname.startsWith('/admin/settings') ? 'text-accent' : 'hover:text-accent'}`}>Settings</Link>
 
                 <button
                   onClick={handleLogout}

@@ -19,6 +19,7 @@ import ProductEditor from './pages/admin/ProductEditor';
 import AssetDashboard from './pages/admin/AssetDashboard';
 import AdminSubevents from './pages/admin/AdminSubevents';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminSettings from './pages/admin/AdminSettings';
 
 import OrderDetail from './pages/OrderDetail';
 import CampingPage from './pages/camping/CampingPage';
@@ -78,6 +79,7 @@ function App() {
                 <Route path="admin/merchandise/:id" element={<ProductEditor />} />
                 <Route path="admin/assets" element={<AssetDashboard />} />
                 <Route path="admin/subevents" element={<AdminSubevents />} />
+                <Route path="admin/settings" element={<AdminSettings />} />
 
               </Route>
             </Routes>
