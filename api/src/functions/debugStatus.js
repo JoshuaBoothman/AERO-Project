@@ -33,15 +33,26 @@ app.http('debugStatus', {
 
         // 1. Check Auth (if provided)
         try {
-            const user = validateToken(request);
-            if (user) {
-                report.auth.tokenValid = true;
-                report.auth.decoded = user;
+            const secret = process.env.JWT_SECRET || "dev-secret-key-change-me";
+            report.auth.secretPrefix = secret.substring(0, 3) + "***"; // Safety check
+
+            const authHeader = request.headers.get('Authorization');
+            if (authHeader) {
+                const token = authHeader.split(' ')[1];
+                try {
+                    const decoded = jwt.verify(token, secret);
+                    if (decoded) {
+                        report.auth.tokenValid = true;
+                        report.auth.decoded = decoded;
+                    }
+                } catch (jwtErr) {
+                    report.auth.error = `JWT Verify Failed: ${jwtErr.message}`;
+                }
             } else {
-                report.auth.error = "Token invalid or missing";
+                report.auth.error = "No Authorization header found";
             }
         } catch (e) {
-            report.auth.error = e.message;
+            report.auth.error = `Unexpected error: ${e.message}`;
         }
 
         // 2. Check DB
