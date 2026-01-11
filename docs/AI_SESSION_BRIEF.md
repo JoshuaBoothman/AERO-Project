@@ -7,7 +7,11 @@
 1.  **Read this file** (`docs/AI_SESSION_BRIEF.md`) to ground yourself in the project context.
 2.  **Read `docs/ROADMAP.md`** to understand the current sprint and backlog.
 3.  **Read `docs/Development_Log.md`** (latest entry) to see where we left off.
-4.  **Read Git Log:** Run `git log -n 5` to see the latest committed code changes.
+4.  **Review Key Docs:**
+    *   `docs/Pilot_Logic_Deep_Dive.md` (Complex Logic)
+    *   `docs/azure_deployment_guide.md` (Deployment)
+    *   `docs/azure_auth_fix.md` (Critical Auth Info)
+5.  **Read Git Log:** Run `git log -n 5` to see the latest committed code changes.
 5. Instruct user to run    `C:\laragon\www\AERO-Project> cd client`
 6.                             `C:\laragon\www\AERO-Project\client> npm run dev` to start the development server.
 7. Instruct user to run    `C:\laragon\www\AERO-Project> cd api`
@@ -40,6 +44,8 @@
 *   **Frontend:** React (Vite)
 *   **Backend:** Azure Functions (Node.js)
 *   **Database:** Azure SQL Database
+*   **Live Environment:** [AERO Project Live](https://lively-sea-07f844a00.1.azurestaticapps.net/)
+    *   *Note: Uses X-Auth-Token header to bypass Azure EasyAuth interference.*
 *   **Key Patterns:**
     *   **Auth:** JWT-based.
     *   **DB Access:** Singleton Connection Pool.

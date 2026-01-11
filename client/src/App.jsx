@@ -35,10 +35,21 @@ function App() {
 
   useEffect(() => {
     async function fetchSettings() {
+      // 1. Check Cache
+      const cached = localStorage.getItem('orgSettings');
+      if (cached) {
+        setOrgSettings(JSON.parse(cached));
+        setLoading(false); // Show cached version immediately
+      }
+
       try {
+        // 2. Fetch Fresh
         const response = await fetch('/api/getOrganization');
         if (!response.ok) throw new Error('Network response was not ok');
         const data = await response.json();
+
+        // 3. Update Cache & State
+        localStorage.setItem('orgSettings', JSON.stringify(data));
         setOrgSettings(data);
       } catch (err) {
         setError(err.message);
