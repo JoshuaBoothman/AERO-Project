@@ -35,30 +35,34 @@ function Layout({ orgSettings, loading, error }) {
           {/* Right Side: Navigation */}
           <nav className="flex gap-6 items-center">
             {user && user.role === 'admin' ? (
-              <Link to="/admin" className="hover:text-accent transition-colors">Home</Link>
+              /* ================= ADMIN NAVIGATION ================= */
+              <div className="flex items-center gap-4">
+                <Link to="/" className="hover:text-accent transition-colors font-medium">Home</Link>
+                <Link to="/events" className="hover:text-accent transition-colors font-medium">Events</Link>
+                <Link to="/admin/merchandise" className={`font-bold ${location.pathname.startsWith('/admin/merchandise') ? 'text-accent' : 'hover:text-accent'}`}>Merchandise</Link>
+                <Link to="/admin/assets" className={`font-bold ${location.pathname.startsWith('/admin/assets') ? 'text-accent' : 'hover:text-accent'}`}>Assets</Link>
+                <Link to="/admin/subevents" className={`font-bold ${location.pathname.startsWith('/admin/subevents') ? 'text-accent' : 'hover:text-accent'}`}>Subevents</Link>
+                <Link to="/camping" className="hover:text-accent transition-colors font-medium">Camping</Link>
+                <Link to="/admin/orders" className={`font-bold ${location.pathname.startsWith('/admin/orders') ? 'text-accent' : 'hover:text-accent'}`}>Orders</Link>
+
+                <button
+                  onClick={handleLogout}
+                  className="bg-accent text-primary px-4 py-2 rounded font-bold hover:brightness-110 transition-all shadow-sm ml-4"
+                >
+                  Logout
+                </button>
+              </div>
             ) : (
-              <Link to="/" className="hover:text-accent transition-colors">Home</Link>
-            )}
-            <Link to="/events" className="hover:text-accent transition-colors">Events</Link>
-            <Link to="/camping" className="hover:text-accent transition-colors">Camping</Link>
+              /* ================= PUBLIC / USER NAVIGATION ================= */
+              <>
+                <Link to="/" className="hover:text-accent transition-colors">Home</Link>
+                <Link to="/events" className="hover:text-accent transition-colors">Events</Link>
+                <Link to="/camping" className="hover:text-accent transition-colors">Camping</Link>
 
-            {/* Auth Logic */}
-            {user ? (
-              <div className="flex gap-4 items-center pl-6 border-l border-white/20">
-                <span className="hidden md:inline font-medium">Hi, {user.firstName}</span>
+                {user ? (
+                  <div className="flex gap-4 items-center pl-6 border-l border-white/20">
+                    <span className="hidden md:inline font-medium">Hi, {user.firstName}</span>
 
-                {user.role === 'admin' ? (
-                  /* Admin Menu */
-                  <>
-                    {/* <Link to="/admin" className={...}>Dashboard</Link> Removed as per request, handled by Home */}
-                    <Link to="/admin/orders" className={`font-bold ${location.pathname.startsWith('/admin/orders') ? 'text-accent' : 'hover:text-accent'}`}>Orders</Link>
-                    <Link to="/admin/merchandise" className={`font-bold ${location.pathname.startsWith('/admin/merchandise') ? 'text-accent' : 'hover:text-accent'}`}>Merchandise</Link>
-                    <Link to="/admin/assets" className={`font-bold ${location.pathname.startsWith('/admin/assets') ? 'text-accent' : 'hover:text-accent'}`}>Assets</Link>
-                    <Link to="/admin/subevents" className={`font-bold ${location.pathname.startsWith('/admin/subevents') ? 'text-accent' : 'hover:text-accent'}`}>Subevents</Link>
-                  </>
-                ) : (
-                  /* User Menu */
-                  <>
                     <Link to="/checkout" className="flex items-center gap-2 hover:text-accent relative">
                       <span>🛒</span>
                       {cart.length > 0 && (
@@ -68,23 +72,23 @@ function Layout({ orgSettings, loading, error }) {
                       )}
                     </Link>
                     <Link to="/my-orders" className="font-bold hover:text-accent">My Orders</Link>
-                  </>
-                )}
 
-                <button
-                  onClick={handleLogout}
-                  className="bg-black/20 hover:bg-black/30 text-inherit px-3 py-1.5 rounded text-sm transition-colors"
-                >
-                  Logout
-                </button>
-              </div>
-            ) : (
-              <Link
-                to="/login"
-                className="bg-accent text-primary px-4 py-2 rounded font-bold hover:brightness-110 transition-all shadow-sm"
-              >
-                Login
-              </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="bg-black/20 hover:bg-black/30 text-inherit px-3 py-1.5 rounded text-sm transition-colors"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                ) : (
+                  <Link
+                    to="/login"
+                    className="bg-accent text-primary px-4 py-2 rounded font-bold hover:brightness-110 transition-all shadow-sm"
+                  >
+                    Login
+                  </Link>
+                )}
+              </>
             )}
           </nav>
         </div>
