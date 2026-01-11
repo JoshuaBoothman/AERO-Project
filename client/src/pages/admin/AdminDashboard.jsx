@@ -33,7 +33,8 @@ function AdminDashboard() {
 
             const res = await fetch(url, {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}` // Ensure token is sent
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'X-Auth-Token': localStorage.getItem('token') // Bypass Azure EasyAuth
                 }
             });
 

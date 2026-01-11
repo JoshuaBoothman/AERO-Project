@@ -18,7 +18,10 @@ function AdminList() {
         try {
             setLoading(true);
             const res = await fetch('/api/manage/admins', {
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'X-Auth-Token': token
+                }
             });
             if (!res.ok) throw new Error('Failed to load admins');
             const data = await res.json();

@@ -14,7 +14,8 @@ function AdminOrders() {
                 const token = localStorage.getItem('token');
                 const response = await fetch('/api/getAdminOrders', { // Ensure API name matches
                     headers: {
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${token}`,
+                        'X-Auth-Token': token
                     }
                 });
 
