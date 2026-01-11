@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 
-function OrgSettings() {
+function OrgSettings({ refreshSettings }) {
     const { token } = useAuth();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -98,13 +98,12 @@ function OrgSettings() {
 
             setSuccessMsg('Settings updated successfully!');
 
-            // Reload page to reflect theme changes globally if needed, 
-            // or we can rely on a context update if we had one. 
-            // For now, a reload is a simple way to propagate new colors to Layout if it fetches independently,
-            // BUT Layout fetches on App mount. So a reload is actually good here.
-            setTimeout(() => {
-                window.location.reload();
-            }, 1000);
+            if (refreshSettings) {
+                await refreshSettings();
+            } else {
+                // Fallback if no refresher (shouldn't happen)
+                console.warn("No refreshSettings function provided");
+            }
 
         } catch (err) {
             setError(err.message);

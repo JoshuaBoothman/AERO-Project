@@ -3,7 +3,7 @@ import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 
-function Layout({ orgSettings, loading, error }) {
+function Layout({ orgSettings, loading, error, refreshSettings }) {
   const { user, logout } = useAuth(); // <--- Get user state
   const { cart } = useCart();
   const navigate = useNavigate();
@@ -109,7 +109,7 @@ function Layout({ orgSettings, loading, error }) {
       </header>
 
       <main className="flex-grow container mx-auto p-4 md:p-8">
-        <Outlet />
+        <Outlet context={{ refreshSettings }} />
       </main>
     </div>
   );

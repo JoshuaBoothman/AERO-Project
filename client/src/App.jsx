@@ -33,32 +33,44 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const fetchSettings = async () => {
+    // 1. Check Cache (only on initial load really, but fine to keep logic if we want)
+    // Actually, for a refresh, we want to bypass cache or update it.
+    // The original logic checked cache first. 
+    // Let's modify it to accept a 'force' param or just always fetch if called explicitly.
+    // But for simplicity, let's just keep the logic but we need to ensure it updates state.
+
+    try {
+      // 2. Fetch Fresh
+      const response = await fetch('/api/getOrganization');
+      if (!response.ok) throw new Error('Network response was not ok');
+      const data = await response.json();
+
+      // 3. Update Cache & State
+      localStorage.setItem('orgSettings', JSON.stringify(data));
+      setOrgSettings(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    async function fetchSettings() {
-      // 1. Check Cache
+    // Initial load - check cache first to avoid flicker?
+    // The original code checked cache inside the function.
+    // Let's preserve the exact behavior but make it callable.
+
+    const initSettings = async () => {
       const cached = localStorage.getItem('orgSettings');
       if (cached) {
         setOrgSettings(JSON.parse(cached));
-        setLoading(false); // Show cached version immediately
-      }
-
-      try {
-        // 2. Fetch Fresh
-        const response = await fetch('/api/getOrganization');
-        if (!response.ok) throw new Error('Network response was not ok');
-        const data = await response.json();
-
-        // 3. Update Cache & State
-        localStorage.setItem('orgSettings', JSON.stringify(data));
-        setOrgSettings(data);
-      } catch (err) {
-        setError(err.message);
-      } finally {
         setLoading(false);
       }
-    }
+      await fetchSettings();
+    };
 
-    fetchSettings();
+    initSettings();
   }, []);
 
   return (
@@ -67,7 +79,7 @@ function App() {
         <CartProvider>
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<Layout orgSettings={orgSettings} loading={loading} error={error} />}>
+              <Route path="/" element={<Layout orgSettings={orgSettings} loading={loading} error={error} refreshSettings={fetchSettings} />}>
                 <Route index element={<Home />} />
                 <Route path="events" element={<Events />} />
                 <Route path="events/new" element={<EventForm />} />
