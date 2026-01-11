@@ -61,7 +61,8 @@ app.http('authLogin', {
                         firstName: user.first_name,
                         lastName: user.last_name,
                         role
-                    }
+                    },
+                    debug_secret_prefix: SECRET_KEY.substring(0, 3) + "***"
                 })
             };
 
