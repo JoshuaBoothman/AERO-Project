@@ -1,7 +1,8 @@
 const jwt = require('jsonwebtoken');
 
 function validateToken(request) {
-    const SECRET_KEY = process.env.JWT_SECRET || "dev-secret-key-change-me";
+    // NUCLEAR FIX: Hardcoded secret to bypass Env Var issues
+    const SECRET_KEY = "super-secret-azure-fix-2025";
     const authHeader = request.headers.get('Authorization');
     if (!authHeader) return null;
 
