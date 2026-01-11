@@ -48,6 +48,16 @@ app.http('debugStatus', {
                     }
                 } catch (jwtErr) {
                     report.auth.error = `JWT Verify Failed: ${jwtErr.message}`;
+                    // Debug: Try verifying with the Dev Key to see if that's what we have
+                    try {
+                        const devDecoded = jwt.verify(token, "dev-secret-key-change-me");
+                        if (devDecoded) {
+                            report.auth.signedWithDevKey = true;
+                            report.auth.error += " (BUT token is valid with DEV KEY!)";
+                        }
+                    } catch (e) {
+                        // ignore
+                    }
                 }
             } else {
                 report.auth.error = "No Authorization header found";
