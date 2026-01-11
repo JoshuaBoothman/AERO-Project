@@ -3,9 +3,6 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { query, sql } = require('../lib/db');
 
-// Use a fallback for dev, but ensure this is in your App Settings in Azure
-const SECRET_KEY = process.env.JWT_SECRET || "dev-secret-key-change-me";
-
 app.http('authLogin', {
     methods: ['POST'],
     authLevel: 'anonymous',
@@ -46,6 +43,8 @@ app.http('authLogin', {
             }
 
             // 4. Generate Token
+            // Move SECRET inside to ensure we get the latest Env var
+            const SECRET_KEY = process.env.JWT_SECRET || "dev-secret-key-change-me";
             const token = jwt.sign(
                 { userId: user.user_id, email: email, role },
                 SECRET_KEY,

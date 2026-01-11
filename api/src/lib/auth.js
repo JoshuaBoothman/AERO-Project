@@ -1,9 +1,9 @@
 const jwt = require('jsonwebtoken');
 
-// Ensure this matches the key used in authLogin.js
-const SECRET_KEY = process.env.JWT_SECRET || "dev-secret-key-change-me";
+const jwt = require('jsonwebtoken');
 
 function validateToken(request) {
+    const SECRET_KEY = process.env.JWT_SECRET || "dev-secret-key-change-me";
     const authHeader = request.headers.get('Authorization');
     if (!authHeader) return null;
 
