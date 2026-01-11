@@ -12,8 +12,15 @@ app.http('getAdminDashboardStats', {
         // 1. Auth Check - Admin Only
         const user = validateToken(request);
         if (!user || user.role !== 'admin') {
-            context.log('[Dashboard] Auth failed');
-            return { status: 403, body: JSON.stringify({ error: "Unauthorized. Admin access required." }) };
+            const authHeader = request.headers.get('Authorization');
+            const debugInfo = {
+                msg: "Auth rejected",
+                headerStart: authHeader ? authHeader.substring(0, 15) + "..." : "MISSING",
+                userObj: user ? JSON.stringify(user) : "null",
+                requiredRole: 'admin'
+            };
+            context.log('[Dashboard] Auth failed', debugInfo);
+            return { status: 403, body: JSON.stringify({ error: "Unauthorized", debug: debugInfo }) };
         }
         context.log('[Dashboard] Auth success for user:', user.email);
 
