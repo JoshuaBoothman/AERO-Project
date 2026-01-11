@@ -13,11 +13,27 @@ app.http('getAdminDashboardStats', {
         const user = validateToken(request);
         if (!user || user.role !== 'admin') {
             const authHeader = request.headers.get('Authorization');
+            let unsafe = null;
+            let verifyError = "Unknown";
+            if (authHeader) {
+                try {
+                    const token = authHeader.split(' ')[1];
+                    const jwt = require('jsonwebtoken'); // Lazy load for debug
+                    unsafe = jwt.decode(token);
+                    // Also try to verify and catch the specific error
+                    jwt.verify(token, "super-secret-azure-fix-2025");
+                } catch (e) {
+                    verifyError = e.message;
+                }
+            }
+
             const debugInfo = {
                 msg: "Auth rejected",
                 headerStart: authHeader ? authHeader.substring(0, 15) + "..." : "MISSING",
                 userObj: user ? JSON.stringify(user) : "null",
-                requiredRole: 'admin'
+                requiredRole: 'admin',
+                unsafeDecode: unsafe,
+                verifyError: verifyError
             };
             context.log('[Dashboard] Auth failed', debugInfo);
             return { status: 403, body: JSON.stringify({ error: "Unauthorized", debug: debugInfo }) };
