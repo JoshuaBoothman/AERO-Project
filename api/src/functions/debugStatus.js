@@ -66,7 +66,24 @@ app.http('debugStatus', {
             report.auth.error = `Unexpected error: ${e.message}`;
         }
 
-        // 2. Check DB
+        // 2. Self-Test (Can we sign and verify our own tokens?)
+        try {
+            const secret = process.env.JWT_SECRET || "dev-secret-key-change-me";
+            const dummyToken = jwt.sign({ test: 'data' }, secret, { expiresIn: '1m' });
+            const decodedDummy = jwt.verify(dummyToken, secret);
+            report.selfTest = {
+                success: true,
+                message: "Server can sign and verify its own tokens with current secret",
+                secretLength: secret.length
+            };
+        } catch (stErr) {
+            report.selfTest = {
+                success: false,
+                message: `Self-test failed: ${stErr.message}`
+            };
+        }
+
+        // 3. Check DB
         try {
             const pool = await getPool();
             report.db.connected = true;
