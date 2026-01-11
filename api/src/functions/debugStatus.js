@@ -1,6 +1,7 @@
 const { app } = require('@azure/functions');
 const { getPool, sql } = require('../lib/db');
 const { validateToken } = require('../lib/auth');
+const jwt = require('jsonwebtoken');
 
 app.http('debugStatus', {
     methods: ['GET'],
