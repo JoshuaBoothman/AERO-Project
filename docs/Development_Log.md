@@ -773,3 +773,28 @@ When ready to deploy to production with a real domain:
     *   **Refactor:** Fixed logging syntax to use `context.error` and `context.warn`.
     *   **Verification:** Confirmed uploads now work successfully in the live environment.
 
+
+## [2026-01-12] - Hire Assets Features
+**Milestone:** Asset Image Display, Selection, and Availability Checking
+
+### Completed Items
+*   **Database**
+    *   **Schema:** Added `image_url` column to `asset_items` table.
+*   **Backend (API)**
+    *   **Features:**
+        *   Updated `manageAssetItems.js` to support creating/editing items with `image_url`.
+        *   Updated `getStoreItems.js` to return asset type images.
+        *   Created `getAssetAvailability.js` to fetch available items for a date range, preventing double bookings.
+    *   **Fix:** Resolved 'Invalid column name status' error in availability check by relying on `asset_hires` dates.
+*   **Frontend (Client)**
+    *   **Admin Dashboard:**
+        *   Updated `AssetItems.jsx` to support editing items and uploading specific item images (e.g. for damage/condition tracking).
+        *   Added thumbnail display to the items list.
+    *   **Storefront:**
+        *   **Asset Selection:** Implemented `AssetSelectionModal` to allow users to view and select specific available items (e.g. specific serial numbers).
+        *   **Availability:** Integrated date-based availability checking to hide booked items.
+        *   **Image Fallback:** Implemented logic to show Asset Item image -> Asset Type image -> No Image placeholder.
+        *   **Consistency:** Updated all modals (`ProductModal`, `CampsiteModal`, `AssetSelectionModal`) to use consistent `lucide-react` icons.
+
+### Next Steps
+*   **Pricing:** Display the total amount for each asset item in the modal based on daily rate and hire date range.

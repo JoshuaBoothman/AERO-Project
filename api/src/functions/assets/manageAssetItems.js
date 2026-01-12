@@ -28,7 +28,7 @@ app.http('manageAssetItems', {
 
             if (method === 'POST') {
                 const body = await request.json();
-                const { asset_type_id, identifier, serial_number, status, notes } = body;
+                const { asset_type_id, identifier, serial_number, status, notes, image_url } = body;
 
                 const result = await pool.request()
                     .input('typeId', sql.Int, asset_type_id)
@@ -36,10 +36,11 @@ app.http('manageAssetItems', {
                     .input('serial', sql.NVarChar, serial_number || null)
                     .input('status', sql.VarChar, status || 'Active')
                     .input('notes', sql.NVarChar, notes || '')
+                    .input('imageUrl', sql.NVarChar, image_url || null)
                     .query(`
-                        INSERT INTO asset_items (asset_type_id, identifier, serial_number, status, notes)
+                        INSERT INTO asset_items (asset_type_id, identifier, serial_number, status, notes, image_url)
                         OUTPUT INSERTED.*
-                        VALUES (@typeId, @ident, @serial, @status, @notes)
+                        VALUES (@typeId, @ident, @serial, @status, @notes, @imageUrl)
                     `);
 
                 return { status: 201, jsonBody: result.recordset[0] };
@@ -56,6 +57,7 @@ app.http('manageAssetItems', {
                 if (body.serial_number !== undefined) { updates.push("serial_number = @serial"); req.input('serial', sql.NVarChar, body.serial_number); }
                 if (body.status !== undefined) { updates.push("status = @status"); req.input('status', sql.VarChar, body.status); }
                 if (body.notes !== undefined) { updates.push("notes = @notes"); req.input('notes', sql.NVarChar, body.notes); }
+                if (body.image_url !== undefined) { updates.push("image_url = @img"); req.input('img', sql.NVarChar, body.image_url); }
 
                 if (updates.length > 0) {
                     await req.query(`UPDATE asset_items SET ${updates.join(', ')} WHERE asset_item_id = @id`);

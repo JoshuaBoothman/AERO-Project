@@ -5,6 +5,7 @@ import { useNotification } from '../context/NotificationContext';
 import CampingPage from './camping/CampingPage';
 import ProductCard from '../components/ProductCard';
 import ProductModal from '../components/ProductModal';
+import AssetSelectionModal from '../components/AssetSelectionModal';
 
 function StorePage({ orgSettings }) {
     const { slug } = useParams();
@@ -16,6 +17,10 @@ function StorePage({ orgSettings }) {
     const [data, setData] = useState({ merchandise: [], assets: [], subevents: [] });
     const [activeTab, setActiveTab] = useState('merch');
     const [selectedProduct, setSelectedProduct] = useState(null);
+
+    // Asset Selection State
+    const [selectedAssetType, setSelectedAssetType] = useState(null);
+    const [hireDates, setHireDates] = useState({ start: '', end: '' });
 
     useEffect(() => {
         setLoading(true);
@@ -47,31 +52,33 @@ function StorePage({ orgSettings }) {
         notify("Added to Cart!", "success");
     };
 
-    // Asset State
-    const [hireDates, setHireDates] = useState({ start: '', end: '' });
+    const handleOpenAssetModal = (asset) => {
+        if (!hireDates.start || !hireDates.end) return notify("Please select hire dates first.", "error");
+        setSelectedAssetType(asset);
+    };
 
-    const handleAddAsset = (asset) => {
-        if (!hireDates.start || !hireDates.end) return notify("Select dates first.", "error");
-
+    const handleAddAssetToCart = (assetType, assetItem, dates) => {
         // Calculate Days
-        const start = new Date(hireDates.start);
-        const end = new Date(hireDates.end);
+        const start = new Date(dates.start);
+        const end = new Date(dates.end);
         const diffTime = Math.abs(end - start);
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        const days = diffDays < 1 ? 1 : diffDays; // Minimum 1 day charge? Or depending on logic.
+        const days = diffDays < 1 ? 1 : diffDays;
 
-        const price = asset.price * days;
+        const price = assetType.price * days;
 
         addToCart({
             type: 'ASSET',
-            id: asset.id, // asset_type_id
-            name: `${asset.name} (${days} days)`,
+            id: assetType.id, // asset_type_id
+            itemId: assetItem.asset_item_id, // Specific Item ID
+            name: `${assetType.name} #${assetItem.identifier} (${days} days)`,
             price: price,
-            quantity: 1, // "1 hire" but implies dates.
-            checkIn: hireDates.start,
-            checkOut: hireDates.end,
-            dailyRate: asset.price,
-            eventId: data.eventId
+            quantity: 1,
+            checkIn: dates.start,
+            checkOut: dates.end,
+            dailyRate: assetType.price,
+            eventId: data.eventId,
+            image: assetItem.image_url || assetType.image // Use item image or type image
         });
         notify("Added to Cart!", "success");
     };
@@ -163,24 +170,31 @@ function StorePage({ orgSettings }) {
                                 <label className="block text-sm font-bold mb-1 text-gray-700">Hire End</label>
                                 <input type="date" className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary focus:border-transparent outline-none" value={hireDates.end} onChange={e => setHireDates({ ...hireDates, end: e.target.value })} />
                             </div>
-                            <div className="text-sm text-gray-500 pb-2 italic">Select dates to view pricing</div>
+                            <div className="text-sm text-gray-500 pb-2 italic">Select dates to view available items</div>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {data.assets.length === 0 && <p className="text-gray-500 italic">No assets available for hire.</p>}
                             {data.assets.map(asset => (
                                 <div key={asset.id} className="bg-white border border-gray-100 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
-                                    <div>
+                                    <div className="mb-4">
+                                        <div className="w-full h-48 bg-gray-50 rounded mb-4 overflow-hidden border border-gray-100">
+                                            {asset.image ? (
+                                                <img src={asset.image} alt={asset.name} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-gray-200">No Image</div>
+                                            )}
+                                        </div>
                                         <h3 className="font-bold text-lg text-gray-800 mb-1">{asset.name}</h3>
-                                        <p className="text-sm text-gray-600 mb-4">{asset.description}</p>
+                                        <p className="text-sm text-gray-600">{asset.description}</p>
                                     </div>
                                     <div>
                                         <p className="font-bold text-xl mb-4 text-primary">${asset.price} <span className="text-sm font-normal text-gray-500">/ day</span></p>
                                         <button
-                                            onClick={() => handleAddAsset(asset)}
+                                            onClick={() => handleOpenAssetModal(asset)}
                                             className="w-full bg-primary text-secondary py-2 rounded hover:brightness-110 transition-all font-bold"
                                         >
-                                            Add to Cart
+                                            View Available Items
                                         </button>
                                     </div>
                                 </div>
@@ -224,6 +238,16 @@ function StorePage({ orgSettings }) {
                 )}
 
             </div>
+
+            {/* Asset Modal */}
+            {selectedAssetType && (
+                <AssetSelectionModal
+                    asset={selectedAssetType}
+                    hireDates={hireDates}
+                    onClose={() => setSelectedAssetType(null)}
+                    onAddToCart={handleAddAssetToCart}
+                />
+            )}
         </div>
     );
 }

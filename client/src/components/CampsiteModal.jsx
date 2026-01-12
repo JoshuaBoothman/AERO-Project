@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { X } from 'lucide-react';
 
 function CampsiteModal({ event, onClose, onAddToCart, orgSettings }) {
     // DEBUG LOG
@@ -95,7 +96,9 @@ function CampsiteModal({ event, onClose, onAddToCart, orgSettings }) {
                 {/* Header */}
                 <div style={{ padding: '15px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <h2 style={{ margin: 0 }}>Book Campsite</h2>
-                    <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer' }}>×</button>
+                    <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', color: '#666' }}>
+                        <X size={24} />
+                    </button>
                 </div>
 
                 {/* Toolbar */}

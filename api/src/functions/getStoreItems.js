@@ -109,7 +109,7 @@ app.http('getStoreItems', {
 
             // 3. Fetch Assets
             const assetRes = await pool.request().input('eid', sql.Int, eventId).query(`
-                SELECT asset_type_id, name, description, base_hire_cost
+                SELECT asset_type_id, name, description, base_hire_cost, image_url
                 FROM asset_types
                 WHERE event_id = @eid
             `);
@@ -117,7 +117,8 @@ app.http('getStoreItems', {
                 id: a.asset_type_id,
                 name: a.name,
                 description: a.description,
-                price: a.base_hire_cost
+                price: a.base_hire_cost,
+                image: a.image_url
             }));
 
             // 4. Fetch Subevents
