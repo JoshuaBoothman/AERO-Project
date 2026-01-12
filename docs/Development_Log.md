@@ -799,5 +799,18 @@ When ready to deploy to production with a real domain:
         *   **Total Cost Display:** Added calculation to show total hire cost (Daily Rate * Days) in `AssetSelectionModal` header and selection buttons.
         *   **Date Check:** Updated day count logic to be inclusive (e.g., 1st to 2nd = 2 days) in both the modal and `StorePage`.
 
+## [2026-01-13] - Camping Page Fix
+**Milestone:** Resolved Critical Camping Page Bug
+
+### The Issue
+The "Camping" page for "Festival of Aeromodelling 2026" was displaying "No campgrounds found for this event." despite campgrounds existing in the database.
+
+### The Fix
+* **Backend (API):**
+    *   **Bug Found:** `getCampgroundAvailability` contained a SQL query error. It was attempting to select a column `c.name` from the `campsites` table, but the correct column name is `c.site_number`.
+    *   **Resolution:** Corrected the SQL query to select `c.site_number` as `site_number`.
+    *   **Verification:** Verified by calling the API directly and confirming it now returns the campground data correctly.
+
+
 ### Next Steps
 *   **Checkout:** Ensure the correct price (Daily Rate * Days) is passed to the cart and checkout flow.

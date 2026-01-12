@@ -36,7 +36,7 @@ app.http('getCampgroundAvailability', {
             const query = `
                 SELECT 
                     cg.campground_id, cg.name as campground_name, cg.map_image_url,
-                    c.campsite_id, c.name as site_number, c.is_powered, c.price_per_night, c.map_coordinates, c.is_active,
+                    c.campsite_id, c.site_number, c.is_powered, c.price_per_night, c.map_coordinates, c.is_active,
                     CASE 
                         WHEN EXISTS (
                             SELECT 1 FROM campsite_bookings cb
