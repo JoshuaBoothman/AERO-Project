@@ -795,6 +795,9 @@ When ready to deploy to production with a real domain:
         *   **Availability:** Integrated date-based availability checking to hide booked items.
         *   **Image Fallback:** Implemented logic to show Asset Item image -> Asset Type image -> No Image placeholder.
         *   **Consistency:** Updated all modals (`ProductModal`, `CampsiteModal`, `AssetSelectionModal`) to use consistent `lucide-react` icons.
+    *   **Pricing & Logic:**
+        *   **Total Cost Display:** Added calculation to show total hire cost (Daily Rate * Days) in `AssetSelectionModal` header and selection buttons.
+        *   **Date Check:** Updated day count logic to be inclusive (e.g., 1st to 2nd = 2 days) in both the modal and `StorePage`.
 
 ### Next Steps
-*   **Pricing:** Display the total amount for each asset item in the modal based on daily rate and hire date range.
+*   **Checkout:** Ensure the correct price (Daily Rate * Days) is passed to the cart and checkout flow.

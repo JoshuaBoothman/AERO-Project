@@ -63,7 +63,7 @@ function StorePage({ orgSettings }) {
         const end = new Date(dates.end);
         const diffTime = Math.abs(end - start);
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        const days = diffDays < 1 ? 1 : diffDays;
+        const days = diffDays + 1; // Inclusive
 
         const price = assetType.price * days;
 
