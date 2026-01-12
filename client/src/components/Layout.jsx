@@ -55,8 +55,6 @@ function Layout({ orgSettings, loading, error, refreshSettings }) {
                 <Link to="/admin/merchandise" className={`font-bold ${location.pathname.startsWith('/admin/merchandise') ? 'text-accent' : 'hover:text-accent'}`}>Merchandise</Link>
                 <Link to="/admin/assets" className={`font-bold ${location.pathname.startsWith('/admin/assets') ? 'text-accent' : 'hover:text-accent'}`}>Assets</Link>
                 <Link to="/admin/subevents" className={`font-bold ${location.pathname.startsWith('/admin/subevents') ? 'text-accent' : 'hover:text-accent'}`}>Subevents</Link>
-                <Link to="/admin/subevents" className={`font-bold ${location.pathname.startsWith('/admin/subevents') ? 'text-accent' : 'hover:text-accent'}`}>Subevents</Link>
-                <Link to="/shop" className="hover:text-accent transition-colors font-medium">Shop</Link>
                 <Link to="/admin/orders" className={`font-bold ${location.pathname.startsWith('/admin/orders') ? 'text-accent' : 'hover:text-accent'}`}>Orders</Link>
                 <Link to="/admin/settings" className={`font-bold ${location.pathname.startsWith('/admin/settings') ? 'text-accent' : 'hover:text-accent'}`}>Settings</Link>
 

@@ -758,3 +758,18 @@ When ready to deploy to production with a real domain:
     *   **Verification:** Confirmed that `ProductCard` and `EventDetails` components correctly render images served from absolute Azure URLs (`https://...`).
 * **Verification**
     *   **Upload Test:** Verified that uploading a file via the API successfully stores it in Azure and returns a valid, accessible URL.
+
+## [2026-01-12] - Azure Upload Debugging
+**Milestone:** Resolved "500 Internal Server Error" on Live Azure Environment
+
+### The Issue
+*   Image uploads were working locally but failing silently on the deployed Azure Static Web App.
+*   **Error 1:** The error handler was crashing because `context.log.error` is valid in v3 but invalid in v4 (should be `context.error`).
+*   **Error 2:** The underlying error was `ReferenceError: crypto is not defined`. The Azure Storage SDK requires `global.crypto`, which was missing in the Azure Functions Node environment.
+
+### The Fix
+*   **Backend (API)**
+    *   **Polyfill:** Added a global polyfill for `crypto` in `uploadImage.js` to satisfy SDK requirements.
+    *   **Refactor:** Fixed logging syntax to use `context.error` and `context.warn`.
+    *   **Verification:** Confirmed uploads now work successfully in the live environment.
+
