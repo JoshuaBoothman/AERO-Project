@@ -3,6 +3,16 @@ const { BlobServiceClient } = require('@azure/storage-blob');
 const crypto = require('crypto');
 const path = require('path');
 
+// Polyfill for global.crypto in case the Azure Node environment doesn't provide it globally
+// This fixes 'ReferenceError: crypto is not defined' in @azure/core-rest-pipeline / uuidUtils
+if (!global.crypto) {
+    try {
+        global.crypto = crypto;
+    } catch (e) {
+        console.error('Failed to polyfill global.crypto', e);
+    }
+}
+
 const connectionString = process.env.BLOB_STORAGE_CONNECTION_STRING;
 const containerName = 'uploads';
 
@@ -12,7 +22,7 @@ app.http('uploadImage', {
     route: 'upload',
     handler: async (request, context) => {
         let stage = 'INIT';
-        context.log(`[UPLOAD] Starting upload request. URL: ${request.url}`);
+        context.log(`[UPLOAD] Starting upload request. URL: ${request.url}. Node Version: ${process.version}`);
 
         try {
             stage = 'CHECK_ENV';
