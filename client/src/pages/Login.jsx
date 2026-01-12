@@ -21,7 +21,8 @@ function Login() {
       });
 
       if (!res.ok) {
-        throw new Error('Invalid credentials');
+        const errorText = await res.text();
+        throw new Error(errorText || 'Login failed');
       }
 
       const data = await res.json();
@@ -37,20 +38,20 @@ function Login() {
       <h1>Login</h1>
       {error && <p style={{ color: 'red' }}>{error}</p>}
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        <input 
-          type="email" 
-          placeholder="Email" 
-          value={email} 
-          onChange={(e) => setEmail(e.target.value)} 
-          required 
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
           style={{ padding: '0.5rem' }}
         />
-        <input 
-          type="password" 
-          placeholder="Password" 
-          value={password} 
-          onChange={(e) => setPassword(e.target.value)} 
-          required 
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
           style={{ padding: '0.5rem' }}
         />
         <button type="submit" className="primary-button">Log In</button>

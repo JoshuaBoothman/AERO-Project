@@ -702,3 +702,24 @@ When ready to deploy to production with a real domain:
     *   Open `api/src/lib/emailService.js`
     *   Update the `from` address: `from: 'Aeromodelling <noreply@yourdomain.com>'`
 
+
+## [2026-01-12] - Admin User Management
+**Milestone:** User Administration & Account Lockout
+
+### Completed Items
+* **Database**
+    *   **Schema:** Added is_locked column to users table.
+* **Backend (API)**
+    *   **New Endpoints:**
+        *   GET /api/manage/users: Fetches list of all registered users (masked sensitive data).
+        *   PUT /api/manage/users/{id}/status: Updates is_locked status.
+    *   **Security:**
+        *   Secured new endpoints with Admin authentication.
+        *   Updated uthLogin to check is_locked status and return 403 Forbidden if locked.
+    *   **Bug Fix:** Identified and resolved issue where is_email_verified check was being ignored in uthLogin due to missing column in SELECT query. Fixed query to include necessary flags.
+* **Frontend (Client)**
+    *   **Admin Dashboard:** Added "Manage Users" tab to System Settings.
+    *   **UI:** Created UserList.jsx to display registered users with status indicators (Verified/Pending, Active/Locked).
+    *   **Interaction:** Implemented Lock/Unlock functionality with optimistic UI updates.
+    *   **Login:** Updated Login.jsx to display actual server error messages (e.g., "Account is locked", "Please verify email") instead of generic "Invalid Credentials".
+

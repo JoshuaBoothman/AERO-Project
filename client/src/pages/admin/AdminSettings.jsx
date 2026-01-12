@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import OrgSettings from './settings/OrgSettings';
 import AdminList from './settings/AdminList';
+import UserList from './settings/UserList';
 
 function AdminSettings() {
     const [activeTab, setActiveTab] = useState('organization'); // 'organization' | 'admins'
@@ -31,12 +32,22 @@ function AdminSettings() {
                 >
                     Manage Admins
                 </button>
+                <button
+                    onClick={() => setActiveTab('users')}
+                    className={`pb-3 px-6 font-bold text-lg transition-colors border-b-4 ${activeTab === 'users'
+                        ? 'border-accent text-primary'
+                        : 'border-transparent text-gray-500 hover:text-primary'
+                        }`}
+                >
+                    Manage Users
+                </button>
             </div>
 
             {/* Content By Tab */}
             <div className="tab-content animate-fade-in">
                 {activeTab === 'organization' && <OrgSettings refreshSettings={refreshSettings} />}
                 {activeTab === 'admins' && <AdminList />}
+                {activeTab === 'users' && <UserList />}
             </div>
         </div>
     );

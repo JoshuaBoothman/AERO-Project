@@ -24,11 +24,14 @@ app.http('authLogin', {
                 user.user_id = user.admin_user_id; // Normalize ID
             } else {
                 // 2. Check Regular Users
-                const userRes = await query("SELECT user_id, password_hash, first_name, last_name FROM users WHERE email = @email", [
+                const userRes = await query("SELECT user_id, password_hash, first_name, last_name, is_locked, is_email_verified FROM users WHERE email = @email", [
                     { name: 'email', type: sql.NVarChar, value: email }
                 ]);
                 if (userRes.length > 0) {
                     user = userRes[0];
+                    if (user.is_locked) {
+                        return { status: 403, body: "Account is locked. Please contact support." };
+                    }
                 }
             }
 
@@ -38,6 +41,7 @@ app.http('authLogin', {
 
             // 3. Compare Password
             const isMatch = await bcrypt.compare(password, user.password_hash);
+
             if (!isMatch) {
                 return { status: 401, body: "Invalid credentials" };
             }
