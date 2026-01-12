@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../../context/AuthContext';
+import { useNotification } from '../../../context/NotificationContext';
 
 function UserList() {
     const { token } = useAuth();
+    const { notify, confirm } = useNotification();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -30,35 +32,36 @@ function UserList() {
         }
     };
 
-    const toggleLock = async (user) => {
+    const toggleLock = (user) => {
         const newStatus = !user.is_locked;
         const confirmMsg = newStatus
             ? `Are you sure you want to LOCK ${user.email}? They will not be able to log in.`
             : `Are you sure you want to UNLOCK ${user.email}?`;
 
-        if (!window.confirm(confirmMsg)) return;
+        confirm(confirmMsg, async () => {
+            try {
+                const res = await fetch(`/api/manage/users/${user.user_id}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                        'X-Auth-Token': token
+                    },
+                    body: JSON.stringify({ is_locked: newStatus })
+                });
 
-        try {
-            const res = await fetch(`/api/manage/users/${user.user_id}/status`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                    'X-Auth-Token': token
-                },
-                body: JSON.stringify({ is_locked: newStatus })
-            });
+                if (!res.ok) throw new Error('Failed to update status');
 
-            if (!res.ok) throw new Error('Failed to update status');
+                // Optimistic update
+                setUsers(prev => prev.map(u =>
+                    u.user_id === user.user_id ? { ...u, is_locked: newStatus } : u
+                ));
+                notify(`User ${newStatus ? 'locked' : 'unlocked'} successfully`, "success");
 
-            // Optimistic update
-            setUsers(prev => prev.map(u =>
-                u.user_id === user.user_id ? { ...u, is_locked: newStatus } : u
-            ));
-
-        } catch (err) {
-            alert(err.message);
-        }
+            } catch (err) {
+                notify(err.message, "error");
+            }
+        });
     };
 
     if (loading) return <div className="p-8">Loading users...</div>;
@@ -109,8 +112,8 @@ function UserList() {
                                     <button
                                         onClick={() => toggleLock(user)}
                                         className={`text-sm font-semibold px-3 py-1 rounded border transition-colors ${user.is_locked
-                                                ? 'border-gray-300 text-gray-700 hover:bg-gray-100'
-                                                : 'border-red-200 text-red-600 hover:bg-red-50'
+                                            ? 'border-gray-300 text-gray-700 hover:bg-gray-100'
+                                            : 'border-red-200 text-red-600 hover:bg-red-50'
                                             }`}
                                     >
                                         {user.is_locked ? 'Unlock' : 'Lock Account'}

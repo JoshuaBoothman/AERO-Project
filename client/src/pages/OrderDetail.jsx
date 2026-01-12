@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import QRCode from 'react-qr-code';
 import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 
 function OrderDetail() {
     const { orderId } = useParams();
     const { user } = useAuth();
+    const { notify } = useNotification();
 
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -98,7 +100,7 @@ function OrderDetail() {
 
             setEditingAttendeeId(null);
         } catch (err) {
-            alert(`Error updating: ${err.message}`);
+            notify(`Error updating: ${err.message}`, "error");
         } finally {
             setSaving(false);
         }

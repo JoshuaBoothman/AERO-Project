@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNotification } from '../context/NotificationContext';
 
 function ProductModal({ product, onClose, onAddToCart }) {
     const [selectedOptions, setSelectedOptions] = useState({});
@@ -46,9 +47,11 @@ function ProductModal({ product, onClose, onAddToCart }) {
         setSelectedOptions(prev => ({ ...prev, [category]: value }));
     };
 
+    const { notify } = useNotification();
+
     const handleAdd = () => {
-        if (!matchedSku) return alert("Unavailable combination");
-        if (matchedSku.stock <= 0) return alert("Out of stock");
+        if (!matchedSku) return notify("Unavailable combination", "error");
+        if (matchedSku.stock <= 0) return notify("Out of stock", "error");
         onAddToCart(product, matchedSku);
         onClose();
     };

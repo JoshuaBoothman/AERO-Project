@@ -1,18 +1,20 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { useNotification } from '../context/NotificationContext';
 import { useNavigate } from 'react-router-dom';
 
 function Checkout() {
     const { cart, removeFromCart, clearCart, cartTotal } = useCart();
     const { token } = useAuth();
+    const { notify } = useNotification();
     const navigate = useNavigate();
 
     const [loading, setLoading] = useState(false);
 
     const handleCheckout = async () => {
         if (!token) {
-            alert("Please login to checkout.");
+            notify("Please login to checkout.", "error");
             navigate('/login');
             return;
         }
@@ -21,7 +23,7 @@ function Checkout() {
         try {
             const eventId = cart[0]?.eventId;
             if (!eventId) {
-                alert("Error: No event associated with cart items.");
+                notify("Error: No event associated with cart items.", "error");
                 setLoading(false);
                 return;
             }
@@ -75,17 +77,17 @@ function Checkout() {
 
             if (res.ok) {
                 const data = await res.json();
-                alert(`Order Success! ID: ${data.orderId}`);
+                notify(`Order Success! ID: ${data.orderId}`, "success");
                 clearCart();
                 navigate('/my-orders');
             } else {
                 const err = await res.json();
-                alert('Checkout Failed: ' + err.error);
+                notify('Checkout Failed: ' + err.error, "error");
             }
 
         } catch (e) {
             console.error(e);
-            alert('Error submitting order');
+            notify('Error submitting order', "error");
         } finally {
             setLoading(false);
         }

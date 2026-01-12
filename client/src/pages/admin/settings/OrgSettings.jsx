@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../../context/AuthContext';
+import { useNotification } from '../../../context/NotificationContext';
 
 function OrgSettings({ refreshSettings }) {
     const { token } = useAuth();
+    const { notify } = useNotification();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState(null);
@@ -68,7 +70,7 @@ function OrgSettings({ refreshSettings }) {
             const data = await res.json();
             setFormData(prev => ({ ...prev, logo_url: data.url }));
         } catch (err) {
-            alert('Image upload failed: ' + err.message);
+            notify('Image upload failed: ' + err.message, "error");
         } finally {
             setSaving(false);
         }

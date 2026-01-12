@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
+import { useNotification } from '../../context/NotificationContext';
 
 function SubeventForm({ isOpen, onClose, onSubmit, initialData }) {
+    const { notify } = useNotification();
     const [formData, setFormData] = useState({
         name: '',
         description: '',
@@ -68,11 +70,11 @@ function SubeventForm({ isOpen, onClose, onSubmit, initialData }) {
                 console.log("Upload success, url:", data.url);
                 setFormData(prev => ({ ...prev, img_url: data.url }));
             } else {
-                alert('Image upload failed');
+                notify('Image upload failed', 'error');
             }
         } catch (error) {
             console.error('Upload error:', error);
-            alert('Image upload failed');
+            notify('Image upload failed', 'error');
         } finally {
             setUploading(false);
         }

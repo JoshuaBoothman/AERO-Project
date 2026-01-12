@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useNotification } from '../context/NotificationContext';
 import CampingPage from './camping/CampingPage';
 import ProductCard from '../components/ProductCard';
 import ProductModal from '../components/ProductModal';
@@ -8,6 +9,7 @@ import ProductModal from '../components/ProductModal';
 function StorePage({ orgSettings }) {
     const { slug } = useParams();
     const { addToCart } = useCart();
+    const { notify } = useNotification();
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -42,14 +44,14 @@ function StorePage({ orgSettings }) {
             productId: product.id,
             eventId: data.eventId
         });
-        alert("Added to Cart!");
+        notify("Added to Cart!", "success");
     };
 
     // Asset State
     const [hireDates, setHireDates] = useState({ start: '', end: '' });
 
     const handleAddAsset = (asset) => {
-        if (!hireDates.start || !hireDates.end) return alert("Select dates first.");
+        if (!hireDates.start || !hireDates.end) return notify("Select dates first.", "error");
 
         // Calculate Days
         const start = new Date(hireDates.start);
@@ -71,7 +73,7 @@ function StorePage({ orgSettings }) {
             dailyRate: asset.price,
             eventId: data.eventId
         });
-        alert("Added to Cart!");
+        notify("Added to Cart!", "success");
     };
 
     const handleAddSubevent = (sub) => {
@@ -84,7 +86,7 @@ function StorePage({ orgSettings }) {
             startTime: sub.startTime,
             eventId: data.eventId
         });
-        alert("Added to Cart!");
+        notify("Added to Cart!", "success");
     };
 
     if (loading) return <div className="p-10 text-center">Loading Store...</div>;

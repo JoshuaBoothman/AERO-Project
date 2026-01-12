@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useNotification } from '../../context/NotificationContext';
 
 function AdminMapTool() {
     const { user, token } = useAuth();
+    const { notify, confirm } = useNotification();
     const navigate = useNavigate();
 
     // Route Protection
@@ -149,36 +151,38 @@ function AdminMapTool() {
     };
 
     const handleDeleteCampground = async (id) => {
-        if (!window.confirm("Are you sure you want to delete this campground? This cannot be undone.")) return;
-        try {
-            const res = await fetch(`/api/campgrounds/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'X-Auth-Token': token
+        confirm("Are you sure you want to delete this campground? This cannot be undone.", async () => {
+            try {
+                const res = await fetch(`/api/campgrounds/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'X-Auth-Token': token
+                    }
+                });
+                if (res.ok) {
+                    setCampgrounds(prev => prev.filter(c => c.campground_id !== id));
+                    if (selectedCampgroundId === id) {
+                        setSelectedCampgroundId(null);
+                        setCampground(null);
+                    }
+                    notify("Campground deleted", "success");
+                } else {
+                    const text = await res.text();
+                    let errMsg = 'Failed to delete campground';
+                    try {
+                        const json = JSON.parse(text);
+                        errMsg = json.error || errMsg;
+                    } catch (e) {
+                        errMsg += ` (${res.status} ${res.statusText})`;
+                    }
+                    notify(errMsg, "error");
                 }
-            });
-            if (res.ok) {
-                setCampgrounds(prev => prev.filter(c => c.campground_id !== id));
-                if (selectedCampgroundId === id) {
-                    setSelectedCampgroundId(null);
-                    setCampground(null);
-                }
-            } else {
-                const text = await res.text();
-                let errMsg = 'Failed to delete campground';
-                try {
-                    const json = JSON.parse(text);
-                    errMsg = json.error || errMsg;
-                } catch (e) {
-                    errMsg += ` (${res.status} ${res.statusText})`;
-                }
-                alert(errMsg);
+            } catch (e) {
+                console.error(e);
+                notify('Error deleting campground', "error");
             }
-        } catch (e) {
-            console.error(e);
-            alert('Error deleting campground');
-        }
+        });
     };
 
     const handleRenameCampground = (id, currentName) => {
@@ -205,22 +209,22 @@ function AdminMapTool() {
                 setShowRenameModal(false);
             } else {
                 const err = await res.json();
-                alert('Failed to rename: ' + (err.error || 'Unknown error'));
+                notify('Failed to rename: ' + (err.error || 'Unknown error'), "error");
             }
         } catch (e) {
             console.error(e);
-            alert('Error renaming campground');
+            notify('Error renaming campground', "error");
         }
     };
 
     const handleCreateCampground = async () => {
         if (!newCampName || !selectedEventId) {
-            alert('Name and Event are required');
+            notify('Name and Event are required', "error");
             return;
         }
 
         if (!selectedFile) {
-            alert('Please select a map image');
+            notify('Please select a map image', "error");
             return;
         }
 
@@ -266,11 +270,11 @@ function AdminMapTool() {
                     setSelectedCampgroundId(data.campground_id);
                 }
             } else {
-                alert('Failed to create campground');
+                notify('Failed to create campground', "error");
             }
         } catch (e) {
             console.error(e);
-            alert('Error: ' + e.message);
+            notify('Error: ' + e.message, "error");
         } finally {
             setUploading(false);
         }
@@ -336,20 +340,22 @@ function AdminMapTool() {
 
 
     const handleDelete = async (id) => {
-        if (!window.confirm('Delete this site?')) return;
-        try {
-            const res = await fetch(`/api/campsites/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'X-Auth-Token': token
+        confirm('Delete this site?', async () => {
+            try {
+                const res = await fetch(`/api/campsites/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'X-Auth-Token': token
+                    }
+                });
+                if (res.ok) {
+                    setSites(prev => prev.filter(s => s.campsite_id !== id));
+                    setSelectedSiteId(null);
+                    notify("Site deleted", "success");
                 }
-            });
-            if (res.ok) {
-                setSites(prev => prev.filter(s => s.campsite_id !== id));
-                setSelectedSiteId(null);
-            }
-        } catch (e) { console.error(e); }
+            } catch (e) { console.error(e); }
+        });
     };
 
     const handleMapClick = (e) => {
@@ -379,9 +385,9 @@ function AdminMapTool() {
                 setTempCoords(null);
             } else {
                 const err = await res.json();
-                alert(`Failed to save: ${err.error || 'Unknown error'}`);
+                notify(`Failed to save: ${err.error || 'Unknown error'}`, "error");
             }
-        } catch (err) { alert('Error saving: ' + err.message); }
+        } catch (err) { notify('Error saving: ' + err.message, "error"); }
     };
 
     return (

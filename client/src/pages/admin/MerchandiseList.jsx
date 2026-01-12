@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useNotification } from '../../context/NotificationContext';
 
 function MerchandiseList() {
     const { token } = useAuth();
     const navigate = useNavigate();
+    const { notify } = useNotification();
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -44,10 +46,10 @@ function MerchandiseList() {
                 const data = await res.json();
                 navigate(`/admin/merchandise/${data.product_id}`);
             } else {
-                alert('Failed to create product');
+                notify('Failed to create product', 'error');
             }
         } catch (e) {
-            alert('Error creating product');
+            notify('Error creating product', 'error');
         }
     };
 

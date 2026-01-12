@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useNotification } from '../../context/NotificationContext';
 
 function EventForm() {
     const { slug } = useParams();
     const navigate = useNavigate();
     const { user, token } = useAuth();
+    const { notify, confirm } = useNotification();
 
     const [venues, setVenues] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -149,7 +151,7 @@ function EventForm() {
             const data = await res.json();
             setFormData(prev => ({ ...prev, banner_url: data.url }));
         } catch (err) {
-            alert('Image upload failed: ' + err.message);
+            notify('Image upload failed: ' + err.message, 'error');
         } finally {
             setSaving(false);
         }
@@ -190,7 +192,7 @@ function EventForm() {
 
     const handleCreateVenue = async () => {
         if (!venueForm.name || !venueForm.state) {
-            alert("Name and State are required");
+            notify("Name and State are required", "error");
             return;
         }
         try {
@@ -214,7 +216,7 @@ function EventForm() {
             setShowVenueModal(false);
             setVenueForm({ name: '', address_line_1: '', city: '', state: 'QLD', postcode: '', map_url: '' });
         } catch (err) {
-            alert(err.message);
+            notify(err.message, 'error');
         }
     };
 
@@ -229,7 +231,7 @@ function EventForm() {
 
     const handleSaveTicket = async () => {
         if (!ticketForm.name || ticketForm.price === '') {
-            alert("Name and Price are required");
+            notify("Name and Price are required", "error");
             return;
         }
 
@@ -268,25 +270,27 @@ function EventForm() {
             setTicketForm({ name: '', price: '', system_role: 'spectator', is_pilot: false, is_pit_crew: false });
 
         } catch (err) {
-            alert(err.message);
+            notify(err.message, "error");
         }
     };
 
-    const handleDeleteTicket = async (id) => {
-        if (!window.confirm("Delete this ticket type?")) return;
-        try {
-            const res = await fetch(`/api/ticket-types/${id}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}`, 'X-Auth-Token': token }
-            });
-            if (!res.ok) {
-                const err = await res.json().catch(() => ({}));
-                throw new Error(err.error || 'Delete failed');
+    const handleDeleteTicket = (id) => {
+        confirm("Delete this ticket type?", async () => {
+            try {
+                const res = await fetch(`/api/ticket-types/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}`, 'X-Auth-Token': token }
+                });
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.error || 'Delete failed');
+                }
+                setTicketTypes(prev => prev.filter(t => t.ticket_type_id !== id));
+                notify('Ticket type deleted', 'success');
+            } catch (err) {
+                notify(err.message, 'error');
             }
-            setTicketTypes(prev => prev.filter(t => t.ticket_type_id !== id));
-        } catch (err) {
-            alert(err.message);
-        }
+        });
     };
 
     const openCreateTicket = () => {
@@ -318,6 +322,30 @@ function EventForm() {
         const date = new Date(isoString);
         if (isNaN(date)) return '';
         return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    };
+
+    const handleDeleteEvent = () => {
+        confirm("Are you sure you want to delete this event? This action cannot be undone.", async () => {
+            setSaving(true);
+            try {
+                const res = await fetch(`/api/events/${formData.event_id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'X-Auth-Token': token
+                    }
+                });
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.error || 'Delete failed');
+                }
+                notify('Event deleted', 'success');
+                navigate('/events');
+            } catch (err) {
+                notify(err.message, 'error');
+                setSaving(false);
+            }
+        });
     };
 
     return (
@@ -524,28 +552,7 @@ function EventForm() {
                     {isEditMode && (
                         <button
                             type="button"
-                            onClick={async () => {
-                                if (window.confirm("Are you sure you want to delete this event? This action cannot be undone.")) {
-                                    setSaving(true);
-                                    try {
-                                        const res = await fetch(`/api/events/${formData.event_id}`, {
-                                            method: 'DELETE',
-                                            headers: {
-                                                'Authorization': `Bearer ${token}`,
-                                                'X-Auth-Token': token
-                                            }
-                                        });
-                                        if (!res.ok) {
-                                            const err = await res.json().catch(() => ({}));
-                                            throw new Error(err.error || 'Delete failed');
-                                        }
-                                        navigate('/events');
-                                    } catch (err) {
-                                        alert(err.message);
-                                        setSaving(false);
-                                    }
-                                }
-                            }}
+                            onClick={handleDeleteEvent}
                             style={{
                                 backgroundColor: '#dc3545',
                                 color: 'white',

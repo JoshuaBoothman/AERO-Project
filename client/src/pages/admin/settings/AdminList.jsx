@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../../context/AuthContext';
+import { useNotification } from '../../../context/NotificationContext';
 import AdminModal from './AdminModal';
 
 function AdminList() {
     const { user, token } = useAuth(); // Logged in user info
+    const { notify, confirm } = useNotification();
     const [admins, setAdmins] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -43,27 +45,28 @@ function AdminList() {
         setIsModalOpen(true);
     };
 
-    const handleDelete = async (adminId) => {
-        if (!window.confirm('Are you sure you want to delete this admin? This action cannot be undone.')) return;
+    const handleDelete = (adminId) => {
+        confirm('Are you sure you want to delete this admin? This action cannot be undone.', async () => {
+            try {
+                const res = await fetch(`/api/manage/admins/${adminId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'X-Auth-Token': token
+                    }
+                });
 
-        try {
-            const res = await fetch(`/api/manage/admins/${adminId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'X-Auth-Token': token
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.error || 'Failed to delete admin');
                 }
-            });
 
-            if (!res.ok) {
-                const err = await res.json().catch(() => ({}));
-                throw new Error(err.error || 'Failed to delete admin');
+                setAdmins(prev => prev.filter(a => a.admin_user_id !== adminId));
+                notify("Admin deleted successfully", "success");
+            } catch (err) {
+                notify(err.message, "error");
             }
-
-            setAdmins(prev => prev.filter(a => a.admin_user_id !== adminId));
-        } catch (err) {
-            alert(err.message);
-        }
+        });
     };
 
     const handleSave = (savedAdmin) => {
