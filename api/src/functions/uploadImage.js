@@ -20,7 +20,7 @@ app.http('uploadImage', {
             context.log(`[UPLOAD] Stage: ${stage}. Has Connection String: ${hasConnString}`);
 
             if (!connectionString) {
-                context.log.error('[UPLOAD] Missing BLOB_STORAGE_CONNECTION_STRING');
+                context.error('[UPLOAD] Missing BLOB_STORAGE_CONNECTION_STRING');
                 return { status: 500, body: JSON.stringify({ error: "Configuration Error", details: "BLOB_STORAGE_CONNECTION_STRING is missing" }) };
             }
 
@@ -32,14 +32,14 @@ app.http('uploadImage', {
                 formData = await request.formData();
                 context.log(`[UPLOAD] FormData parsed successfully.`);
             } catch (formError) {
-                context.log.error('[UPLOAD] FormData Parse Error:', formError);
+                context.error('[UPLOAD] FormData Parse Error:', formError);
                 return { status: 400, body: JSON.stringify({ error: "Invalid Form Data", details: formError.message, stage }) };
             }
 
             stage = 'GET_FILE';
             const file = formData.get('file');
             if (!file) {
-                context.log.warn('[UPLOAD] No file found in parsing formData.');
+                context.warn('[UPLOAD] No file found in parsing formData.');
                 return { status: 400, body: JSON.stringify({ error: "No file uploaded", stage }) };
             }
             context.log(`[UPLOAD] File received: ${file.name}, Size: ${file.size}, Type: ${file.type}`);
@@ -81,7 +81,7 @@ app.http('uploadImage', {
             };
 
         } catch (error) {
-            context.log.error(`[UPLOAD] Critical Error at stage ${stage}:`, error);
+            context.error(`[UPLOAD] Critical Error at stage ${stage}:`, error);
             return {
                 status: 500,
                 body: JSON.stringify({
