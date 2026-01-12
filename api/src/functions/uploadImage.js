@@ -59,7 +59,14 @@ app.http('uploadImage', {
 
         } catch (error) {
             context.log.error('Upload error:', error);
-            return { status: 500, body: JSON.stringify({ error: "Upload failed: " + error.message }) };
+            return {
+                status: 500,
+                body: JSON.stringify({
+                    error: "Upload failed: " + error.message,
+                    details: error.stack, // Helpful for debugging
+                    code: error.code || 'UNKNOWN'
+                })
+            };
         }
     }
 });
