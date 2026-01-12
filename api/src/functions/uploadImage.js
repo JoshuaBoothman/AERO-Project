@@ -1,10 +1,10 @@
 const { app } = require('@azure/functions');
-const fs = require('fs');
-const path = require('path');
+const { BlobServiceClient } = require('@azure/storage-blob');
 const crypto = require('crypto');
+const path = require('path');
 
-// Helper to parse multipart/form-data manually (since simple req.formData() might be stream based in some versions, but v4 is usually good)
-// Actually, in Node v18+ and Azure Functions v4, request.formData() returns a standard FormData object.
+const connectionString = process.env.BLOB_STORAGE_CONNECTION_STRING;
+const containerName = 'uploads';
 
 app.http('uploadImage', {
     methods: ['POST'],
@@ -12,6 +12,10 @@ app.http('uploadImage', {
     route: 'upload',
     handler: async (request, context) => {
         try {
+            if (!connectionString) {
+                return { status: 500, body: JSON.stringify({ error: "Azure Storage connection string not configured." }) };
+            }
+
             const formData = await request.formData();
             const file = formData.get('file');
 
@@ -23,31 +27,39 @@ app.http('uploadImage', {
             const ext = path.extname(file.name) || '.png';
             const filename = `${crypto.randomUUID()}${ext}`;
 
-            // Define upload path (Local Dev specific: ../client/public/uploads)
-            // Note: In production, this should be Blob Storage.
-            const uploadDir = path.resolve(__dirname, '../../../client/public/uploads');
+            // Initialize Azure Blob Service
+            const blobServiceClient = BlobServiceClient.fromConnectionString(connectionString);
+            const containerClient = blobServiceClient.getContainerClient(containerName);
 
-            // Ensure directory exists
-            if (!fs.existsSync(uploadDir)) {
-                fs.mkdirSync(uploadDir, { recursive: true });
-            }
+            // Ensure container exists (idempotent)
+            await containerClient.createIfNotExists({
+                access: 'blob' // Public read access for blobs
+            });
 
-            const filePath = path.join(uploadDir, filename);
+            const blockBlobClient = containerClient.getBlockBlobClient(filename);
 
             // Convert Web Stream/Blob to Buffer
             const arrayBuffer = await file.arrayBuffer();
             const buffer = Buffer.from(arrayBuffer);
 
-            fs.writeFileSync(filePath, buffer);
+            // Upload to Azure
+            // undefined content-type usually defaults to application/octet-stream, 
+            // but for images we might want to try to detect or pass it if available.
+            // request.formData() 'file' object often has 'type' property.
+            const contentType = file.type || 'application/octet-stream';
+
+            await blockBlobClient.upload(buffer, buffer.length, {
+                blobHTTPHeaders: { blobContentType: contentType }
+            });
 
             return {
                 status: 200,
-                jsonBody: { url: `/uploads/${filename}` }
+                jsonBody: { url: blockBlobClient.url }
             };
 
         } catch (error) {
             context.log.error('Upload error:', error);
-            return { status: 500, body: JSON.stringify({ error: "Upload failed " + error.message }) };
+            return { status: 500, body: JSON.stringify({ error: "Upload failed: " + error.message }) };
         }
     }
 });

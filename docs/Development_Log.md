@@ -742,3 +742,19 @@ When ready to deploy to production with a real domain:
 *   **Backend (API)**
     *   **Data Structure:** Enhanced `getStoreItems` response to return nested `options` (for dropdowns) and `variant_map` (for logic).
     *   **Images:** Added `image_url` support to individual SKUs in the API response.
+
+## [2026-01-12] - Azure Storage Migration
+**Milestone:** Scalable Image Hosting for Serverless Environment
+
+### Completed Items
+* **Infrastructure**
+    *   **Azure Storage:** Set up a dedicated Storage Account (`aeroprojectstorage`) and `uploads` container.
+    *   **Configuration:** Added `BLOB_STORAGE_CONNECTION_STRING` to `local.settings.json`.
+* **Backend (API)**
+    *   **Dependencies:** Installed `@azure/storage-blob`.
+    *   **Refactor:** Rewrote `uploadImage.js` to upload files directly to Azure Blob Storage instead of the local filesystem.
+    *   **Security:** Configured public read access for the `uploads` container to serve images globally.
+* **Frontend (Client)**
+    *   **Verification:** Confirmed that `ProductCard` and `EventDetails` components correctly render images served from absolute Azure URLs (`https://...`).
+* **Verification**
+    *   **Upload Test:** Verified that uploading a file via the API successfully stores it in Azure and returns a valid, accessible URL.
