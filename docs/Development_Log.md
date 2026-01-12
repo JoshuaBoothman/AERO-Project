@@ -723,3 +723,22 @@ When ready to deploy to production with a real domain:
     *   **Interaction:** Implemented Lock/Unlock functionality with optimistic UI updates.
     *   **Login:** Updated Login.jsx to display actual server error messages (e.g., "Account is locked", "Please verify email") instead of generic "Invalid Credentials".
 
+
+## [2026-01-12] - Store UI & Global Merchandise Flow
+**Milestone:** Storefront Modernization & Global SKU Access
+
+### Completed Items
+*   **Merchandise Architecture**
+    *   **Refactor:** Decoupled Merchandise from specific Events. Products are now "Global" by default.
+    *   **Logic:** Updated `getStoreItems` to fetch all active `product_skus`, removing the strict `event_skus` join.
+    *   **Transactions:** Updated `createOrder.js` to process orders using `product_sku_id` directly, simplifying inventory management.
+*   **Storefront UI/UX**
+    *   **Visual Overhaul:** Replaced the dense list view with a clean **Product Grid**.
+    *   **Interaction:** Introduced a **Product Modal** for item selection.
+        *   **Dynamic Options:** Dropdowns (Size/Color) are generated dynamically from API data.
+        *   **Real-time Feedback:** Price and Stock status update instantly based on user selection.
+        *   **Smart Imaging:** Modal image updates to the specific SKU image (if available) when options are selected.
+    *   **Components:** Created reusable `ProductCard.jsx` and `ProductModal.jsx` components.
+*   **Backend (API)**
+    *   **Data Structure:** Enhanced `getStoreItems` response to return nested `options` (for dropdowns) and `variant_map` (for logic).
+    *   **Images:** Added `image_url` support to individual SKUs in the API response.

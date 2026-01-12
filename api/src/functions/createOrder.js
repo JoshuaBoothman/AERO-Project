@@ -184,26 +184,26 @@ app.http('createOrder', {
                 // 5. Process MERCHANDISE Items
                 if (merchandise && merchandise.length > 0) {
                     for (const merch of merchandise) {
-                        // skuId is event_sku_id? OR product_sku_id?
-                        // Cart sends `event_sku_id` (from getStoreItems).
-                        // Order Items `item_reference_id` should probably be `product_sku_id` or `event_sku_id`. 
-                        // `event_skus` links to `product_skus`.
-                        // Let's resolve to `product_sku_id` for inventory management.
-
-                        const esReq = new sql.Request(transaction);
-                        const esRes = await esReq.input('esid', sql.Int, merch.skuId).query("SELECT product_sku_id, price FROM event_skus WHERE event_sku_id = @esid");
-                        if (esRes.recordset.length === 0) throw new Error("Invalid merchandise SKU.");
-
-                        const skuId = esRes.recordset[0].product_sku_id;
+                        // skuId is now product_sku_id (Global Merch)
+                        const skuId = merch.skuId;
                         const qty = merch.quantity || 1;
-                        const price = esRes.recordset[0].price; // Use DB price? Or payload? DB price is safer.
 
-                        // Check & Update Stock
+                        // Check SKU & Price
+                        const skuReq = new sql.Request(transaction);
+                        const skuRes = await skuReq.input('sid', sql.Int, skuId).query("SELECT price, current_stock FROM product_skus WHERE product_sku_id = @sid AND is_active = 1");
+
+                        if (skuRes.recordset.length === 0) throw new Error(`Invalid or inactive merchandise SKU: ${skuId}`);
+
+                        const price = skuRes.recordset[0].price;
+                        const currentStock = skuRes.recordset[0].current_stock;
+
+                        // Check Stock
+                        if (currentStock < qty) throw new Error(`Insufficient stock for SKU ${skuId}. Requested: ${qty}, Available: ${currentStock}`);
+
+                        // Update Stock
                         const stockReq = new sql.Request(transaction);
-                        const stockRes = await stockReq.input('sid', sql.Int, skuId).input('qty', sql.Int, qty)
-                            .query("UPDATE product_skus SET current_stock = current_stock - @qty WHERE product_sku_id = @sid AND current_stock >= @qty");
-
-                        if (stockRes.rowsAffected[0] === 0) throw new Error(`Insufficient stock for Merch SKU ${skuId}`);
+                        await stockReq.input('sid', sql.Int, skuId).input('qty', sql.Int, qty)
+                            .query("UPDATE product_skus SET current_stock = current_stock - @qty WHERE product_sku_id = @sid");
 
                         totalAmount += (price * qty);
 

@@ -242,11 +242,16 @@ function ProductEditor() {
         // Optimistic update
         setSkus(prev => prev.map(s => s.id === skuId ? { ...s, [field]: value } : s));
 
+        // Map state keys to API keys
+        let apiField = field;
+        if (field === 'stock') apiField = 'current_stock';
+        if (field === 'active') apiField = 'is_active';
+
         try {
             await fetch(`/api/skus/${skuId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'X-Auth-Token': token },
-                body: JSON.stringify({ [field]: value })
+                body: JSON.stringify({ [apiField]: value })
             });
         } catch (e) { console.error('Failed to save SKU change', e); }
     };
@@ -410,7 +415,7 @@ function ProductEditor() {
                                         <input
                                             type="checkbox"
                                             checked={sku.active}
-                                            onChange={e => handleSkuUpdate(sku.id, 'is_active', e.target.checked)}
+                                            onChange={e => handleSkuUpdate(sku.id, 'active', e.target.checked)}
                                         />
                                     </td>
                                     <td style={{ padding: '10px' }}>
@@ -439,7 +444,7 @@ function ProductEditor() {
                                         <input
                                             type="number"
                                             value={sku.stock}
-                                            onChange={e => handleSkuUpdate(sku.id, 'current_stock', e.target.value)}
+                                            onChange={e => handleSkuUpdate(sku.id, 'stock', e.target.value)}
                                             style={{ width: '80px', padding: '5px', border: '1px solid #ddd', borderRadius: '4px' }}
                                         />
                                     </td>

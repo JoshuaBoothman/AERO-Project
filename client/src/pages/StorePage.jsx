@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import CampingPage from './camping/CampingPage';
+import ProductCard from '../components/ProductCard';
+import ProductModal from '../components/ProductModal';
 
 function StorePage({ orgSettings }) {
     const { slug } = useParams();
@@ -11,6 +13,7 @@ function StorePage({ orgSettings }) {
     const [error, setError] = useState(null);
     const [data, setData] = useState({ merchandise: [], assets: [], subevents: [] });
     const [activeTab, setActiveTab] = useState('merch');
+    const [selectedProduct, setSelectedProduct] = useState(null);
 
     useEffect(() => {
         setLoading(true);
@@ -31,11 +34,11 @@ function StorePage({ orgSettings }) {
     const handleAddMerch = (product, sku) => {
         addToCart({
             type: 'MERCH',
-            id: sku.id, // event_sku_id
-            name: `${product.name} (${sku.variant})`,
+            id: sku.id, // product_sku_id (Global)
+            name: `${product.name} ${Object.values(sku.variant_map || {}).join(' / ')}`,
             price: sku.price,
             quantity: 1,
-            image: product.image,
+            image: sku.image || product.image,
             productId: product.id,
             eventId: data.eventId
         });
@@ -124,31 +127,26 @@ function StorePage({ orgSettings }) {
 
                 {/* MERCHANDISE */}
                 {activeTab === 'merch' && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {data.merchandise.length === 0 && <p className="text-gray-500 italic">No merchandise available.</p>}
-                        {data.merchandise.map(prod => (
-                            <div key={prod.id} className="bg-white border border-gray-100 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-                                <img src={prod.image} alt={prod.name} className="w-full h-48 object-cover mb-4 rounded bg-gray-50" />
-                                <h3 className="font-bold text-lg text-gray-800">{prod.name}</h3>
-                                <p className="text-sm text-gray-600 mb-4 h-10 overflow-hidden">{prod.description}</p>
+                    <>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                            {data.merchandise.length === 0 && <p className="text-gray-500 italic">No merchandise available.</p>}
+                            {data.merchandise.map(prod => (
+                                <ProductCard
+                                    key={prod.id}
+                                    product={prod}
+                                    onSelect={setSelectedProduct}
+                                />
+                            ))}
+                        </div>
 
-                                <div className="space-y-2 mt-auto">
-                                    {prod.skus.map(sku => (
-                                        <div key={sku.id} className="flex justify-between items-center bg-gray-50 p-2 rounded border border-gray-100">
-                                            <span className="text-sm font-medium text-gray-700">{sku.variant}</span>
-                                            <span className="font-bold text-primary">${sku.price}</span>
-                                            <button
-                                                onClick={() => handleAddMerch(prod, sku)}
-                                                className="bg-primary text-secondary px-3 py-1 rounded text-sm hover:brightness-110 transition-all font-medium"
-                                            >
-                                                Add
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                        {selectedProduct && (
+                            <ProductModal
+                                product={selectedProduct}
+                                onClose={() => setSelectedProduct(null)}
+                                onAddToCart={handleAddMerch}
+                            />
+                        )}
+                    </>
                 )}
 
                 {/* ASSETS */}

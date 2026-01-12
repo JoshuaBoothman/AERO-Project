@@ -28,33 +28,28 @@ app.http('getStoreItems', {
                 eventId = eRes.recordset[0].event_id;
                 eventName = eRes.recordset[0].name;
             } else if (eventId) {
-                // Convert string to int if needed, though SQL driver handles it usually.
-                // Also need to fetch name if we only got ID
                 const eRes = await pool.request()
                     .input('eid', sql.Int, eventId)
                     .query("SELECT name FROM events WHERE event_id = @eid");
                 if (eRes.recordset.length > 0) eventName = eRes.recordset[0].name;
             }
 
-            // 2. Fetch Merch (Products linked via Event Skus)
-            // Join products, variants, skus, event_skus to get full structure.
-            // Simplified: Get Event Skus -> Products.
+            // 2. Fetch Merch (Global Products)
+            // Fetch all active products and their active SKUs
             const merchQuery = `
                 SELECT 
-                    es.event_sku_id, es.price, 
-                    ps.sku_code, ps.current_stock,
+                    ps.product_sku_id as sku_id, ps.price, ps.sku_code, ps.current_stock, ps.image_url as sku_image,
                     p.product_id, p.name as product_name, p.base_image_url, p.description,
                     v.name as variant_category, vo.value as variant_value
-                FROM event_skus es
-                JOIN product_skus ps ON es.product_sku_id = ps.product_sku_id
+                FROM product_skus ps
                 JOIN products p ON ps.product_id = p.product_id
                 LEFT JOIN sku_option_links sol ON ps.product_sku_id = sol.product_sku_id
                 LEFT JOIN variant_options vo ON sol.variant_option_id = vo.variant_option_id
                 LEFT JOIN variants var ON vo.variant_id = var.variant_id
                 LEFT JOIN variant_categories v ON var.variant_category_id = v.variant_category_id
-                WHERE es.event_id = @eid AND es.is_enabled = 1
+                WHERE ps.is_active = 1 AND p.is_active = 1
             `;
-            const merchRes = await pool.request().input('eid', sql.Int, eventId).query(merchQuery);
+            const merchRes = await pool.request().query(merchQuery);
 
             // Group by Product
             const merchandise = [];
@@ -68,17 +63,46 @@ app.http('getStoreItems', {
                         name: row.product_name,
                         description: row.description,
                         image: row.base_image_url,
+                        options: [], // [{ name: "Color", values: Set() }]
                         skus: []
                     };
                     productMap.set(row.product_id, prod);
                     merchandise.push(prod);
                 }
-                prod.skus.push({
-                    id: row.event_sku_id, // This is what we buy!
-                    code: row.sku_code,
-                    price: row.price,
-                    stock: row.current_stock,
-                    variant: row.variant_value
+
+                // Find or Create SKU
+                let existingSku = prod.skus.find(s => s.id === row.sku_id);
+                if (!existingSku) {
+                    existingSku = {
+                        id: row.sku_id, // product_sku_id
+                        code: row.sku_code,
+                        price: row.price,
+                        stock: row.current_stock,
+                        image: row.sku_image || null, // SKU specific image
+                        variant_map: {} // { "Color": "Red", "Size": "L" }
+                    };
+                    prod.skus.push(existingSku);
+                }
+
+                // Process Variant Option
+                if (row.variant_category && row.variant_value) {
+                    // Add to SKU's map
+                    existingSku.variant_map[row.variant_category] = row.variant_value;
+
+                    // Add to Product's centralized Option Definitions
+                    let optCat = prod.options.find(o => o.name === row.variant_category);
+                    if (!optCat) {
+                        optCat = { name: row.variant_category, values: new Set() };
+                        prod.options.push(optCat);
+                    }
+                    optCat.values.add(row.variant_value);
+                }
+            });
+
+            // Post-process options to convert Sets to Arrays
+            merchandise.forEach(prod => {
+                prod.options.forEach(opt => {
+                    opt.values = Array.from(opt.values).sort();
                 });
             });
 
