@@ -812,5 +812,33 @@ The "Camping" page for "Festival of Aeromodelling 2026" was displaying "No campg
     *   **Verification:** Verified by calling the API directly and confirming it now returns the campground data correctly.
 
 
+
 ### Next Steps
 *   **Checkout:** Ensure the correct price (Daily Rate * Days) is passed to the cart and checkout flow.
+
+## [2026-01-13] - Merchandise Delete & Archive Logic
+**Milestone:** Implemented safe deletion and archiving workflows for products.
+
+### Completed Items
+*   **Backend (API)**
+    *   **New Endpoint:** `deleteProduct.js` (DELETE /api/products/{id}).
+        *   **Validation:** Blocks deletion if the product has existing Orders (`409 HAS_ORDERS`).
+        *   **Warning:** Blocks deletion if the product has SKUs (`409 HAS_SKUS`) unless `force=true`.
+        *   **Cleanup:** Performs cascading delete of Product -> Variants -> Options -> SKUs.
+    *   **Enhancement:** Updated `getProducts.js` to remove the default `is_active=1` filter, allowing Admins to view archived products.
+    *   **Fix:** Identified that `products.is_published` column does not exist, corrected legacy checks.
+*   **Frontend (Client)**
+    *   **Product Editor:**
+        *   **Actions:** Added "Archive", "Unarchive", and "Delete" buttons to the bottom of the "Info" tab.
+        *   **UX:** Implemented smart confirmation logic:
+            *   "Has Orders" -> Suggests Archiving.
+            *   "Has SKUs" -> Double confirmation warning about data loss.
+    *   **Merchandise List:**
+        *   **Filtering:** Added "Show Archived" checkbox to toggle visibility of archived items.
+        *   **Status:** Removed incorrect "Draft" badge; Added clear "Archived" badge.
+*   **Verification**
+    *   Verified archiving hides products from the list (unless filter is active).
+    *   Verified unarchiving restores products.
+    *   Verified deletion works for clean products and forces confirmation for products with SKUs.
+    *   Verified products with orders cannot be deleted and prompt for archiving.
+

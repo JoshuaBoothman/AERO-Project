@@ -20,7 +20,8 @@ app.http('getProducts', {
                     (SELECT COUNT(*) FROM product_skus s WHERE s.product_id = p.product_id AND s.is_active = 1) as sku_count,
                     (SELECT SUM(current_stock) FROM product_skus s WHERE s.product_id = p.product_id AND s.is_active = 1) as total_stock
                 FROM products p
-                WHERE p.is_active = 1
+                -- WHERE p.is_active = 1 (Removed to allow fetching archived products for admin)
+
                 ORDER BY p.created_at DESC
             `);
 

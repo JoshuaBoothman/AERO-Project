@@ -11,6 +11,7 @@ function MerchandiseList() {
     const [loading, setLoading] = useState(true);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [newProductName, setNewProductName] = useState('');
+    const [showArchived, setShowArchived] = useState(false);
 
     useEffect(() => {
         fetchProducts();
@@ -59,12 +60,22 @@ function MerchandiseList() {
         <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                 <h1 style={{ margin: 0 }}>Merchandise</h1>
-                <button
-                    onClick={() => setShowCreateModal(true)}
-                    style={{ background: 'black', color: 'white', padding: '10px 20px', borderRadius: '4px', cursor: 'pointer', border: 'none' }}
-                >
-                    + New Product
-                </button>
+                <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
+                        <input
+                            type="checkbox"
+                            checked={showArchived}
+                            onChange={(e) => setShowArchived(e.target.checked)}
+                        />
+                        Show Archived
+                    </label>
+                    <button
+                        onClick={() => setShowCreateModal(true)}
+                        style={{ background: 'black', color: 'white', padding: '10px 20px', borderRadius: '4px', cursor: 'pointer', border: 'none' }}
+                    >
+                        + New Product
+                    </button>
+                </div>
             </div>
 
             <div style={{ overflowX: 'auto' }}>
@@ -80,29 +91,31 @@ function MerchandiseList() {
                         </tr>
                     </thead>
                     <tbody>
-                        {products.map(p => (
-                            <tr key={p.product_id} style={{ borderBottom: '1px solid #eee' }}>
-                                <td style={{ padding: '10px' }}>
-                                    {p.base_image_url ? (
-                                        <img src={p.base_image_url} alt={p.name} style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '4px' }} />
-                                    ) : (
-                                        <div style={{ width: '50px', height: '50px', background: '#eee', borderRadius: '4px' }}></div>
-                                    )}
-                                </td>
-                                <td style={{ padding: '10px', fontWeight: 'bold' }}>
-                                    <Link to={`/admin/merchandise/${p.product_id}`} style={{ color: 'black', textDecoration: 'none' }}>
-                                        {p.name}
-                                    </Link>
-                                    {!p.is_active && <span style={{ marginLeft: '10px', fontSize: '0.8rem', background: '#ccc', padding: '2px 6px', borderRadius: '4px' }}>Draft</span>}
-                                </td>
-                                <td style={{ padding: '10px', textAlign: 'center' }}>{p.variant_count}</td>
-                                <td style={{ padding: '10px', textAlign: 'center' }}>{p.sku_count}</td>
-                                <td style={{ padding: '10px', textAlign: 'center' }}>{p.total_stock || 0}</td>
-                                <td style={{ padding: '10px', textAlign: 'right' }}>
-                                    <Link to={`/admin/merchandise/${p.product_id}`} style={{ color: 'blue', textDecoration: 'none', marginRight: '10px' }}>Edit</Link>
-                                </td>
-                            </tr>
-                        ))}
+                        {products
+                            .filter(p => showArchived ? true : p.is_active)
+                            .map(p => (
+                                <tr key={p.product_id} style={{ borderBottom: '1px solid #eee' }}>
+                                    <td style={{ padding: '10px' }}>
+                                        {p.base_image_url ? (
+                                            <img src={p.base_image_url} alt={p.name} style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '4px' }} />
+                                        ) : (
+                                            <div style={{ width: '50px', height: '50px', background: '#eee', borderRadius: '4px' }}></div>
+                                        )}
+                                    </td>
+                                    <td style={{ padding: '10px', fontWeight: 'bold' }}>
+                                        <Link to={`/admin/merchandise/${p.product_id}`} style={{ color: 'black', textDecoration: 'none' }}>
+                                            {p.name}
+                                        </Link>
+                                        {!p.is_active && <span style={{ marginLeft: '10px', fontSize: '0.8rem', background: '#ccc', padding: '2px 6px', borderRadius: '4px' }}>Archived</span>}
+                                    </td>
+                                    <td style={{ padding: '10px', textAlign: 'center' }}>{p.variant_count}</td>
+                                    <td style={{ padding: '10px', textAlign: 'center' }}>{p.sku_count}</td>
+                                    <td style={{ padding: '10px', textAlign: 'center' }}>{p.total_stock || 0}</td>
+                                    <td style={{ padding: '10px', textAlign: 'right' }}>
+                                        <Link to={`/admin/merchandise/${p.product_id}`} style={{ color: 'blue', textDecoration: 'none', marginRight: '10px' }}>Edit</Link>
+                                    </td>
+                                </tr>
+                            ))}
                     </tbody>
                 </table>
                 {products.length === 0 && <p style={{ textAlign: 'center', marginTop: '20px' }}>No products found.</p>}

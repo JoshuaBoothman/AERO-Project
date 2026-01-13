@@ -14,6 +14,7 @@ function ProductEditor() {
     const [product, setProduct] = useState({});
     const [variants, setVariants] = useState([]); // [{ variant_id, name, options: [{id, value}] }]
     const [skus, setSkus] = useState([]); // [{ id, code, price, stock, options: [], description }]
+    const [isArchived, setIsArchived] = useState(false);
 
     // Edit State
     const [formData, setFormData] = useState({ name: '', description: '', base_image_url: '' });
@@ -35,6 +36,7 @@ function ProductEditor() {
             if (res.ok) {
                 const data = await res.json();
                 setProduct(data.product);
+                setIsArchived(!data.product.is_active);
                 setVariants(data.variants);
                 setSkus(data.skus);
                 setFormData({
@@ -237,6 +239,70 @@ function ProductEditor() {
         });
     };
 
+    // --- Delete / Archive Handlers ---
+    const handleDeleteProduct = async (force = false) => {
+        if (!force) {
+            const confirmMsg = "Are you sure you want to delete this product? This action cannot be undone.";
+            if (!window.confirm(confirmMsg)) return;
+            // Note: using window.confirm for initial check to avoid nested custom modals complexity for now, or use custom if preferred.
+            // Actually, let's just proceed to API call, the API handles the logic checks.
+            // But for "Clean" product, we want a confirm.
+        }
+
+        try {
+            const res = await fetch(`/api/products/${id}${force ? '?force=true' : ''}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}`, 'X-Auth-Token': token }
+            });
+
+            if (res.ok) {
+                notify('Product deleted successfully', 'success');
+                window.location.href = '/admin/merchandise'; // using location.href to ensure full refresh or navigate
+                return;
+            }
+
+            const data = await res.json();
+
+            if (res.status === 409) {
+                if (data.code === 'HAS_ORDERS') {
+                    if (window.confirm(`${data.error} \n\nWould you like to archive this product instead?`)) {
+                        handleToggleArchive(true); // Archive it
+                    }
+                } else if (data.code === 'HAS_SKUS') {
+                    if (window.confirm(`${data.error} \n\nAre you sure you want to proceed? This will delete all SKUs and cannot be undone.`)) {
+                        handleDeleteProduct(true); // Force delete
+                    }
+                } else {
+                    notify(data.error, 'error');
+                }
+            } else {
+                notify(data.error || 'Failed to delete product', 'error');
+            }
+
+        } catch (e) {
+            console.error(e);
+            notify('Error deleting product', 'error');
+        }
+    };
+
+    const handleToggleArchive = async (archive) => {
+        try {
+            const res = await fetch(`/api/products/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'X-Auth-Token': token },
+                body: JSON.stringify({ is_active: !archive }) // if archive=true, is_active=false
+            });
+            if (res.ok) {
+                setIsArchived(archive);
+                notify(archive ? 'Product Archived' : 'Product Unarchived', 'success');
+                setProduct({ ...product, is_active: !archive });
+            } else {
+                notify('Failed to update status', 'error');
+            }
+        } catch (e) { notify('Error updating status', 'error'); }
+    };
+
+
     // --- Tab 3: SKU Handlers ---
     const handleSkuUpdate = async (skuId, field, value) => {
         // Optimistic update
@@ -317,6 +383,36 @@ function ProductEditor() {
                     <button onClick={handleInfoSave} style={{ background: 'black', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
                         Save Details
                     </button>
+                    <div style={{ marginTop: '30px', paddingTop: '20px', borderTop: '1px solid #ddd' }}>
+                        <h3>Actions</h3>
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                            {isArchived ? (
+                                <button
+                                    onClick={() => handleToggleArchive(false)}
+                                    style={{ background: '#4CAF50', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                                >
+                                    Unarchive Product
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={() => handleToggleArchive(true)}
+                                    style={{ background: '#FF9800', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                                >
+                                    Archive Product
+                                </button>
+                            )}
+
+                            <button
+                                onClick={() => handleDeleteProduct(false)}
+                                style={{ background: '#F44336', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                            >
+                                Delete Product
+                            </button>
+                        </div>
+                        <p style={{ color: '#666', fontSize: '0.9rem', marginTop: '10px' }}>
+                            <strong>Note:</strong> Archiving hides the product from the store but keeps historical data. Deleting permanently removes it.
+                        </p>
+                    </div>
                 </div>
             )}
 
