@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import EventDetails from './EventDetails';
 
 function Home() {
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('Finding upcoming events...');
+  const [targetSlug, setTargetSlug] = useState(null);
 
   useEffect(() => {
-    const fetchAndRedirect = async () => {
+    const fetchAndDecide = async () => {
       try {
         const response = await fetch('/api/events');
         if (!response.ok) throw new Error('Failed to fetch events');
@@ -30,36 +30,36 @@ function Home() {
         });
 
         if (currentEvent) {
-          navigate(`/events/${currentEvent.slug}`);
+          setTargetSlug(currentEvent.slug);
           return;
         }
 
         // 2. Check for Next Upcoming Event
-        // Events are already sorted by start_date DESC from API, but for "next" we want the closest one in the future.
-        // So we filter for future events and sort ASC.
         const futureEvents = events
           .filter(e => new Date(e.start_date) > now)
           .sort((a, b) => new Date(a.start_date) - new Date(b.start_date));
 
         if (futureEvents.length > 0) {
-          navigate(`/events/${futureEvents[0].slug}`);
+          setTargetSlug(futureEvents[0].slug);
           return;
         }
 
-        // 3. Fallback: If no current or future events, maybe show the most recent past event?
-        // For now, just show message.
         setMessage('No upcoming events scheduled at this time.');
 
       } catch (err) {
-        console.error("Home redirection error:", err);
+        console.error("Home error:", err);
         setMessage('Unable to load events.');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchAndRedirect();
-  }, [navigate]);
+    fetchAndDecide();
+  }, []);
+
+  if (targetSlug) {
+    return <EventDetails propSlug={targetSlug} />;
+  }
 
   if (loading) {
     return (

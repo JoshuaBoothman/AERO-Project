@@ -32,17 +32,18 @@ function Layout({ orgSettings, loading, error, refreshSettings }) {
         <div className="container mx-auto flex justify-between items-center">
           {/* Left Side: Logo/Name */}
           <div className="flex items-center gap-4">
-            {orgSettings?.logo_url && (
-              <img
-                src={orgSettings.logo_url}
-                alt="Logo"
-                className="h-10 w-auto object-contain bg-white/10 rounded-sm"
-              />
-            )}
-            <div>
-              <h1 className="text-xl font-bold m-0 leading-tight">{orgSettings?.organization_name}</h1>
-              <small className="opacity-80 text-xs block">Support: {orgSettings?.support_email}</small>
-            </div>
+            <Link to="/" className="flex items-center gap-4 hover:opacity-90 transition-opacity">
+              {orgSettings?.logo_url && (
+                <img
+                  src={orgSettings.logo_url}
+                  alt="Logo"
+                  className="h-10 w-auto object-contain bg-white/10 rounded-sm"
+                />
+              )}
+              <div>
+                <h1 className="text-xl font-bold m-0 leading-tight">{orgSettings?.organization_name}</h1>
+              </div>
+            </Link>
           </div>
 
           {/* Right Side: Navigation */}

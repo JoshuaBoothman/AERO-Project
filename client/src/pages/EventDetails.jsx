@@ -3,8 +3,9 @@ import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import CampsiteModal from '../components/CampsiteModal';
 
-function EventDetails() {
-    const { slug } = useParams();
+function EventDetails({ propSlug }) {
+    const { slug: paramSlug } = useParams();
+    const slug = propSlug || paramSlug;
     const navigate = useNavigate();
     const location = useLocation();
     const { user } = useAuth();
