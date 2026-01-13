@@ -2,20 +2,21 @@ import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useNotification } from '../context/NotificationContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 function Checkout() {
     const { cart, removeFromCart, clearCart, cartTotal } = useCart();
     const { token } = useAuth();
     const { notify } = useNotification();
     const navigate = useNavigate();
+    const location = useLocation();
 
     const [loading, setLoading] = useState(false);
 
     const handleCheckout = async () => {
         if (!token) {
             notify("Please login to checkout.", "error");
-            navigate('/login');
+            navigate('/login', { state: { from: location } });
             return;
         }
 

@@ -73,18 +73,20 @@ function Layout({ orgSettings, loading, error, refreshSettings }) {
                 <Link to="/events" className="hover:text-accent transition-colors">Events</Link>
                 <Link to="/shop" className="hover:text-accent transition-colors">Shop</Link>
 
+                {/* Cart Icon - Visible to Guests and Regular Users (Not Admins) */}
+                <Link to="/checkout" className="flex items-center gap-2 hover:text-accent relative px-2">
+                  <span>🛒</span>
+                  {cart.length > 0 && (
+                    <span className="bg-accent text-primary rounded-full px-1.5 py-0.5 text-xs font-bold absolute -top-2 -right-2 min-w-[18px] text-center">
+                      {cart.length}
+                    </span>
+                  )}
+                </Link>
+
                 {user ? (
                   <div className="flex gap-4 items-center pl-6 border-l border-white/20">
                     <span className="hidden md:inline font-medium">Hi, {user.firstName}</span>
 
-                    <Link to="/checkout" className="flex items-center gap-2 hover:text-accent relative">
-                      <span>🛒</span>
-                      {cart.length > 0 && (
-                        <span className="bg-accent text-primary rounded-full px-1.5 py-0.5 text-xs font-bold absolute -top-2 -right-2 min-w-[18px] text-center">
-                          {cart.length}
-                        </span>
-                      )}
-                    </Link>
                     <Link to="/my-orders" className="font-bold hover:text-accent">My Orders</Link>
 
                     <button
@@ -97,7 +99,7 @@ function Layout({ orgSettings, loading, error, refreshSettings }) {
                 ) : (
                   <Link
                     to="/login"
-                    className="bg-accent text-primary px-4 py-2 rounded font-bold hover:brightness-110 transition-all shadow-sm"
+                    className="bg-accent text-primary px-4 py-2 rounded font-bold hover:brightness-110 transition-all shadow-sm ml-4"
                   >
                     Login
                   </Link>
