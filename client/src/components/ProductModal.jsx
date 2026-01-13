@@ -74,7 +74,7 @@ function ProductModal({ product, onClose, onAddToCart }) {
                 </div>
 
                 {/* Details Section */}
-                <div className="w-full md:w-1/2 p-8 flex flex-col overflow-y-auto">
+                <div className="w-full md:w-1/2 p-5 md:p-8 flex flex-col overflow-y-auto">
                     <div className="flex justify-between items-start mb-4">
                         <h2 className="text-3xl font-bold text-gray-800">{product.name}</h2>
                         <button onClick={onClose} className="text-gray-400 hover:text-black transition-colors rounded-full hover:bg-gray-100 p-1">

@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
+// ... imports remain the same
+
 function Events() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -30,8 +32,8 @@ function Events() {
     fetchEvents();
   }, [token]);
 
-  if (loading) return <div>Loading events...</div>;
-  if (error) return <div>Error loading events: {error}</div>;
+  if (loading) return <div className="p-8 text-center text-gray-500">Loading events...</div>;
+  if (error) return <div className="p-8 text-center text-red-500">Error loading events: {error}</div>;
 
   const formatDate = (dateString) => new Date(dateString).toLocaleDateString();
 
@@ -41,21 +43,21 @@ function Events() {
   const past = events.filter(e => new Date(e.end_date) < now);
 
   return (
-    <div className="events-page">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2>Events</h2>
+    <div className="max-w-5xl mx-auto p-4 md:p-8">
+      <div className="flex justify-between items-center mb-8">
+        <h2 className="text-3xl font-bold text-gray-800">Events</h2>
         {isAdmin && (
           <Link to="/events/new">
-            <button className="primary-button">New Event</button>
+            <button className="bg-primary hover:bg-primary/90 text-secondary font-bold py-2 px-6 rounded shadow transition-all">New Event</button>
           </Link>
         )}
       </div>
 
       {/* CURRENT EVENTS */}
       {current.length > 0 && (
-        <section className="event-section current">
-          <h3>HAPPENING NOW</h3>
-          <div className="event-grid">
+        <section className="mb-12">
+          <h3 className="text-xl font-bold text-accent mb-4 uppercase tracking-wider">Happening Now</h3>
+          <div className="space-y-6">
             {current.map(event => (
               <EventCard key={event.event_id} event={event} type="current" formatDate={formatDate} isAdmin={isAdmin} />
             ))}
@@ -64,20 +66,20 @@ function Events() {
       )}
 
       {/* UPCOMING */}
-      <section className="event-section">
-        <h3>Upcoming Events</h3>
-        <div className="event-grid">
+      <section className="mb-12">
+        <h3 className="text-2xl font-bold text-gray-700 mb-6">Upcoming Events</h3>
+        <div className="space-y-6">
           {upcoming.map(event => (
             <EventCard key={event.event_id} event={event} formatDate={formatDate} isAdmin={isAdmin} />
           ))}
-          {upcoming.length === 0 && <p>No upcoming events scheduled.</p>}
+          {upcoming.length === 0 && <p className="text-gray-500 italic">No upcoming events scheduled.</p>}
         </div>
       </section>
 
       {/* PAST */}
-      <section className="event-section">
-        <h3>Past Events</h3>
-        <div className="event-grid">
+      <section className="mb-12">
+        <h3 className="text-2xl font-bold text-gray-700 mb-6">Past Events</h3>
+        <div className="space-y-6">
           {past.map(event => (
             <EventCard key={event.event_id} event={event} formatDate={formatDate} isPast isAdmin={isAdmin} />
           ))}
@@ -87,81 +89,52 @@ function Events() {
   );
 }
 
-// ... imports and Event function remain the same ...
-
 function EventCard({ event, type, formatDate, isPast, isAdmin }) {
   const isCurrent = type === 'current';
 
-  // Card Container
-  const cardStyle = {
-    opacity: isPast ? 0.7 : 1,
-    marginBottom: '1rem',
-    borderLeft: isCurrent ? '5px solid var(--accent-color, #FFD700)' : '1px solid transparent', // Changed default to transparent
-    boxShadow: isCurrent ? '0 4px 12px rgba(0,0,0,0.1)' : 'none',
-    display: 'flex',       // <--- Flexbox for Image + Content side-by-side
-    flexDirection: 'row',  // Row direction
-    overflow: 'hidden',    // Ensures image respects rounded corners
-    padding: 0,            // Reset padding so image touches edge
-  };
-
-  const imageStyle = {
-    width: '200px',        // Fixed width for thumbnail
-    objectFit: 'cover',    // Ensures image covers area without stretching
-    display: 'block'       // Removes bottom whitespace
-  };
-
-  const contentStyle = {
-    padding: '1.5rem',     // Re-add padding to the content side
-    flex: 1,               // Take up remaining space
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center'
-  };
-
-  const badgeStyle = {
-    background: 'var(--accent-color, #FFD700)',
-    color: 'var(--primary-color, #000000)',
-    padding: '4px 10px',
-    borderRadius: '4px',
-    fontSize: '0.75rem',
-    fontWeight: 'bold',
-    letterSpacing: '0.5px',
-    textTransform: 'uppercase',
-    alignSelf: 'flex-start' // Don't stretch
-  };
-
   return (
-    <div className="card event-card" style={cardStyle}>
+    <div className={`bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col sm:flex-row ${isPast ? 'opacity-70 grayscale-[50%]' : ''} ${isCurrent ? 'border-l-4 border-accent shadow-md' : 'border border-gray-100'}`}>
 
-      {/* 1. THUMBNAIL IMAGE (Left Side) */}
-      {event.banner_url ? (
-        <img src={event.banner_url} alt={event.name} style={imageStyle} />
-      ) : (
-        // Fallback grey box if no image
-        <div style={{ ...imageStyle, background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#aaa' }}>
-          No Image
-        </div>
-      )}
+      {/* 1. THUMBNAIL IMAGE (Left Side / Top on Mobile) */}
+      <div className="w-full h-48 sm:w-64 sm:h-auto bg-gray-100 flex-shrink-0">
+        {event.banner_url ? (
+          <img src={event.banner_url} alt={event.name} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-gray-400 font-medium">
+            No Image
+          </div>
+        )}
+      </div>
 
-      {/* 2. CONTENT (Right Side) */}
-      <div style={contentStyle}>
+      {/* 2. CONTENT (Right Side / Bottom on Mobile) */}
+      <div className="p-6 flex-1 flex flex-col justify-center">
 
         {/* Header Row */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '0.5rem' }}>
-          <h3 style={{ margin: 0 }}>{event.name}</h3>
-          {isCurrent && <span style={badgeStyle}>ACTIVE</span>}
+        <div className="flex items-start justify-between gap-4 mb-2">
+          <div className="flex items-center gap-3 flex-wrap">
+            <h3 className="text-xl font-bold text-gray-800 m-0">{event.name}</h3>
+            {isCurrent && (
+              <span className="bg-accent text-primary px-2 py-1 rounded text-xs font-bold uppercase tracking-wide">
+                Active
+              </span>
+            )}
+          </div>
         </div>
 
-        <p className="event-date" style={{ margin: '0 0 0.5rem 0', color: '#666', fontSize: '0.9rem' }}>
+        <p className="text-sm font-medium text-gray-500 mb-3">
           {formatDate(event.start_date)} - {formatDate(event.end_date)}
         </p>
 
-        <p style={{ margin: '0 0 1rem 0', whiteSpace: 'pre-wrap' }}>{event.description}</p>
+        <p className="text-gray-600 mb-6 whitespace-pre-wrap line-clamp-3">{event.description}</p>
 
-        <div style={{ marginTop: 'auto' }}>
+        <div className="mt-auto">
           <Link to={isAdmin ? `/events/${event.slug}/edit` : `/events/${event.slug}`}>
-            {/* Apply styling to ALL buttons now */}
-            <button className={isCurrent ? 'primary-button' : 'secondary-button'}>
+            <button className={`font-bold py-2 px-4 rounded transition-colors text-sm uppercase tracking-wide
+                ${isCurrent
+                ? 'bg-primary text-secondary hover:bg-black/80'
+                : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+              }
+            `}>
               {isAdmin ? 'Edit Details' : (isPast ? 'View Recap' : 'View Details')}
             </button>
           </Link>
@@ -170,6 +143,5 @@ function EventCard({ event, type, formatDate, isPast, isAdmin }) {
     </div>
   );
 }
-// ... export default
 
 export default Events;

@@ -1,16 +1,19 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { Menu, X, ShoppingCart } from 'lucide-react';
 
 function Layout({ orgSettings, loading, error, refreshSettings }) {
-  const { user, logout } = useAuth(); // <--- Get user state
+  const { user, logout } = useAuth();
   const { cart } = useCart();
   const navigate = useNavigate();
   const location = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
+    setIsMobileMenuOpen(false);
     navigate('/');
   };
 
@@ -23,45 +26,89 @@ function Layout({ orgSettings, loading, error, refreshSettings }) {
     }
   }, [orgSettings]);
 
+  // Close mobile menu when route changes
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
+
   if (loading) return <div>Loading settings...</div>;
   if (error) return <div>Error: {error}</div>;
+
+  const NavLink = ({ to, children, className = "" }) => (
+    <Link
+      to={to}
+      className={`hover:text-accent transition-colors font-medium ${className} ${location.pathname === to ? 'text-accent' : ''}`}
+      onClick={() => setIsMobileMenuOpen(false)}
+    >
+      {children}
+    </Link>
+  );
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <header className="bg-primary text-secondary p-4 shadow-md sticky top-0 z-50 transition-colors duration-300">
-        <div className="container mx-auto flex justify-between items-center">
-          {/* Left Side: Logo/Name */}
-          <div className="flex items-center gap-4">
-            <Link to="/" className="flex items-center gap-4 hover:opacity-90 transition-opacity">
-              {orgSettings?.logo_url && (
-                <img
-                  src={orgSettings.logo_url}
-                  alt="Logo"
-                  className="h-10 w-auto object-contain bg-white/10 rounded-sm"
-                />
-              )}
-              <div>
-                <h1 className="text-xl font-bold m-0 leading-tight">{orgSettings?.organization_name}</h1>
-              </div>
+        <div className="container mx-auto flex flex-wrap justify-between items-center">
+
+          {/* Logo - Always Left */}
+          <Link to="/" className="flex items-center hover:opacity-90 transition-opacity z-50" onClick={() => setIsMobileMenuOpen(false)}>
+            {orgSettings?.logo_url && (
+              <img
+                src={orgSettings.logo_url}
+                alt="Logo"
+                className="h-10 w-auto object-contain bg-white/10 rounded-sm"
+              />
+            )}
+            {!orgSettings?.logo_url && (
+              <span className="text-2xl font-bold">Logo</span>
+            )}
+          </Link>
+
+          {/* Mobile Actions (Cart & Toggle) - Always Right on Mobile */}
+          <div className="flex items-center gap-4 md:hidden z-50">
+            {(!user || user.role !== 'admin') && (
+              <Link to="/checkout" className="flex items-center hover:text-accent relative" onClick={() => setIsMobileMenuOpen(false)}>
+                <ShoppingCart size={24} />
+                {cart.length > 0 && (
+                  <span className="bg-accent text-primary rounded-full px-1.5 py-0.5 text-[10px] font-bold absolute -top-2 -right-2 min-w-[16px] text-center">
+                    {cart.length}
+                  </span>
+                )}
+              </Link>
+            )}
+
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="p-1 hover:text-accent transition-colors"
+            >
+              {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
+            </button>
+          </div>
+
+          {/* Organization Name - Full Width on Mobile (Row 2), Next to Logo on Desktop */}
+          <div className="w-full md:w-auto md:flex-1 md:ml-6 text-center md:text-left mt-3 md:mt-0 order-last md:order-none">
+            <Link to="/" onClick={() => setIsMobileMenuOpen(false)}>
+              <h1 className="text-xl md:text-2xl font-bold leading-tight hover:text-accent transition-colors">
+                {orgSettings?.organization_name}
+              </h1>
             </Link>
           </div>
 
-          {/* Right Side: Navigation */}
-          <nav className="flex gap-6 items-center">
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex gap-6 items-center">
             {user && user.role === 'admin' ? (
               /* ================= ADMIN NAVIGATION ================= */
               <div className="flex items-center gap-4">
-                <Link to="/admin" className="hover:text-accent transition-colors font-medium">Home</Link>
-                <Link to="/events" className="hover:text-accent transition-colors font-medium">Events</Link>
-                <Link to="/admin/merchandise" className={`font-bold ${location.pathname.startsWith('/admin/merchandise') ? 'text-accent' : 'hover:text-accent'}`}>Merchandise</Link>
-                <Link to="/admin/assets" className={`font-bold ${location.pathname.startsWith('/admin/assets') ? 'text-accent' : 'hover:text-accent'}`}>Assets</Link>
-                <Link to="/admin/subevents" className={`font-bold ${location.pathname.startsWith('/admin/subevents') ? 'text-accent' : 'hover:text-accent'}`}>Subevents</Link>
-                <Link to="/admin/orders" className={`font-bold ${location.pathname.startsWith('/admin/orders') ? 'text-accent' : 'hover:text-accent'}`}>Orders</Link>
-                <Link to="/admin/settings" className={`font-bold ${location.pathname.startsWith('/admin/settings') ? 'text-accent' : 'hover:text-accent'}`}>Settings</Link>
+                <NavLink to="/admin">Home</NavLink>
+                <NavLink to="/events">Events</NavLink>
+                <NavLink to="/admin/merchandise">Merchandise</NavLink>
+                <NavLink to="/admin/assets">Assets</NavLink>
+                <NavLink to="/admin/subevents">Subevents</NavLink>
+                <NavLink to="/admin/orders">Orders</NavLink>
+                <NavLink to="/admin/settings">Settings</NavLink>
 
                 <button
                   onClick={handleLogout}
-                  className="bg-accent text-primary px-4 py-2 rounded font-bold hover:brightness-110 transition-all shadow-sm ml-4"
+                  className="bg-accent text-primary px-4 py-2 rounded font-bold hover:brightness-110 transition-all shadow-sm ml-4 cursor-pointer"
                 >
                   Logout
                 </button>
@@ -69,13 +116,13 @@ function Layout({ orgSettings, loading, error, refreshSettings }) {
             ) : (
               /* ================= PUBLIC / USER NAVIGATION ================= */
               <>
-                <Link to="/" className="hover:text-accent transition-colors">Home</Link>
-                <Link to="/events" className="hover:text-accent transition-colors">Events</Link>
-                <Link to="/shop" className="hover:text-accent transition-colors">Shop</Link>
+                <NavLink to="/">Home</NavLink>
+                <NavLink to="/events">Events</NavLink>
+                <NavLink to="/shop">Shop</NavLink>
 
-                {/* Cart Icon - Visible to Guests and Regular Users (Not Admins) */}
+                {/* Cart Icon - Desktop */}
                 <Link to="/checkout" className="flex items-center gap-2 hover:text-accent relative px-2">
-                  <span>🛒</span>
+                  <ShoppingCart size={20} />
                   {cart.length > 0 && (
                     <span className="bg-accent text-primary rounded-full px-1.5 py-0.5 text-xs font-bold absolute -top-2 -right-2 min-w-[18px] text-center">
                       {cart.length}
@@ -85,13 +132,13 @@ function Layout({ orgSettings, loading, error, refreshSettings }) {
 
                 {user ? (
                   <div className="flex gap-4 items-center pl-6 border-l border-white/20">
-                    <span className="hidden md:inline font-medium">Hi, {user.firstName}</span>
+                    <span className="font-medium">Hi, {user.firstName}</span>
 
-                    <Link to="/my-orders" className="font-bold hover:text-accent">My Orders</Link>
+                    <NavLink to="/my-orders">My Orders</NavLink>
 
                     <button
                       onClick={handleLogout}
-                      className="bg-black/20 hover:bg-black/30 text-inherit px-3 py-1.5 rounded text-sm transition-colors"
+                      className="bg-black/20 hover:bg-black/30 text-inherit px-3 py-1.5 rounded text-sm transition-colors cursor-pointer"
                     >
                       Logout
                     </button>
@@ -107,6 +154,47 @@ function Layout({ orgSettings, loading, error, refreshSettings }) {
               </>
             )}
           </nav>
+
+          {/* Mobile Navigation Overlay */}
+          <div className={`fixed inset-0 bg-primary/95 z-40 flex flex-col items-center justify-center gap-8 transition-transform duration-300 md:hidden ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+
+            {user && user.role === 'admin' ? (
+              <>
+                <NavLink to="/admin" className="text-2xl">Home</NavLink>
+                <NavLink to="/events" className="text-2xl">Events</NavLink>
+                <NavLink to="/admin/merchandise" className="text-2xl">Merchandise</NavLink>
+                <NavLink to="/admin/assets" className="text-2xl">Assets</NavLink>
+                <NavLink to="/admin/subevents" className="text-2xl">Subevents</NavLink>
+                <NavLink to="/admin/orders" className="text-2xl">Orders</NavLink>
+                <NavLink to="/admin/settings" className="text-2xl">Settings</NavLink>
+                <button onClick={handleLogout} className="text-2xl text-accent font-bold mt-4">Logout</button>
+              </>
+            ) : (
+              <>
+                <NavLink to="/" className="text-2xl">Home</NavLink>
+                <NavLink to="/events" className="text-2xl">Events</NavLink>
+                <NavLink to="/shop" className="text-2xl">Shop</NavLink>
+
+                {user ? (
+                  <>
+                    <div className="w-16 h-1 bg-white/20 my-2"></div>
+                    <span className="text-xl opacity-75">Hi, {user.firstName}</span>
+                    <NavLink to="/my-orders" className="text-2xl">My Orders</NavLink>
+                    <button onClick={handleLogout} className="text-2xl text-accent font-bold mt-4">Logout</button>
+                  </>
+                ) : (
+                  <Link
+                    to="/login"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="bg-accent text-primary px-8 py-3 rounded text-xl font-bold hover:brightness-110 transition-all shadow-sm mt-4"
+                  >
+                    Login
+                  </Link>
+                )}
+              </>
+            )}
+          </div>
+
         </div>
       </header>
 

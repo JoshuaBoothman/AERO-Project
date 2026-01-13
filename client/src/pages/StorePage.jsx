@@ -104,27 +104,27 @@ function StorePage({ orgSettings }) {
             <h1 className="text-3xl font-bold mb-8 text-primary">Event Store: {data.eventName || slug}</h1>
 
             {/* Tabs */}
-            <div className="flex border-b border-gray-200 mb-8 overflow-x-auto">
+            <div className="flex border-b border-gray-200 mb-8 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
                 <button
-                    className={`px-6 py-3 font-semibold transition-colors whitespace-nowrap ${activeTab === 'merch' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-primary'}`}
+                    className={`px-6 py-3 font-semibold transition-colors whitespace-nowrap flex-shrink-0 ${activeTab === 'merch' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-primary'}`}
                     onClick={() => setActiveTab('merch')}
                 >
                     Merchandise
                 </button>
                 <button
-                    className={`px-6 py-3 font-semibold transition-colors whitespace-nowrap ${activeTab === 'hire' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-primary'}`}
+                    className={`px-6 py-3 font-semibold transition-colors whitespace-nowrap flex-shrink-0 ${activeTab === 'hire' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-primary'}`}
                     onClick={() => setActiveTab('hire')}
                 >
                     Hire Assets
                 </button>
                 <button
-                    className={`px-6 py-3 font-semibold transition-colors whitespace-nowrap ${activeTab === 'program' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-primary'}`}
+                    className={`px-6 py-3 font-semibold transition-colors whitespace-nowrap flex-shrink-0 ${activeTab === 'program' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-primary'}`}
                     onClick={() => setActiveTab('program')}
                 >
                     Program / Subevents
                 </button>
                 <button
-                    className={`px-6 py-3 font-semibold transition-colors whitespace-nowrap ${activeTab === 'camping' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-primary'}`}
+                    className={`px-6 py-3 font-semibold transition-colors whitespace-nowrap flex-shrink-0 ${activeTab === 'camping' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-primary'}`}
                     onClick={() => setActiveTab('camping')}
                 >
                     Camping

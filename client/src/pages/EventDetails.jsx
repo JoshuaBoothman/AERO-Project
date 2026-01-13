@@ -234,21 +234,24 @@ function EventDetails({ propSlug }) {
     };
 
     return (
-        <div className="container">
+        <div className="container mx-auto px-4 py-6">
             {event.banner_url && (
-                <div className="event-banner">
-                    <img src={event.banner_url} alt={event.name} />
+                <div className="w-full h-48 md:h-[350px] rounded-xl overflow-hidden mb-8 shadow-md bg-gray-200">
+                    <img
+                        src={event.banner_url}
+                        alt={event.name}
+                        className="w-full h-full object-cover object-center"
+                    />
                 </div>
             )}
 
-            <div className="event-hero" style={{ textAlign: 'center', maxWidth: '800px', margin: '0 auto' }}>
-                <h1 style={{ fontSize: '2.5rem', margin: '1rem 0' }}>{event.name}</h1>
-                <p style={{ whiteSpace: 'pre-wrap', marginBottom: '2rem' }}>{event.description}</p>
+            <div className="max-w-3xl mx-auto text-center">
+                <h1 className="text-3xl md:text-5xl font-bold my-6 text-gray-900">{event.name}</h1>
+                <p className="whitespace-pre-wrap mb-8 text-gray-700 leading-relaxed text-lg text-left md:text-center">{event.description}</p>
 
-                <div style={{ display: 'flex', justifyContent: 'center', gap: '20px' }}>
+                <div className="flex flex-col sm:flex-row justify-center gap-4">
                     <button
-                        className="primary-button"
-                        style={{ padding: '0.8rem 2rem', fontSize: '1.1rem' }}
+                        className="bg-primary hover:bg-primary/90 text-secondary font-bold py-3 px-8 rounded-lg text-lg transition-all shadow-lg w-full sm:w-auto"
                         onClick={() => {
                             if (!user) {
                                 navigate('/login', { state: { from: location } });
@@ -285,21 +288,21 @@ function EventDetails({ propSlug }) {
                         {tickets.length === 0 ? (
                             <p>No tickets available for this event.</p>
                         ) : (
-                            <div className="ticket-list">
+                            <div className="space-y-2">
                                 {tickets.map(t => (
-                                    <div key={t.ticket_type_id} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: '1px solid #eee' }}>
+                                    <div key={t.ticket_type_id} className="flex justify-between items-center py-3 border-b border-gray-100 last:border-0">
                                         <div>
-                                            <strong>{t.name}</strong>
-                                            <div>${t.price}</div>
+                                            <strong className="text-gray-800">{t.name}</strong>
+                                            <div className="text-gray-600">${t.price}</div>
                                         </div>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                        <div className="flex items-center gap-3">
                                             <button
-                                                style={{ width: '30px', height: '30px', padding: 0 }}
+                                                className="w-8 h-8 flex items-center justify-center bg-gray-100 rounded hover:bg-gray-200 text-lg font-medium transition-colors"
                                                 onClick={() => updateCart(t.ticket_type_id, -1)}
                                             >-</button>
-                                            <span style={{ width: '20px', textAlign: 'center' }}>{cart[t.ticket_type_id] || 0}</span>
+                                            <span className="w-6 text-center font-medium">{cart[t.ticket_type_id] || 0}</span>
                                             <button
-                                                style={{ width: '30px', height: '30px', padding: 0 }}
+                                                className="w-8 h-8 flex items-center justify-center bg-gray-100 rounded hover:bg-gray-200 text-lg font-medium transition-colors"
                                                 onClick={() => updateCart(t.ticket_type_id, 1)}
                                             >+</button>
                                         </div>
@@ -310,18 +313,18 @@ function EventDetails({ propSlug }) {
 
                         {/* Campsites Section */}
                         {campsiteCart.length > 0 && (
-                            <div style={{ marginTop: '1.5rem' }}>
-                                <h3>Campsites</h3>
+                            <div className="mt-6">
+                                <h3 className="text-lg font-bold mb-2">Campsites</h3>
                                 {campsiteCart.map((site, index) => (
-                                    <div key={index} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: '1px solid #eee', alignItems: 'center' }}>
+                                    <div key={index} className="flex justify-between items-center py-3 border-b border-gray-100 last:border-0">
                                         <div>
-                                            <strong>{site.campgroundName} - {site.site_number}</strong>
-                                            <div style={{ fontSize: '0.8rem', color: '#666' }}>{site.checkIn} to {site.checkOut}</div>
-                                            <div>${site.price_per_night}</div>
+                                            <strong className="block text-gray-800">{site.campgroundName} - {site.site_number}</strong>
+                                            <div className="text-sm text-gray-500">{site.checkIn} to {site.checkOut}</div>
+                                            <div className="font-medium">${site.price_per_night}</div>
                                         </div>
                                         <button
                                             onClick={() => removeCampsiteFromCart(index)}
-                                            style={{ background: 'none', border: 'none', color: 'red', cursor: 'pointer', fontSize: '1.2rem' }}
+                                            className="text-red-500 hover:text-red-700 p-2 text-xl font-bold transition-colors"
                                         >
                                             ×
                                         </button>
@@ -340,10 +343,10 @@ function EventDetails({ propSlug }) {
                             </div>
                         )}
 
-                        <div style={{ marginTop: '2rem', paddingTop: '1rem', borderTop: '2px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <h3>Total: ${cartTotal.toFixed(2)}</h3>
+                        <div className="mt-8 pt-4 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4">
+                            <h3 className="text-xl font-bold">Total: ${cartTotal.toFixed(2)}</h3>
                             <button
-                                className="primary-button"
+                                className="bg-primary hover:bg-primary/90 text-secondary font-bold py-3 px-6 rounded-lg shadow-md disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto transition-all"
                                 disabled={purchasing || cartTotal === 0}
                                 onClick={handleInitialCheckout}
                             >

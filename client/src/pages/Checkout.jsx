@@ -103,11 +103,11 @@ function Checkout() {
     );
 
     const renderItem = (item, idx) => (
-        <div key={idx} className="flex justify-between items-start p-6 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors group">
-            <div className="flex-grow">
-                <div className="flex items-center gap-2">
+        <div key={idx} className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-6 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors group gap-4">
+            <div className="flex-grow w-full sm:w-auto">
+                <div className="flex items-center gap-2 flex-wrap">
                     <strong className="text-lg text-gray-800">{item.name}</strong>
-                    <span className="text-xs font-bold uppercase tracking-wider bg-gray-100 text-gray-500 px-2 py-0.5 rounded">{item.type}</span>
+                    <span className="text-xs font-bold uppercase tracking-wider bg-gray-100 text-gray-500 px-2 py-0.5 rounded whitespace-nowrap">{item.type}</span>
                 </div>
                 {(item.type === 'CAMPSITE' || item.type === 'ASSET') && (
                     <small className="block text-gray-500 mt-1">
@@ -120,11 +120,11 @@ function Checkout() {
                     </small>
                 )}
             </div>
-            <div className="flex items-center gap-6">
+            <div className="flex items-center justify-between w-full sm:w-auto sm:gap-6">
                 <span className="font-bold text-lg text-gray-900">${item.price.toFixed(2)}</span>
                 <button
                     onClick={() => removeFromCart(idx)}
-                    className="text-gray-400 hover:text-red-600 bg-transparent hover:bg-red-50 rounded-full w-8 h-8 flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
+                    className="text-gray-400 hover:text-red-600 bg-transparent hover:bg-red-50 rounded-full w-10 h-10 flex items-center justify-center transition-all focus:outline-none"
                     aria-label="Remove item"
                 >
                     ✕
