@@ -4,12 +4,14 @@ const ToastContainer = ({ toasts, removeToast }) => {
     return (
         <div style={{
             position: 'fixed',
-            top: '20px',
-            right: '20px',
+            bottom: '20px',
+            left: '50%',
+            transform: 'translateX(-50%)',
             zIndex: 9999,
             display: 'flex',
-            flexDirection: 'column',
-            gap: '10px'
+            flexDirection: 'column-reverse', // Newest at bottom
+            gap: '10px',
+            alignItems: 'center'
         }}>
             {toasts.map(toast => (
                 <Toast key={toast.id} toast={toast} removeToast={removeToast} />
