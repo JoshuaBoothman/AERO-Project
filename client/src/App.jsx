@@ -75,6 +75,21 @@ function App() {
     initSettings();
   }, []);
 
+  useEffect(() => {
+    if (orgSettings?.organization_name) {
+      document.title = orgSettings.organization_name;
+    }
+
+    // Update favicon
+    let link = document.querySelector("link[rel~='icon']");
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.head.appendChild(link);
+    }
+    link.href = '/aeroplane.svg';
+  }, [orgSettings]);
+
   return (
     <AuthProvider>
       <NotificationProvider>
