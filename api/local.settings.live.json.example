@@ -1,0 +1,10 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "FUNCTIONS_WORKER_RUNTIME": "node",
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "SQL_CONNECTION_STRING": "Server=tcp:sql-aero-dev-jb.database.windows.net,1433;Initial Catalog=sqldb-aero-master;Persist Security Info=False;User ID=aero_admin;Password=<REDACTED>;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;",
+    "RESEND_API_KEY": "re_<REDACTED>",
+    "BLOB_STORAGE_CONNECTION_STRING": "DefaultEndpointsProtocol=https;AccountName=aeroprojectstorage;AccountKey=<REDACTED>;EndpointSuffix=core.windows.net"
+  }
+}

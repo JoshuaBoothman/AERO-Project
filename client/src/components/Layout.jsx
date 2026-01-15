@@ -103,6 +103,7 @@ function Layout({ orgSettings, loading, error, refreshSettings }) {
                 <NavLink to="/admin/merchandise">Merchandise</NavLink>
                 <NavLink to="/admin/assets">Assets</NavLink>
                 <NavLink to="/admin/subevents">Subevents</NavLink>
+                <NavLink to="/admin/map">Camping</NavLink>
                 <NavLink to="/admin/orders">Orders</NavLink>
                 <NavLink to="/admin/settings">Settings</NavLink>
 
@@ -165,6 +166,7 @@ function Layout({ orgSettings, loading, error, refreshSettings }) {
                 <NavLink to="/admin/merchandise" className="text-2xl">Merchandise</NavLink>
                 <NavLink to="/admin/assets" className="text-2xl">Assets</NavLink>
                 <NavLink to="/admin/subevents" className="text-2xl">Subevents</NavLink>
+                <NavLink to="/admin/map" className="text-2xl">Camping</NavLink>
                 <NavLink to="/admin/orders" className="text-2xl">Orders</NavLink>
                 <NavLink to="/admin/settings" className="text-2xl">Settings</NavLink>
                 <button onClick={handleLogout} className="text-2xl text-accent font-bold mt-4">Logout</button>

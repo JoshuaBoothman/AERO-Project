@@ -4,18 +4,13 @@
 **Objective:** Build high-quality, "wow-factor" web applications with clean architecture and robust features.
 
 ## 📝 Session Startup Checklist
-1.  **Read this file** (`docs/AI_SESSION_BRIEF.md`) to ground yourself in the project context.
-2.  **Read `docs/ROADMAP.md`** to understand the current sprint and backlog.
-3.  **Read `docs/Development_Log.md`** (latest entry) to see where we left off.
-4.  **Review Key Docs:**
-    *   `docs/Pilot_Logic_Deep_Dive.md` (Complex Logic)
-    *   `docs/azure_deployment_guide.md` (Deployment)
-    *   `docs/azure_auth_fix.md` (Critical Auth Info)
-5.  **Read Git Log:** Run `git log -n 5` to see the latest committed code changes.
-5. Instruct user to run    `C:\laragon\www\AERO-Project> cd client`
-6.                             `C:\laragon\www\AERO-Project\client> npm run dev` to start the development server.
-7. Instruct user to run    `C:\laragon\www\AERO-Project> cd api`
-8.                             `C:\laragon\www\AERO-Project\api> npm start` to start the API server.
+
+> **Full Procedures**: See [SESSION_WORKFLOW.md](SESSION_WORKFLOW.md) for detailed Start, Execution, and End-of-Session protocols.
+
+1.  **Read this file** (`docs/AI_SESSION_BRIEF.md`) to ground yourself.
+2.  **Follow the Workflow**: Execute the "Start of Session" steps in `docs/SESSION_WORKFLOW.md`.
+3.  **Check Environment**: Refer to `docs/DEPLOYMENT.md` to ensure you are on the correct DB (Dev vs Live).
+
 
 ## 🔭 Project Vision & Roles
 *   **Whitelabel Goal:** Initially built for *Australian Large Scale Models* (Dave), but intended for resale to other groups.
