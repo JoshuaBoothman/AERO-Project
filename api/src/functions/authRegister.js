@@ -51,12 +51,36 @@ app.http('authRegister', {
             ]);
 
             // 5. Send Verification Email
-            await sendVerificationEmail(email, verificationToken, firstName);
+            const emailResult = await sendVerificationEmail(email, verificationToken, firstName);
+
+            if (!emailResult.success) {
+                // Determine if we should delete the user or just warn
+                // For now, let's keep the user but return a specific error so frontend can handle it
+                // Or clean up? Best practice: if email fails, user can't verify, so maybe rollback?
+                // Decided: Return error code but keep user? No, they can't verify.
+                // Simpler: Return 500 but with specific message.
+                // Ideally we would delete the user here to allow retry.
+
+                // Let's delete the user to allow retry
+                const deleteQuery = "DELETE FROM users WHERE email = @email";
+                await query(deleteQuery, [
+                    { name: 'email', type: sql.NVarChar, value: email }
+                ]);
+
+                return {
+                    status: 500,
+                    body: `User created but email failed to send: ${JSON.stringify(emailResult.error)}. User deleted, please try again.`
+                };
+            }
 
             return { status: 201, body: JSON.stringify({ message: "User created successfully" }) };
 
         } catch (error) {
             context.log(`Error in authRegister: ${error.message}`);
+            // If JSON parsing fails
+            if (error instanceof SyntaxError && error.message.includes('JSON')) {
+                return { status: 400, body: "Invalid JSON body" };
+            }
             return { status: 500, body: "Internal Server Error" };
         }
     }

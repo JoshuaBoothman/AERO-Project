@@ -1,3 +1,487 @@
+# AERO Project Context
+Generated on: 2026-01-15T21:26:23.603Z
+
+## Project Structure
+```
+├── .gitignore
+├── api
+│   ├── .funcignore
+│   ├── .gitignore
+│   ├── api_log.txt
+│   ├── api_test.txt
+│   ├── create_admin.cjs
+│   ├── debug-events.js
+│   ├── debug.log
+│   ├── debug_campground_chain.js
+│   ├── debug_merch.js
+│   ├── debug_org_cols.cjs
+│   ├── debug_schema_standalone.js
+│   ├── fix_settings.js
+│   ├── host.json
+│   ├── local.settings.json
+│   ├── local.settings.live.json.example
+│   ├── package.json
+│   ├── scripts
+│   │   ├── check_asset_hires.js
+│   │   ├── check_constraints.js
+│   │   ├── check_db.js
+│   │   ├── check_linking.js
+│   │   ├── check_roles.js
+│   │   ├── check_tickets.js
+│   │   ├── clone_db.js
+│   │   ├── debug_admin_query.js
+│   │   ├── debug_assets.js
+│   │   ├── drop_tables.js
+│   │   ├── dump_schema.js
+│   │   ├── enable_crew_role.js
+│   │   ├── ensure_schema_minimal.js
+│   │   ├── fresh_start_2026.js
+│   │   ├── get_latest_code.js
+│   │   ├── init_crew_schema.js
+│   │   ├── seed_demo_data.js
+│   │   ├── seed_winter_tickets.js
+│   │   ├── test_cascade_logic.js
+│   │   ├── update_schema_merch.js
+│   │   ├── verify_dev_connection.js
+│   │   └── verify_link.js
+│   ├── src
+│   │   ├── functions
+│   │   │   ├── assets
+│   │   │   │   ├── getAssetAvailability.js
+│   │   │   │   ├── getAssetHires.js
+│   │   │   │   ├── getAssets.js
+│   │   │   │   ├── manageAssetItems.js
+│   │   │   │   └── manageAssetTypes.js
+│   │   │   ├── authLogin.js
+│   │   │   ├── authRegister.js
+│   │   │   ├── authVerifyEmail.js
+│   │   │   ├── createAdmin.js
+│   │   │   ├── createCampground.js
+│   │   │   ├── createCampsites.js
+│   │   │   ├── createEvent.js
+│   │   │   ├── createOrder.js
+│   │   │   ├── createProduct.js
+│   │   │   ├── createSubevent.js
+│   │   │   ├── createVenue.js
+│   │   │   ├── debugPath.js
+│   │   │   ├── debugStatus.js
+│   │   │   ├── debug_camp.js
+│   │   │   ├── debug_schema.js
+│   │   │   ├── debug_sql.js
+│   │   │   ├── debug_subevents.js
+│   │   │   ├── deleteAdmin.js
+│   │   │   ├── deleteCampground.js
+│   │   │   ├── deleteCampsite.js
+│   │   │   ├── deleteEvent.js
+│   │   │   ├── deleteProduct.js
+│   │   │   ├── deleteProductVariant.js
+│   │   │   ├── deleteSKU.js
+│   │   │   ├── deleteSubevent.js
+│   │   │   ├── deleteVariantOption.js
+│   │   │   ├── generateSKUs.js
+│   │   │   ├── getAdminDashboardStats.js
+│   │   │   ├── getAdminOrders.js
+│   │   │   ├── getAdmins.js
+│   │   │   ├── getCampgroundAvailability.js
+│   │   │   ├── getCampgrounds.js
+│   │   │   ├── getCampsites.js
+│   │   │   ├── getEventDetail.js
+│   │   │   ├── getEvents.js
+│   │   │   ├── getEventTicketTypes.js
+│   │   │   ├── getOrderDetail.js
+│   │   │   ├── getOrganization.js
+│   │   │   ├── getProductDetails.js
+│   │   │   ├── getProducts.js
+│   │   │   ├── getStoreItems.js
+│   │   │   ├── getSubevents.js
+│   │   │   ├── getUserEventAttendees.js
+│   │   │   ├── getUserOrders.js
+│   │   │   ├── getUsers.js
+│   │   │   ├── getVenues.js
+│   │   │   ├── manageProductOptions.js
+│   │   │   ├── ping.js
+│   │   │   ├── setupTest.js
+│   │   │   ├── temp_check.js
+│   │   │   ├── testDb.js
+│   │   │   ├── ticketTypes.js
+│   │   │   ├── updateAdmin.js
+│   │   │   ├── updateAttendee.js
+│   │   │   ├── updateCampground.js
+│   │   │   ├── updateCampsite.js
+│   │   │   ├── updateCampsiteCoords.js
+│   │   │   ├── updateEvent.js
+│   │   │   ├── updateOrganizationSettings.js
+│   │   │   ├── updateProduct.js
+│   │   │   ├── updateSKU.js
+│   │   │   ├── updateSubevent.js
+│   │   │   ├── updateUserStatus.js
+│   │   │   ├── update_schema_force.js
+│   │   │   ├── update_schema_merch_func.js
+│   │   │   └── uploadImage.js
+│   │   └── lib
+│   │       ├── auth.js
+│   │       ├── db.js
+│   │       └── emailService.js
+│   ├── test_admin_conn.cjs
+│   └── test_update_org.cjs
+├── client
+│   ├── .gitignore
+│   ├── eslint.config.js
+│   ├── index.html
+│   ├── package.json
+│   ├── public
+│   │   ├── aeroplane.svg
+│   │   ├── campgrounds
+│   │   │   └── test-map.jpg
+│   │   ├── uploads
+│   │   │   ├── 0254fcdf-3fb9-4f91-bcd2-6d85c5956320.jpg
+│   │   │   ├── 07cf2f2d-eb1b-405a-b588-cd71b8931d39.jpg
+│   │   │   ├── 07d10cdf-ffa7-430a-963e-19c6f4d9a278.avif
+│   │   │   ├── 0a7b75eb-a514-4a7d-b79d-c5dfc1aba3d1.jpg
+│   │   │   ├── 0ed9b61c-634b-4e0c-aaea-9a8fd28d96e0.jpg
+│   │   │   ├── 1245fb50-19ed-49a6-8cb4-3f46e4ce65f0.jpg
+│   │   │   ├── 259f214b-5758-41fb-8416-8f3a8821f2dd.jpeg
+│   │   │   ├── 39c642ef-17c4-4062-bd0b-0f779397afc9.jpg
+│   │   │   ├── 3b10019a-d642-4f75-b3fb-8cb326960c0f.jpg
+│   │   │   ├── 4b063df9-e1cb-4883-a9e5-390570e87b83.jpg
+│   │   │   ├── 590dd673-ed67-4947-83a5-6e37ebb0a474.avif
+│   │   │   ├── 5a3fc645-4838-4fe2-8c7d-87173bfb5195.png
+│   │   │   ├── 5a9dc920-fe01-4fb9-a003-9603eb1a40f1.png
+│   │   │   ├── 5ad576d5-682c-4339-b0c3-fcc678477915.png
+│   │   │   ├── 84899830-aa26-49ca-9994-d5815c873b02.png
+│   │   │   ├── 87d6a39b-0d99-4a36-bee0-ea8b9cb2b00f.jpg
+│   │   │   ├── 97358203-447e-46fe-bcfa-e9c17dffa8cc.avif
+│   │   │   ├── a885bc4e-ae3c-49d5-8fda-0808b491fcbb.jpg
+│   │   │   ├── a9073177-59a5-4349-94db-3e2a816553d8.jpg
+│   │   │   ├── ab53fdc4-9c0b-43e1-ab7d-ebadb89b032a.avif
+│   │   │   ├── abfddd9a-05b9-416f-9757-881320f220e2.png
+│   │   │   ├── b11cb87a-b917-4d3a-93de-47ebf45a22af.png
+│   │   │   ├── bae7ab28-1bb6-4626-be20-3782fac1abdc.jpg
+│   │   │   ├── c33d1032-8774-45b5-ad7f-bb9063bf62bc.png
+│   │   │   ├── c6af8054-157c-42f3-ac85-81f5d59cc2f9.jpg
+│   │   │   ├── c802add4-e332-4eaf-9913-82da2ad978e0.jpg
+│   │   │   ├── dcf751bb-e314-45f1-902f-d32dd4ae903a.jpg
+│   │   │   ├── e13284e0-e0fa-4af3-9b74-be8fd62a1aa5.png
+│   │   │   ├── e1c4f18e-ab1e-4887-a5b6-bc710fb5a5f0.png
+│   │   │   ├── e4f8fc62-8343-4890-88e7-347e94272315.png
+│   │   │   └── edbdae35-a282-4452-acc9-d08fea2c7ddb.jpg
+│   │   └── vite.svg
+│   ├── README.md
+│   ├── scripts
+│   │   ├── create_real_admin.cjs
+│   │   ├── create_real_admin.js
+│   │   └── create_test_users.js
+│   ├── src
+│   │   ├── App.css
+│   │   ├── App.jsx
+│   │   ├── assets
+│   │   │   └── react.svg
+│   │   ├── components
+│   │   │   ├── admin
+│   │   │   │   └── SubeventForm.jsx
+│   │   │   ├── AssetSelectionModal.jsx
+│   │   │   ├── CampsiteModal.jsx
+│   │   │   ├── Layout.jsx
+│   │   │   ├── ProductCard.jsx
+│   │   │   ├── ProductModal.jsx
+│   │   │   └── ui
+│   │   │       ├── ConfirmationModal.jsx
+│   │   │       └── ToastContainer.jsx
+│   │   ├── context
+│   │   │   ├── AuthContext.jsx
+│   │   │   ├── CartContext.jsx
+│   │   │   └── NotificationContext.jsx
+│   │   ├── index.css
+│   │   ├── main.jsx
+│   │   └── pages
+│   │       ├── admin
+│   │       │   ├── AdminDashboard.jsx
+│   │       │   ├── AdminOrders.jsx
+│   │       │   ├── AdminSettings.jsx
+│   │       │   ├── AdminSubevents.jsx
+│   │       │   ├── AssetDashboard.jsx
+│   │       │   ├── assets
+│   │       │   │   ├── AssetHires.jsx
+│   │       │   │   ├── AssetItems.jsx
+│   │       │   │   └── AssetTypes.jsx
+│   │       │   ├── EventForm.jsx
+│   │       │   ├── MerchandiseList.jsx
+│   │       │   ├── ProductEditor.jsx
+│   │       │   └── settings
+│   │       │       ├── AdminList.jsx
+│   │       │       ├── AdminModal.jsx
+│   │       │       ├── OrgSettings.jsx
+│   │       │       └── UserList.jsx
+│   │       ├── camping
+│   │       │   ├── AdminMapTool.jsx
+│   │       │   └── CampingPage.jsx
+│   │       ├── Checkout.jsx
+│   │       ├── EventDetails.jsx
+│   │       ├── EventPurchase.jsx
+│   │       ├── Events.jsx
+│   │       ├── Home.jsx
+│   │       ├── Login.jsx
+│   │       ├── MyOrders.jsx
+│   │       ├── OrderDetail.jsx
+│   │       ├── Register.jsx
+│   │       ├── ShopIndex.jsx
+│   │       ├── StorePage.jsx
+│   │       └── VerifyEmail.jsx
+│   └── vite.config.js
+├── docs
+│   ├── AI_SESSION_BRIEF.md
+│   ├── ARCHIVE
+│   │   ├── AERO_Project_Context.md
+│   │   ├── AERO_TRD.md
+│   │   ├── Development_Log_v2.md
+│   │   ├── Project_Backlog.md
+│   │   ├── Registration_Flow_Recommendation_20251225.md
+│   │   └── Schema_Changes_Summary.md
+│   ├── azure_auth_fix.md
+│   ├── DEPLOYMENT.md
+│   ├── Development_Log.md
+│   ├── Future_Feature_Requirements.md
+│   ├── Merchandise_Implementation_Plan.md
+│   ├── Pilot_Logic_Deep_Dive.md
+│   ├── ROADMAP.md
+│   └── SESSION_WORKFLOW.md
+└── scripts
+    ├── add_image_url_to_asset_items.sql
+    └── generate_notebooklm_context.js
+```
+
+## Client Configuration (client/package.json)
+### Scripts
+- dev: vite
+- build: vite build
+- lint: eslint .
+- preview: vite preview
+
+### Dependencies
+Dependencies:
+- lucide-react: ^0.562.0
+- react: ^19.2.0
+- react-dom: ^19.2.0
+- react-qr-code: ^2.0.18
+- react-router-dom: ^7.11.0
+Dev Dependencies:
+- @eslint/js: ^9.39.1
+- @tailwindcss/vite: ^4.1.18
+- @types/react: ^19.2.5
+- @types/react-dom: ^19.2.3
+- @vitejs/plugin-react: ^5.1.1
+- autoprefixer: ^10.4.23
+- eslint: ^9.39.1
+- eslint-plugin-react-hooks: ^7.0.1
+- eslint-plugin-react-refresh: ^0.4.24
+- globals: ^16.5.0
+- postcss: ^8.5.6
+- tailwindcss: ^4.1.18
+- vite: ^7.2.4
+
+
+## API Configuration (api/package.json)
+### Scripts
+- start: func start
+- test: echo "No tests yet..."
+
+### Dependencies
+Dependencies:
+- @azure/functions: ^4.0.0
+- @azure/storage-blob: ^12.29.1
+- bcryptjs: ^3.0.3
+- jsonwebtoken: ^9.0.3
+- mssql: ^12.2.0
+- resend: ^6.7.0
+Dev Dependencies:
+- azure-functions-core-tools: ^4.x
+
+
+Connected to SQL Server
+# Database Schema
+
+
+## Documentation: AI_SESSION_BRIEF.md
+
+# AI Session Brief & Context
+
+**Role:** You are an AI Full-Stack Engineer pairing with Josh (User).
+**Objective:** Build high-quality, "wow-factor" web applications with clean architecture and robust features.
+
+## 📝 Session Startup Checklist
+
+> **Full Procedures**: See [SESSION_WORKFLOW.md](SESSION_WORKFLOW.md) for detailed Start, Execution, and End-of-Session protocols.
+
+1.  **Read this file** (`docs/AI_SESSION_BRIEF.md`) to ground yourself.
+2.  **Follow the Workflow**: Execute the "Start of Session" steps in `docs/SESSION_WORKFLOW.md`.
+3.  **Check Environment**: Refer to `docs/DEPLOYMENT.md` to ensure you are on the correct DB (Dev vs Live).
+
+
+## 🔭 Project Vision & Roles
+*   **Whitelabel Goal:** Initially built for *Australian Large Scale Models* (Dave), but intended for resale to other groups.
+    *   **Branding:** Must be versatile. Styles are driven by `organization_settings` (primary/secondary/accent/logo) to allow full rebranding.
+*   **Key User Roles:**
+    1.  **Admin:** Data maintenance, configuration, reporting.
+    2.  **User (Public):** Event registration, ticket purchase, campsite booking, item hire.
+    3.  **Site Crew:** Operational tasks (Gate check-in, campsite direction, merchandise distribution).
+
+## 👤 User Preferences (Josh)
+*   **Level:** Beginner. **Explain concepts as we go.** Do not assume knowledge. Ask before acting if unsure.
+*   **Aesthetics:** Premium, "wow-factor" designs. Responsive and polished.
+*   **Workflow:**
+    *   **Pairing:** I will be the driver. You will be the navigator.
+    *   **Planning:** Always plan before coding.
+    *   **Step-by-Step:** collaborative iteration.
+    *   **Files:** Keep `docs/` clean.
+    *   **Session Wrap-up:**
+        *   Log work in `docs/Development_Log.md`
+        *   Update `docs/ROADMAP.md` (move completed items to "Completed", add new items to "Next Up")  
+        *   **Export Schema:** Remind user to update `docs/schema.sql` (In SSMS: Select **ANSI text** to ensure readability).
+        *   Remind user to commit to Git - include a meaningful message.
+*   **Testing:** Testing is critical. **I need to physically see the results of each step** to ensure it is working correctly before moving on.
+
+## 🏗️ Project Architecture
+*   **Frontend:** React (Vite)
+*   **Backend:** Azure Functions (Node.js)
+*   **Database:** Azure SQL Database
+*   **Live Environment:** [AERO Project Live](https://lively-sea-07f844a00.1.azurestaticapps.net/)
+    *   *Note: Uses X-Auth-Token header to bypass Azure EasyAuth interference.*
+*   **Key Patterns:**
+    *   **Auth:** JWT-based.
+    *   **DB Access:** Singleton Connection Pool.
+    *   **Styling:** CSS variables via `organization_settings`.
+
+## 🔄 Core Development Rules
+1.  **Strict Schema Compliance:** Always check `docs/schema.sql` (or active DB state) before writing queries.
+2.  **Transactions:** Use SQL Transactions for multi-table writes.
+3.  **Mobile First:** UIs must be optimized for phone usage.
+
+## 🧠 Complex Data Flows
+*   **Registration Entity Chain:** `User` -> `Person` -> `Attendee` -> `OrderItem`.
+    *   **User vs Person:** `Users` link to Auth. `Persons` hold profile data. A User *has* a Person record. Guests are Persons with no User link.
+    *   **Attendee:** Links a `Person` to an `Event`. (Must exist *before* OrderItem).
+    *   **Order Item:** Links the purchase to the `Attendee`.
+*   **Pilot/Planes:**
+    *   Planes are owned by a `Person`.
+    *   During registration, planes are linked to the *Attendee's Person ID*.
+    *   Planes are also linked to the event via `event_planes`.
+*   **Pit Crew:**
+    *   Crew are linked to Pilots via `pilot_pit_crews` (Join table: `pilot_attendee_id` <-> `crew_attendee_id`).
+
+
+---
+
+## Documentation: azure_auth_fix.md
+
+Critical: Azure Authentication & Header Overwriting
+The Issue
+When hosting on Azure App Service or Static Web Apps, if "Authentication" (EasyAuth) is enabled or interacting with the service, Azure intercepts and overwrites the standard Authorization header.
+
+Client Sends: Authorization: Bearer <Your-App-JWT>
+Azure Receives: Authorization: Bearer <Azure-Management-Token>
+This mismatch causes signature verification to fail because the backend tries to verify Microsoft's token (signed with their keys) using your application's JWT_SECRET.
+
+Symptoms
+JWT Verify Failed: invalid signature despite correct JWT_SECRET.
+Decoded token has iss: ...scm.azurewebsites.net (Azure) instead of your app's issuer.
+Public routes work; protected routes return 401/403.
+The Fix: X-Auth-Token Bypass
+To ensure the backend receives the correct application token, pass it in a custom header that Azure ignores.
+
+1. Frontend Update
+In your 
+fetch
+ calls (e.g., 
+AdminDashboard.jsx
+, 
+AdminOrders.jsx
+), send the token in X-Auth-Token as well:
+
+headers: {
+    'Authorization': `Bearer ${token}`, // Still send this for standard compliance/local dev
+    'X-Auth-Token': token               // The critical bypass header
+}
+2. Backend Update (
+lib/auth.js
+)
+Update the token extraction logic to prioritize the custom header:
+
+function validateToken(request) {
+    const SECRET_KEY = process.env.JWT_SECRET;
+    
+    // Check custom header first to bypass Azure overwrites
+    const customHeader = request.headers.get('x-auth-token');
+    const authHeader = request.headers.get('Authorization');
+    
+    let token = null;
+    if (customHeader) {
+        token = customHeader;
+    } else if (authHeader) {
+        token = authHeader.split(' ')[1];
+    }
+    
+    if (!token) return null;
+    
+    // ... verify logic ...
+}
+Troubleshooting
+If auth fails again, use 
+api/src/functions/debugStatus.js
+ (if deployed) to inspect the incoming headers and token claims. Look specifically at the iss (Issuer) field of the received token.
+
+
+
+---
+
+## Documentation: DEPLOYMENT.md
+
+# Deployment & Environment Guide
+
+This document explains how the application handles different environments (Local/Dev vs. Live/Prod) and how to deploy updates.
+
+## Environments
+
+### 1. Local Development (Dev)
+*   **Frontend**: Runs on `localhost:5173`.
+*   **Backend**: Runs on `localhost:7071` (Azure Functions Core Tools).
+*   **Database**: `sqldb-aero-dev` (Hosted on Azure SQL).
+*   **Configuration**:
+    *   Managed by `api/local.settings.json`.
+    *   **Note**: This file is `.gitignore`'d and should NOT be committed.
+    *   **Connection String**: `SQL_CONNECTION_STRING` points to `sqldb-aero-dev`.
+
+### 2. Live Production (Live)
+*   **Frontend**: Azure Static Web App (`lively-sea-...`).
+*   **Backend**: Azure Functions (Production Slot).
+*   **Database**: `sqldb-aero-master` (Hosted on Azure SQL).
+*   **Configuration**:
+    *   Managed via **Azure Portal** -> App Service -> Settings -> **Environment Variables**.
+    *   **Connection String**: `SQL_CONNECTION_STRING` points to `sqldb-aero-master`.
+
+## Environment Switching
+We do **not** change code to switch environments. We change the *configuration*.
+*   **To verify Local is Dev**: Check `api/local.settings.json`.
+*   **To maintain Live is Live**: Never overwrite Azure App Settings with local settings during deployment.
+
+## Deployment Workflow
+
+The project is connected to GitHub.
+
+1.  **Frontend & Backend**:
+    *   Pushing to the `main` branch on GitHub automatically triggers the Azure Deployment Action.
+    *   This builds the React app and deploys the Function App code.
+    *   It **does not** touch the database or the connection strings defined in Azure.
+
+## Database Management
+*   **Schema Changes**: Must be applied to *both* `sqldb-aero-dev` (during dev) and `sqldb-aero-master` (during deployment).
+*   **Data**: Data is **not** automatically synced.
+    *   **Refresh Dev**: To make Dev look like Live, run the `clone_db.js` script (or manual Copy in Azure).
+
+
+---
+
+## Documentation: Development_Log.md
+
 # Development Log
 
 ## [2025-12-22] - Initial Full-Stack Connection
@@ -866,26 +1350,367 @@ The "Camping" page for "Festival of Aeromodelling 2026" was displaying "No campg
     *   Verified products with orders cannot be deleted and prompt for archiving.
 
 
-## [2026-01-16] - Resend Configuration & Database Cleanup
-**Milestone:** Fixed Live Registration Error and Cleaned Development/Live Databases
 
-### Completed Items
-*   **Backend (API)**
-    *   **Fix:** Resolved "Internal Server Error" on registration by robustly handling missing `RESEND_API_KEY`.
-    *   **Refactor:** Moved `Resend` client initialization inside `sendVerificationEmail` to prevent module-load crashes.
-    *   **Logic:** Added strict error checking: invalid JSON returns `400`, email failure deletes the pending user and returns `500` (prevents "ghost" users).
-    *   **Config:** Verified domain sender address `registrations@meandervalleywebdesign.com.au`.
-*   **Database Cleanup**
-    *   **Scripting:** Created and executed safe cleanup scripts for both `sqldb-aero-dev` (Local) and `sqldb-aero-master` (Live).
-    *   **Execution:**
-        *   Preserved Admin (`admin@test.com`) and User (`jbsolutions@gmail.com`).
-        *   Deleted all other users, admins, and cascading linked data (orders, attendees, transactions).
-    *   **Verification:** Verified record counts on both environments.
-*   **Verification**
-    *   Confirmed registration API properly handles missing credentials without crashing the entire app.
-    *   Confirmed clean state of both databases.
+---
 
-### Next Steps
-*   **Live Config:** User to add `RESEND_API_KEY` to Azure Function App settings.
-*   **Testing:** Perform live user registration test.
+## Documentation: Future_Feature_Requirements.md
+
+# Future Feature Requirements: Core Modules
+
+This document outlines the roadmap for the remaining "Product" modules.
+
+## 1. Event Registration (Continued)
+*   **Ticket Logic:** Continues to use the core `cart` and `createOrder` flow.
+*   **Pilot/Plane Logic:** Moved to dedicated document: [Pilot Logic Deep Dive](Pilot_Logic_Deep_Dive.md).
+    *   Includes: "My Hangar", Multiple Planes, and Flight Line Duties.
+
+## 2. Campsite Booking
+**Tables:** `campgrounds`, `campsites`, `campsite_bookings`
+
+*   **Concept:** Users book a physical space for accommodation.
+*   **Selection Mode:**
+    *   **Map Based (Preferred):** Interactive map where users click a specific site (e.g., "Site A1").
+    *   **List Fallback:** If no map image/coordinates provided by Admin, show a simple list of available site names.
+*   **Occupancy:**
+    *   **Multiple Attendees:** A single campsite booking can be linked to multiple Attendees (e.g., a family of 4 sharing "Site B2").
+    *   **No Role Restrictions:** Any ticket holder can camp (unless specifically restricted by Admin, but generally open).
+
+## 3. Subevent Registration
+**Examples:** Qualification Workshops, Gala Dinners, Safety Briefings.
+
+*   **Concept:** Add-on tickets/registrations for specific scheduled activities.
+*   **Key Logic:**
+    *   **Attendee Linking:** Must link to a specific *Attendee* (Person).
+    *   **Capacity:** Strict limits (e.g., "Dinner Hall holds 200").
+    *   **Time Conflict Checks:**
+        *   **Subevent vs Subevent:** Cannot be in two places at once.
+        *   **Subevent vs Duties:** Cannot attend Dinner if rostered for Flight Line Duty (see Pilot Doc).
+
+## 4. Merchandise Store
+**Tables:** `products`, `product_skus`, `variant_categories`, `variant_options`, `sku_option_links`
+
+*   **Concept:** E-commerce flow for physical goods.
+*   **Variant Logic:**
+    *   Products have Options (Size, Color).
+    *   SKUs represent the specific combination (e.g., "T-Shirt - Large - Red").
+    *   Inventory is tracked at the SKU level.
+*   **Fulfillment:**
+    *   **Pickup Only:** No shipping logic required. Users collect at the event "Merch Tent".
+
+## 5. Asset Hire
+**Tables:** `asset_hires`, `asset_items`, `asset_types`
+
+*   **Concept:** Hiring operational equipment (Tables, Chairs, Weights, Cables).
+*   **Logic:**
+    *   **Stock Tracking:** Pool of items (e.g., "50 Chairs available").
+    *   **Deposits:** Handling refundable security bonds.
+    *   **Check-in/Out:** Operational flow for handing out items and marking them returned.
+
+---
+
+## 6. Operational Logic (Gate & Compliance)
+
+### 6.1 Waivers
+*   **Trigger:** Checkout success or First Login after purchase.
+*   **Storage:** Digital signature blob or boolean `is_signed` + timestamp/ip.
+*   **Gate Enforce:** "Cannot check in if Waiver not signed".
+
+### 6.2 Gate Check-in
+*   **QR Codes:** Unique per attendee (Ticket Code).
+*   **Action:** Mobile-first scanner app updates `attendees.status` to 'Checked In'.
+
+
+---
+
+## Documentation: Merchandise_Implementation_Plan.md
+
+# Merchandise Implementation Plan
+
+## Goal Description
+Enable a comprehensive system for selling merchandise for events. This includes a full Admin workflow for managing products, variants (e.g., Size, Color), and event-specific pricing, as well as the User workflow for browsing and purchasing items.
+
+## User Review Required
+> [!IMPORTANT]
+> **Schema Change**: `order_items`.`attendee_id` must be made **NULLable** to support merchandise items that are not linked to a specific attendee ticket.
+
+## Proposed Changes
+
+### Database Schema
+#### [MODIFY] Database Schema
+-   **`order_items`**: Change `attendee_id` to `[int] NULL`.
+- Instruct user how to make this change
+
+### Admin Workflow (Backend & Frontend)
+1.  **Product Management**
+    -   **API**:
+        -   `POST /api/admin/products`: Create generic product (Name, Description, Base Image).
+        -   `PUT /api/admin/products/{id}`: Update details.
+        -   *Note: Images to be uploaded via existing `uploadImage` utility and URL stored.*
+    -   **Frontend**: Admin > Global Settings > Products (New Section).
+
+2.  **Variant Management**
+    -   **API**:
+        -   `POST /api/admin/products/{id}/variants`: Define categories (e.g., "Size") and options (e.g., "S", "M", "L").
+        -   Support attaching images to specific variant options (e.g., "Blue" shirt image).
+    -   **Frontend**: Interface to add Variant Categories and Options to a Product.
+
+3.  **SKU Generation**
+    -   **API**:
+        -   `POST /api/admin/products/{id}/skus/generate`: Auto-generate SKUs for all variant combinations.
+        -   `GET /api/admin/products/{id}/skus`: List generated SKUs.
+    -   **Frontend**: Table showing all combinations. Allow manual override of SKU codes/Barcodes.
+
+4.  **Event Pricing (Merchandise Assignment)**
+    -   **API**:
+        -   `POST /api/admin/events/{eventId}/merchandise`: Link Product SKUs to an Event and set the **Price**.
+        -   Inserts into `event_skus` table.
+    -   **Frontend**: Admin > Event > Merchandise Tab. Select Products, toggle specific SKUs, set Price.
+
+### User Workflow (Frontend & Backend)
+1.  **Browse Merchandise**
+    -   **API**: `GET /api/events/{id}/merchandise` (Returns products with consolidated Price range and Options).
+    -   **Frontend**: User Booking Flow > "Add Extras" step (or separate Merchandise tab).
+    -   *UI*: Product Cards -> Click to view Details -> Select Options (Color/Size) -> Update Image based on selection -> Add to Cart.
+
+2.  **Purchase (Checkout)**
+    -   **API**: `createOrder` (Updated).
+        -   Accept `merchandise` items in payload.
+        -   Validate stock (if tracked) and active status.
+        -   Create `order_items` with `item_type='Merchandise'` and `attendee_id=NULL`.
+    -   **Frontend**: Cart Summary lists merch items separately from Tickets/Camping.
+
+## Implementation Steps
+1.  **Schema Update**: Apply `ALTER TABLE` for `order_items`.
+2.  **Admin API**: Build Product/Variant/SKU endpoints.
+3.  **Admin UI**: Build Product Manager & Event Linker.
+4.  **User API**: `getEventMerchandise` & update `createOrder`.
+5.  **User UI**: Merchandise Storefront & Cart update.
+
+## Verification Plan
+### Automated Tests
+-   **Admin Flow**: Create Product -> Add Variants -> Generate SKUs -> Link to Event.
+-   **User Flow**: Fetch Event Merch -> Add to Cart -> Checkout -> Verify Order Item created with NULL attendee.
+
+### Manual Verification
+-   **images**: Upload base product image and variant-specific images (e.g., Blue shirt). Verify switching options in User UI changes the displayed image.
+
+
+---
+
+## Documentation: Pilot_Logic_Deep_Dive.md
+
+# Deep Dive: Pilot & Plane Logic
+
+This document details the complex logic required for Pilot and Aircraft management, separating it from the core module requirements.
+
+## 1. Registration Flow Enhancements
+**Scenario:** "I am registering a Pilot (Myself or another person I manage)."
+
+### 1.1 Pilot Lookup (The "Person" Layer)
+*   **User Action:** Selects "Myself" OR "Existing Pilot" (from `persons` linked to their User ID).
+    *   *Note:* A single User Account (e.g., Dad) might manage multiple Pilots (Self + Son).
+*   **System Action:**
+    *   Pre-fills Name, ARN, License info from the selected `persons` record.
+    *   If "New Pilot", requires full entry and creates a new `persons` record linked to the User.
+
+### 1.2 Plane Selection (The "Hangar")
+Real-world pilots often bring multiple planes or fly different planes at different events. They should not re-enter data every time.
+
+*   **UI:** "Select Aircraft" section appears after Pilot selection.
+*   **Option A: "My Hangar"**
+    *   Lists planes already in the `planes` table linked to this Person.
+    *   *UI:* Checkbox selection (e.g., `[x] Extra 300 (VH-X30)`, `[ ] Cessna 172 (VH-C17)`).
+*   **Option B: "New Aircraft"**
+    *   *UI:* "Add another plane" button.
+    *   *Inputs:* Make, Model, Rego.
+    *   *Action:* Creates a new `planes` record linked to the Person immediately (or upon Order creation).
+
+### 1.3 Persistence (The "Event Link")
+*   **Database:** We do not duplicates planes per event.
+*   **`event_planes` Table (Proposed):**
+    *   Many-to-Many link acting as the "Attendance Record" for the aircraft.
+    *   Columns: `event_plane_id`, `event_id`, `plane_id`, `pilot_attendee_id`.
+*   **Validation:** Check `event_ticket_types` for any limits on number of planes (likely "Unlimited" for most pilot tickets).
+
+---
+
+## 2. Flight Line Duties
+Volunteering for duties is critical for event operations.
+
+### 2.1 Registration & Availability
+*   **Trigger:** During Pilot Registration.
+*   **Input:** Checkbox `[x] Available for Flight Line Duties`.
+*   **Storage:** Stored on the `attendees` record (new column `is_volunteer` or similar).
+
+### 2.2 Ops Dashboard (Admin)
+*   **Interface:** A "Roster" view of 1-hour slots for the event duration.
+*   **Action:** Admin drags-and-drops available pilots into slots.
+*   **Validation:**
+    *   **Time Conflict:** Ensure the pilot is not registered for a Subevent (Dinner/Workshop) during that slot.
+
+
+---
+
+## Documentation: ROADMAP.md
+
+# 🗺️ Project Roadmap & Agile Board
+
+## 🚀 Current Sprint (Active)
+**Goal:** Registration Flow & Attendee Management
+
+- [x] **Data Model Updates** <!-- via Registration_Flow_Recommendation.md -->
+    - [x] SQL: Make `persons.user_id` nullable.
+    - [x] SQL: Add `is_pilot` to `event_ticket_types`.
+    - [x] SQL: Add `is_pit_crew` and `ticket_code`.
+- [x] **Registration Logic (API)**
+    - [x] Upgrade `createOrder.js` to handle Pilot (Planes) & Crew (Linking).
+    - [x] Refactor `createOrder.js` for In-Cart Linking (Temp IDs).
+    - [x] Update `getEventDetail` to expose `is_pilot` and `is_pit_crew`.
+    - [x] Create `getUserEventAttendees` for previous pilot lookup.
+- [x] **Registration UI (Frontend)**
+    - [x] Enhance `AttendeeModal` with dynamic forms (Pilot vs Crew vs Spectator).
+    - [x] Implement "Smart Pilot Selector" (In-Cart + Previous + Manual).
+    - [x] Implement Validations.
+
+## 📋 Next Up (Ready for Dev)
+- [x] **QR Code Generation:** Display unique QR code for each ticket (for gate scanning).
+- [x] **Campsite Booking:** Interactive map/list for booking camping spots (Backend & Admin Tool Complete).
+- [ ] **Merchandise Store:** E-commerce flow for pre-purchasing gear.
+
+## 📦 Backlog (Future)
+### Authentication & User Management
+- [ ] **Email Confirmation:** Verify via SendGrid.
+- [ ] **Social Login:** Google/Microsoft OAuth.
+- [ ] **Role Management:** Admin UI.
+- [ ] **Waiver System:** Digital waiver signing (Deferred).
+
+### Operational Features
+- [ ] **Mobile Scanning App:** Gate entry.
+
+### Technical Debt / Polish
+- [ ] **Refacto createOrder.js:** Split into `OrderService.js`.
+- [ ] **Toast Notifications:** Replace alerts with toast library.
+- [ ] **Loading Skeletons:** Better empty states.
+- [ ] **Schema:** Add semantic keys for colors (`success_color`).
+
+## 🏁 Completed (Recent)
+- [x] **Public Events Module:** List and Detail views.
+- [x] **Ticket Purchasing MVP:** Basic flow with mock payment.
+- [x] **Authentication:** Login/Register.
+
+
+---
+
+## Documentation: SESSION_WORKFLOW.md
+
+# Session Workflow
+
+This guide outlines the standard operating procedure for starting, conducting, and ending a development session. Adhering to this workflow ensures context is preserved and the codebase remains stable.
+
+## 1. Start of Session (Context Loading)
+
+Before writing any code, you must "load" the project context into your working memory.
+
+1.  **Read the Master Index**: `docs/AI_SESSION_BRIEF.md`.
+2.  **Check the Roadmap**: `docs/ROADMAP.md` to see high-level goals.
+3.  **Read Recent History**: Check the latest entry in `docs/Development_Log.md` to understand where the last session ended.
+4.  **Check Environment**:
+    *   Ensure `api/local.settings.json` is configured correctly (usually pointing to `sqldb-aero-dev`).
+    *   Start the Client: `cd client && npm run dev`.
+    *   Start the API: `cd api && npm start`.
+    *   **Verify**: Open `http://localhost:5173` and click around to ensure connectivity.
+
+## 2. During Session (Development)
+
+1.  **Plan First**: Always create an `implementation_plan.md` artifact for complex tasks. Get user approval.
+2.  **Atomic Steps**: Break work into small, verifiable chunks.
+3.  **Visual Verification**: The user (Josh) needs to *see* results. Use `notify_user` to ask for verification after UI changes.
+4.  **Logging**: Keep a running mental note (or scratchpad) of what you've changed.
+5.  **Database Changes**:
+    *   **NEVER** modify the database schema without checking `Active DB State` first.
+    *   Prefer **Transactions** for multi-table writes.
+
+## 3. End of Session (Handover)
+
+1.  **Documentation**:
+    *   Append a new entry to `docs/Development_Log.md` summarizing the session.
+    *   Use the format: `## [YYYY-MM-DD] - Title`.
+    *   List **Completed Items** and **Next Steps**.
+2.  **Roadmap Update**: Update `docs/ROADMAP.md` (Check off items, move next steps up).
+3.  **Cleanup**:
+    *   Delete temporary scripts or files created during the session.
+4.  **Commit**:
+    *   Remind the user to commit changes to Git.
+    *   Provide a suggested commit message based on the work done.
+
+
+---
+
+## API Functions List
+- authLogin.js
+- authRegister.js
+- authVerifyEmail.js
+- createAdmin.js
+- createCampground.js
+- createCampsites.js
+- createEvent.js
+- createOrder.js
+- createProduct.js
+- createSubevent.js
+- createVenue.js
+- debugPath.js
+- debugStatus.js
+- debug_camp.js
+- debug_schema.js
+- debug_sql.js
+- debug_subevents.js
+- deleteAdmin.js
+- deleteCampground.js
+- deleteCampsite.js
+- deleteEvent.js
+- deleteProduct.js
+- deleteProductVariant.js
+- deleteSKU.js
+- deleteSubevent.js
+- deleteVariantOption.js
+- generateSKUs.js
+- getAdminDashboardStats.js
+- getAdminOrders.js
+- getAdmins.js
+- getCampgroundAvailability.js
+- getCampgrounds.js
+- getCampsites.js
+- getEventDetail.js
+- getEvents.js
+- getEventTicketTypes.js
+- getOrderDetail.js
+- getOrganization.js
+- getProductDetails.js
+- getProducts.js
+- getStoreItems.js
+- getSubevents.js
+- getUserEventAttendees.js
+- getUserOrders.js
+- getUsers.js
+- getVenues.js
+- manageProductOptions.js
+- ping.js
+- setupTest.js
+- temp_check.js
+- testDb.js
+- ticketTypes.js
+- updateAdmin.js
+- updateAttendee.js
+- updateCampground.js
+- updateCampsite.js
+- updateCampsiteCoords.js
+- updateEvent.js
+- updateOrganizationSettings.js
+- updateProduct.js
+- updateSKU.js
+- updateSubevent.js
+- updateUserStatus.js
+- update_schema_force.js
+- update_schema_merch_func.js
+- uploadImage.js
 

@@ -21,9 +21,14 @@ Before writing any code, you must "load" the project context into your working m
 2.  **Atomic Steps**: Break work into small, verifiable chunks.
 3.  **Visual Verification**: The user (Josh) needs to *see* results. Use `notify_user` to ask for verification after UI changes.
 4.  **Logging**: Keep a running mental note (or scratchpad) of what you've changed.
-5.  **Database Changes**:
-    *   **NEVER** modify the database schema without checking `Active DB State` first.
-    *   Prefer **Transactions** for multi-table writes.
+5.  **Database Schema Changes (CRITICAL)**:
+    *   **Development**: Apply changes to `sqldb-aero-dev` and test.
+    *   **Production Sync**: You **MUST** apply the same changes to `sqldb-aero-master` (Live).
+    *   **Workflow**:
+        *   Write the SQL change (e.g., `ALTER TABLE...`).
+        *   Run it on Dev.
+        *   *Immediately* save the SQL snippet to a file (e.g., `docs/schema_updates/pending_update.sql`) OR run it on Live immediately if it's non-breaking.
+        *   **Do not forget this.** Code often breaks if the DB schema doesn't match.
 
 ## 3. End of Session (Handover)
 
@@ -34,6 +39,9 @@ Before writing any code, you must "load" the project context into your working m
 2.  **Roadmap Update**: Update `docs/ROADMAP.md` (Check off items, move next steps up).
 3.  **Cleanup**:
     *   Delete temporary scripts or files created during the session.
-4.  **Commit**:
+4.  **Update NotebookLM Context**:
+    *   Run `node scripts/generate_notebooklm_context.js`.
+    *   Remind the user to upload the new `docs/NotebookLM_Context.md` to NotebookLM.
+5.  **Commit**:
     *   Remind the user to commit changes to Git.
     *   Provide a suggested commit message based on the work done.

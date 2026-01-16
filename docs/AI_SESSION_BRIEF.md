@@ -32,6 +32,7 @@
         *   Log work in `docs/Development_Log.md`
         *   Update `docs/ROADMAP.md` (move completed items to "Completed", add new items to "Next Up")  
         *   **Export Schema:** Remind user to update `docs/schema.sql` (In SSMS: Select **ANSI text** to ensure readability).
+        *   **NotebookLM:** Run `node scripts/generate_notebooklm_context.js` and remind user to update NotebookLM.
         *   Remind user to commit to Git - include a meaningful message.
 *   **Testing:** Testing is critical. **I need to physically see the results of each step** to ensure it is working correctly before moving on.
 
@@ -47,7 +48,10 @@
     *   **Styling:** CSS variables via `organization_settings`.
 
 ## 🔄 Core Development Rules
-1.  **Strict Schema Compliance:** Always check `docs/schema.sql` (or active DB state) before writing queries.
+1.  **Strict Schema Compliance:**
+    *   **User-Led Changes:** You (The User) are responsible for executing all `ALTER`, `CREATE`, or schema-modifying SQL commands.
+    *   **Dual Environment:** Always apply changes to **Dev** first, then **Live** immediately after verification.
+    *   Always check the active DB state before writing queries.
 2.  **Transactions:** Use SQL Transactions for multi-table writes.
 3.  **Mobile First:** UIs must be optimized for phone usage.
 

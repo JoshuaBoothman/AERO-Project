@@ -39,3 +39,9 @@ The project is connected to GitHub.
 *   **Schema Changes**: Must be applied to *both* `sqldb-aero-dev` (during dev) and `sqldb-aero-master` (during deployment).
 *   **Data**: Data is **not** automatically synced.
     *   **Refresh Dev**: To make Dev look like Live, run the `clone_db.js` script (or manual Copy in Azure).
+
+## Deployment Checklist
+1.  **Check for Schema Changes**: Did we alter any tables or stored procedures?
+    *   [ ] If YES: Connect to `sqldb-aero-master` and apply the scripts manually.
+2.  **Commit & Push**: Push to `main` triggers the web/api deployment.
+3.  **Verify Live**: Check the live site to ensure the new code works with the live database.

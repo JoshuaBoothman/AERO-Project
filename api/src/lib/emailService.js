@@ -1,6 +1,5 @@
 const { Resend } = require('resend');
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 const SITE_URL = process.env.SITE_URL || 'http://localhost:5173';
 
 /**
@@ -10,11 +9,18 @@ const SITE_URL = process.env.SITE_URL || 'http://localhost:5173';
  * @param {string} firstName - The user's first name.
  */
 async function sendVerificationEmail(email, token, firstName) {
+    // Check if API key is configured
+    if (!process.env.RESEND_API_KEY) {
+        console.error('RESEND_API_KEY is missing. Cannot send verification email.');
+        return { success: false, error: 'Misconfigured: Missing RESEND_API_KEY' };
+    }
+
+    const resend = new Resend(process.env.RESEND_API_KEY);
     const verificationLink = `${SITE_URL}/verify-email?token=${token}`;
 
     try {
         const data = await resend.emails.send({
-            from: 'Aeromodelling <onboarding@resend.dev>', // Update this if you have a verified domain
+            from: 'Aeromodelling <registrations@meandervalleywebdesign.com.au>',
             to: [email],
             subject: 'Verify your email address',
             html: `
@@ -27,6 +33,11 @@ async function sendVerificationEmail(email, token, firstName) {
                 </div>
             `
         });
+
+        if (data.error) {
+            console.error('Resend API returned error:', data.error);
+            return { success: false, error: data.error };
+        }
 
         console.log('Verification email sent:', data);
         return { success: true, data };
