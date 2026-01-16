@@ -57,9 +57,9 @@ app.http('authRegister', {
             let siteUrl = request.headers.get('origin'); // Dynamic frontend URL
 
             try {
-                const orgSettings = await query("SELECT TOP 1 name FROM organization_settings");
-                if (orgSettings.length > 0 && orgSettings[0].name) {
-                    orgName = orgSettings[0].name;
+                const orgSettings = await query("SELECT TOP 1 organization_name FROM organization_settings");
+                if (orgSettings.length > 0 && orgSettings[0].organization_name) {
+                    orgName = orgSettings[0].organization_name;
                 }
             } catch (ignore) {
                 context.warn("Could not fetch organization name for email, using default.");
