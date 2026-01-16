@@ -885,6 +885,13 @@ The "Camping" page for "Festival of Aeromodelling 2026" was displaying "No campg
     *   Confirmed registration API properly handles missing credentials without crashing the entire app.
     *   Confirmed clean state of both databases.
 
+### Email Refinements
+*   **Issues Addressed:**
+    *   **Organization Name:** Now dynamically fetched from the database (`organization_settings`) instead of being hardcoded.
+    *   **Sender Name:** Now matches the dynamic organization name.
+    *   **Verification Link:** Now automatically derives the domain from the request's `Origin` header. Works seamlessly on both `localhost` and Live environments without needing manual configuration.
+*   **Configuration:** Removed the need for `SITE_URL` app setting.
+
 ### Next Steps
 *   **Live Config:** User to add `RESEND_API_KEY` to Azure Function App settings.
 *   **Testing:** Perform live user registration test.

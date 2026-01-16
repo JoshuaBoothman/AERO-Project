@@ -50,8 +50,22 @@ app.http('authRegister', {
                 { name: 'expires', type: sql.DateTime, value: tokenExpires }
             ]);
 
+
             // 5. Send Verification Email
-            const emailResult = await sendVerificationEmail(email, verificationToken, firstName);
+            // Fetch Organization Name and Origin URL dynamically
+            let orgName = 'Aeromodelling';
+            let siteUrl = request.headers.get('origin'); // Dynamic frontend URL
+
+            try {
+                const orgSettings = await query("SELECT TOP 1 name FROM organization_settings");
+                if (orgSettings.length > 0 && orgSettings[0].name) {
+                    orgName = orgSettings[0].name;
+                }
+            } catch (ignore) {
+                context.warn("Could not fetch organization name for email, using default.");
+            }
+
+            const emailResult = await sendVerificationEmail(email, verificationToken, firstName, orgName, siteUrl);
 
             if (!emailResult.success) {
                 // Determine if we should delete the user or just warn
