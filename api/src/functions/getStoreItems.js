@@ -18,20 +18,28 @@ app.http('getStoreItems', {
             // 1. Resolve Event ID
             let eventId = eventIdParam;
             let eventName = '';
+            let eventStartDate = null;
+            let eventEndDate = null;
 
             // 1. Resolve Event ID & Name
             if (slug && !eventId) {
                 const eRes = await pool.request()
                     .input('slug', sql.NVarChar, slug)
-                    .query("SELECT event_id, name FROM events WHERE slug = @slug");
+                    .query("SELECT event_id, name, start_date, end_date FROM events WHERE slug = @slug");
                 if (eRes.recordset.length === 0) return { status: 404, body: JSON.stringify({ error: "Event not found" }) };
                 eventId = eRes.recordset[0].event_id;
                 eventName = eRes.recordset[0].name;
+                eventStartDate = eRes.recordset[0].start_date;
+                eventEndDate = eRes.recordset[0].end_date;
             } else if (eventId) {
                 const eRes = await pool.request()
                     .input('eid', sql.Int, eventId)
-                    .query("SELECT name FROM events WHERE event_id = @eid");
-                if (eRes.recordset.length > 0) eventName = eRes.recordset[0].name;
+                    .query("SELECT name, start_date, end_date FROM events WHERE event_id = @eid");
+                if (eRes.recordset.length > 0) {
+                    eventName = eRes.recordset[0].name;
+                    eventStartDate = eRes.recordset[0].start_date;
+                    eventEndDate = eRes.recordset[0].end_date;
+                }
             }
 
             // 2. Fetch Merch (Global Products)
@@ -109,7 +117,7 @@ app.http('getStoreItems', {
 
             // 3. Fetch Assets
             const assetRes = await pool.request().input('eid', sql.Int, eventId).query(`
-                SELECT asset_type_id, name, description, base_hire_cost, image_url
+                SELECT asset_type_id, name, description, base_hire_cost, full_event_cost, ISNULL(show_daily_cost, 1) as show_daily_cost, ISNULL(show_full_event_cost, 0) as show_full_event_cost, image_url
                 FROM asset_types
                 WHERE event_id = @eid
             `);
@@ -118,6 +126,10 @@ app.http('getStoreItems', {
                 name: a.name,
                 description: a.description,
                 price: a.base_hire_cost,
+                base_hire_cost: a.base_hire_cost, // Explicit for Modal
+                full_event_cost: a.full_event_cost,
+                show_daily_cost: a.show_daily_cost,
+                show_full_event_cost: a.show_full_event_cost,
                 image: a.image_url
             }));
 
@@ -142,6 +154,8 @@ app.http('getStoreItems', {
                 body: JSON.stringify({
                     eventId,
                     eventName,
+                    eventStartDate,
+                    eventEndDate,
                     merchandise, // Grouped
                     assets,
                     subevents

@@ -17,8 +17,11 @@ function AssetTypes() {
         name: '',
         description: '',
         base_hire_cost: 0,
+        full_event_cost: '', // Default empty or 0
+        show_daily_cost: true,
+        show_full_event_cost: false,
         image_url: '',
-        event_id: 1 // Default to 1 (AERO) for now, or fetch from context if available
+        event_id: 1
     });
 
     const [events, setEvents] = useState([]);
@@ -86,6 +89,9 @@ function AssetTypes() {
             name: type.name,
             description: type.description || '',
             base_hire_cost: type.base_hire_cost || 0,
+            full_event_cost: type.full_event_cost || 0,
+            show_daily_cost: type.show_daily_cost !== undefined ? type.show_daily_cost : true,
+            show_full_event_cost: type.show_full_event_cost || false,
             image_url: type.image_url || '',
             event_id: type.event_id || (events.length > 0 ? events[0].event_id : '')
         });
@@ -99,6 +105,9 @@ function AssetTypes() {
             name: '',
             description: '',
             base_hire_cost: 0,
+            full_event_cost: '',
+            show_daily_cost: true,
+            show_full_event_cost: false,
             image_url: '',
             event_id: events.length > 0 ? events[0].event_id : ''
         });
@@ -213,7 +222,13 @@ function AssetTypes() {
                                 <div className="font-medium">{type.name}</div>
                                 <div className="text-xs text-gray-500">{type.description}</div>
                             </td>
-                            <td className="p-3">${typeof type.base_hire_cost === 'number' ? type.base_hire_cost.toFixed(2) : type.base_hire_cost}</td>
+                            <td className="p-3">
+                                <div>
+                                    {type.show_daily_cost && <div className="text-sm">Daily: ${typeof type.base_hire_cost === 'number' ? type.base_hire_cost.toFixed(2) : type.base_hire_cost}</div>}
+                                    {type.show_full_event_cost && <div className="text-sm">Full: ${typeof type.full_event_cost === 'number' ? type.full_event_cost.toFixed(2) : type.full_event_cost}</div>}
+                                    {!type.show_daily_cost && !type.show_full_event_cost && <span className="text-red-500 text-xs">No Pricing</span>}
+                                </div>
+                            </td>
                             <td className="p-3">
                                 <span className={`px-2 py-1 rounded text-xs ${type.total_items > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                                     {type.active_items} Active / {type.total_items} Total
@@ -256,16 +271,50 @@ function AssetTypes() {
                                     onChange={e => setFormData({ ...formData, description: e.target.value })}
                                 />
                             </div>
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium mb-1">Daily Hire Cost ($)</label>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    className="w-full border border-gray-300 rounded p-2"
-                                    value={formData.base_hire_cost}
-                                    onChange={e => setFormData({ ...formData, base_hire_cost: e.target.value })}
-                                />
+                            <div className="mb-4 grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium mb-1">Daily Hire Cost ($)</label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        className="w-full border border-gray-300 rounded p-2"
+                                        value={formData.base_hire_cost}
+                                        onChange={e => setFormData({ ...formData, base_hire_cost: e.target.value })}
+                                    />
+                                    <div className="mt-1 flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            id="showDaily"
+                                            className="mr-2"
+                                            checked={formData.show_daily_cost !== false} // Default true
+                                            onChange={e => setFormData({ ...formData, show_daily_cost: e.target.checked })}
+                                        />
+                                        <label htmlFor="showDaily" className="text-sm text-gray-600">Enable Daily Hire</label>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-1">Full Event Cost ($)</label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        className="w-full border border-gray-300 rounded p-2"
+                                        value={formData.full_event_cost || ''}
+                                        onChange={e => setFormData({ ...formData, full_event_cost: e.target.value })}
+                                        placeholder="Optional"
+                                    />
+                                    <div className="mt-1 flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            id="showFull"
+                                            className="mr-2"
+                                            checked={formData.show_full_event_cost === true} // Default false
+                                            onChange={e => setFormData({ ...formData, show_full_event_cost: e.target.checked })}
+                                        />
+                                        <label htmlFor="showFull" className="text-sm text-gray-600">Enable Full Event Pkg</label>
+                                    </div>
+                                </div>
                             </div>
+
                             <div className="mb-4">
                                 <label className="block text-sm font-medium mb-1">Event Context</label>
                                 <select

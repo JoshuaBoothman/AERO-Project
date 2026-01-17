@@ -899,3 +899,23 @@ The "Camping" page for "Festival of Aeromodelling 2026" was displaying "No campg
 ### Next Steps
 *   **Live Config:** User to add `RESEND_API_KEY` to Azure Function App settings.
 *   **Testing:** Perform live user registration test.
+
+## [2026-01-17] - Asset Pricing Options & Availability
+**Milestone:** Flexible Asset Pricing (Daily vs Full Event) & UX Improvements
+
+### Completed Items
+*   **Database**
+    *   **Schema:** Added `full_event_cost`, `show_daily_cost`, and `show_full_event_cost` to `asset_types` table.
+*   **Backend (API)**
+    *   **Endpoints:** Updated `getAssets.js` and `manageAssetTypes.js` to handle new pricing fields.
+    *   **Store:** Updated `getStoreItems.js` to return pricing configuration and correct Event Dates.
+*   **Frontend (Admin)**
+    *   **Asset Management:** Updated `AssetTypes.jsx` form to include pricing toggles and Full Event cost inputs.
+*   **Frontend (Store)**
+    *   **Display:** Updated `StorePage.jsx` asset cards to display "Daily" and/or "Full Event" prices.
+    *   **UX:** Refactored `AssetSelectionModal.jsx` to host date selection internally, improving user flow.
+    *   **Logic:** Implemented toggling between "Daily Hire" (Date Picker) and "Full Event Pkg" (Fixed Price, Event Dates).
+    *   **Availability:** Fixed infinite loading bug in modal; Verified "First-in-best-dressed" checkout logic in `createOrder.js`.
+
+### Next Steps
+*   **Testing:** Monitor live usage for potential race conditions (though safeguarded by transactions).

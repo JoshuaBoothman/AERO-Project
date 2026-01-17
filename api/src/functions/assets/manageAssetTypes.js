@@ -13,7 +13,7 @@ app.http('manageAssetTypes', {
         try {
             if (method === 'POST') {
                 const body = await request.json();
-                const { name, description, event_id, base_hire_cost, image_url } = body;
+                const { name, description, event_id, base_hire_cost, full_event_cost, show_daily_cost, show_full_event_cost, image_url } = body;
 
                 if (!name || !event_id) {
                     return { status: 400, body: JSON.stringify({ error: "Name and Event ID are required" }) };
@@ -24,11 +24,14 @@ app.http('manageAssetTypes', {
                     .input('name', sql.NVarChar, name)
                     .input('description', sql.NVarChar, description || '')
                     .input('cost', sql.Decimal(10, 2), base_hire_cost || 0)
+                    .input('fullEventCost', sql.Decimal(10, 2), full_event_cost || null)
+                    .input('showDaily', sql.Bit, show_daily_cost !== undefined ? show_daily_cost : 1)
+                    .input('showFull', sql.Bit, show_full_event_cost !== undefined ? show_full_event_cost : 0)
                     .input('imageUrl', sql.NVarChar, image_url || null)
                     .query(`
-                        INSERT INTO asset_types (event_id, name, description, base_hire_cost, image_url)
+                        INSERT INTO asset_types (event_id, name, description, base_hire_cost, full_event_cost, show_daily_cost, show_full_event_cost, image_url)
                         OUTPUT INSERTED.*
-                        VALUES (@eventId, @name, @description, @cost, @imageUrl)
+                        VALUES (@eventId, @name, @description, @cost, @fullEventCost, @showDaily, @showFull, @imageUrl)
                     `);
 
                 return { status: 201, jsonBody: result.recordset[0] };
@@ -45,6 +48,9 @@ app.http('manageAssetTypes', {
                 if (body.name !== undefined) { updates.push("name = @name"); req.input('name', sql.NVarChar, body.name); }
                 if (body.description !== undefined) { updates.push("description = @desc"); req.input('desc', sql.NVarChar, body.description); }
                 if (body.base_hire_cost !== undefined) { updates.push("base_hire_cost = @cost"); req.input('cost', sql.Decimal(10, 2), body.base_hire_cost); }
+                if (body.full_event_cost !== undefined) { updates.push("full_event_cost = @feCost"); req.input('feCost', sql.Decimal(10, 2), body.full_event_cost); }
+                if (body.show_daily_cost !== undefined) { updates.push("show_daily_cost = @showDaily"); req.input('showDaily', sql.Bit, body.show_daily_cost); }
+                if (body.show_full_event_cost !== undefined) { updates.push("show_full_event_cost = @showFull"); req.input('showFull', sql.Bit, body.show_full_event_cost); }
                 if (body.image_url !== undefined) { updates.push("image_url = @img"); req.input('img', sql.NVarChar, body.image_url); }
 
                 if (updates.length === 0) return { status: 400, body: "No fields to update" };

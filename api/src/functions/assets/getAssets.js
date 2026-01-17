@@ -16,6 +16,9 @@ app.http('getAssets', {
                     at.name,
                     at.description,
                     at.base_hire_cost,
+                    at.full_event_cost,
+                    ISNULL(at.show_daily_cost, 1) as show_daily_cost,
+                    ISNULL(at.show_full_event_cost, 0) as show_full_event_cost,
                     at.image_url,
                     (SELECT COUNT(*) FROM asset_items ai WHERE ai.asset_type_id = at.asset_type_id) as total_items,
                     (SELECT COUNT(*) FROM asset_items ai WHERE ai.asset_type_id = at.asset_type_id AND ai.status = 'Active') as active_items

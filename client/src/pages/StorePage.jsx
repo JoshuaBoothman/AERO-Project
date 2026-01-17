@@ -53,30 +53,46 @@ function StorePage({ orgSettings }) {
     };
 
     const handleOpenAssetModal = (asset) => {
-        if (!hireDates.start || !hireDates.end) return notify("Please select hire dates first.", "error");
         setSelectedAssetType(asset);
     };
 
     const handleAddAssetToCart = (assetType, assetItem, dates) => {
-        // Calculate Days
+        let price;
+
+        // If 'assetType' comes from Modal with an override price (e.g. Full Event fixed price)
+        if (assetType.price && !isNaN(assetType.price) && assetType.price !== assetType.base_hire_cost) {
+            // Note: assetType inside Modal typically has 'price' mapped from 'base_hire_cost' initially,
+            // but the Modal overrides it with the final calculated total if we passed the constructed object back.
+            // Let's verify how we passed it.
+            // Modal calls: onAddToCart(assetWithPrice, item, hireDates);
+            // where assetWithPrice.price is the FINAL TOTAL boolean/float.
+            price = parseFloat(assetType.price);
+        } else {
+            // Fallback (or if simple Daily mode wasn't overridden clearly): Calculate Days * Rate
+            const start = new Date(dates.start);
+            const end = new Date(dates.end);
+            const diffTime = Math.abs(end - start);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            const days = diffDays + 1; // Inclusive
+            const rate = parseFloat(assetType.price || 0); // This might be the base rate if not overridden
+            price = rate * days;
+        }
+
+        // Calculation (Just for display string if needed, but price is key)
         const start = new Date(dates.start);
         const end = new Date(dates.end);
-        const diffTime = Math.abs(end - start);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        const days = diffDays + 1; // Inclusive
-
-        const price = assetType.price * days;
+        const diffDays = Math.ceil(Math.abs(end - start) / (1000 * 60 * 60 * 24)) + 1;
 
         addToCart({
             type: 'ASSET',
             id: assetType.id, // asset_type_id
             itemId: assetItem.asset_item_id, // Specific Item ID
-            name: `${assetType.name} #${assetItem.identifier} (${days} days)`,
+            name: `${assetType.name} #${assetItem.identifier} (${diffDays} days)`,
             price: price,
             quantity: 1,
             checkIn: dates.start,
             checkOut: dates.end,
-            dailyRate: assetType.price,
+            dailyRate: assetType.base_hire_cost || assetType.price, // Preserve base rate reference
             eventId: data.eventId,
             image: assetItem.image_url || assetType.image // Use item image or type image
         });
@@ -161,17 +177,7 @@ function StorePage({ orgSettings }) {
                 {/* ASSETS */}
                 {activeTab === 'hire' && (
                     <div>
-                        <div className="bg-gray-100 p-6 rounded-lg mb-8 flex flex-col md:flex-row gap-6 items-end shadow-inner">
-                            <div className="w-full md:w-auto">
-                                <label className="block text-sm font-bold mb-1 text-gray-700">Hire Start</label>
-                                <input type="date" className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary focus:border-transparent outline-none" value={hireDates.start} onChange={e => setHireDates({ ...hireDates, start: e.target.value })} />
-                            </div>
-                            <div className="w-full md:w-auto">
-                                <label className="block text-sm font-bold mb-1 text-gray-700">Hire End</label>
-                                <input type="date" className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary focus:border-transparent outline-none" value={hireDates.end} onChange={e => setHireDates({ ...hireDates, end: e.target.value })} />
-                            </div>
-                            <div className="text-sm text-gray-500 pb-2 italic">Select dates to view available items</div>
-                        </div>
+
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {data.assets.length === 0 && <p className="text-gray-500 italic">No assets available for hire.</p>}
@@ -189,7 +195,18 @@ function StorePage({ orgSettings }) {
                                         <p className="text-sm text-gray-600">{asset.description}</p>
                                     </div>
                                     <div>
-                                        <p className="font-bold text-xl mb-4 text-primary">${asset.price} <span className="text-sm font-normal text-gray-500">/ day</span></p>
+                                        <div className="mb-4">
+                                            {asset.show_daily_cost && asset.show_full_event_cost ? (
+                                                <div>
+                                                    <p className="font-bold text-xl text-primary">${asset.price} <span className="text-sm font-normal text-gray-500">/ day</span></p>
+                                                    <p className="text-sm text-gray-500">or ${asset.full_event_cost} Full Event</p>
+                                                </div>
+                                            ) : asset.show_full_event_cost ? (
+                                                <p className="font-bold text-xl text-primary">${asset.full_event_cost} <span className="text-sm font-normal text-gray-500">Full Event</span></p>
+                                            ) : (
+                                                <p className="font-bold text-xl text-primary">${asset.price} <span className="text-sm font-normal text-gray-500">/ day</span></p>
+                                            )}
+                                        </div>
                                         <button
                                             onClick={() => handleOpenAssetModal(asset)}
                                             className="w-full bg-primary text-secondary py-2 rounded hover:brightness-110 transition-all font-bold"
@@ -244,6 +261,8 @@ function StorePage({ orgSettings }) {
                 <AssetSelectionModal
                     asset={selectedAssetType}
                     hireDates={hireDates}
+                    setHireDates={setHireDates}
+                    eventDates={{ start: data.eventStartDate, end: data.eventEndDate }}
                     onClose={() => setSelectedAssetType(null)}
                     onAddToCart={handleAddAssetToCart}
                 />
