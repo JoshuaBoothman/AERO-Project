@@ -20,6 +20,16 @@ function CampsiteModal({ event, onClose, onAddToCart, orgSettings }) {
 
     const [startDate, setStartDate] = useState(formatDate(event?.start_date));
     const [endDate, setEndDate] = useState(formatDate(event?.end_date));
+    const [useFullEventPrice, setUseFullEventPrice] = useState(false);
+
+    // Toggle Full Event Logic
+    const handleFullEventToggle = (checked) => {
+        setUseFullEventPrice(checked);
+        if (checked) {
+            setStartDate(formatDate(event?.start_date));
+            setEndDate(formatDate(event?.end_date));
+        }
+    };
 
     // Data State
     const [campground, setCampground] = useState(null);
@@ -79,11 +89,13 @@ function CampsiteModal({ event, onClose, onAddToCart, orgSettings }) {
     const handleConfirm = () => {
         // Pass selected sites back to parent
         // Attach the dates to the selection
+        const nights = Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24));
         const selection = selectedSites.map(s => ({
             ...s,
             checkIn: startDate,
             checkOut: endDate,
-            campgroundName: campground?.name
+            campgroundName: campground?.name,
+            price: (useFullEventPrice && s.full_event_price) ? s.full_event_price : (s.price_per_night * nights)
         }));
         onAddToCart(selection);
         onClose();
@@ -119,20 +131,49 @@ function CampsiteModal({ event, onClose, onAddToCart, orgSettings }) {
                     </div>
 
                     {/* Date Pickers */}
-                    <div>
-                        <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'bold' }}>Check In</label>
-                        <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} style={{ padding: '4px' }} />
-                    </div>
-                    <div>
-                        <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'bold' }}>Check Out</label>
-                        <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} style={{ padding: '4px' }} />
+                    <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                        <div>
+                            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'bold' }}>Check In</label>
+                            <input
+                                type="date"
+                                value={startDate}
+                                onChange={e => !useFullEventPrice && setStartDate(e.target.value)}
+                                disabled={useFullEventPrice}
+                                style={{ padding: '4px', background: useFullEventPrice ? '#eee' : 'white' }}
+                            />
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'bold' }}>Check Out</label>
+                            <input
+                                type="date"
+                                value={endDate}
+                                onChange={e => !useFullEventPrice && setEndDate(e.target.value)}
+                                disabled={useFullEventPrice}
+                                style={{ padding: '4px', background: useFullEventPrice ? '#eee' : 'white' }}
+                            />
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '15px' }}>
+                            <input
+                                type="checkbox"
+                                id="fullEventCheck"
+                                checked={useFullEventPrice}
+                                onChange={e => handleFullEventToggle(e.target.checked)}
+                            />
+                            <label htmlFor="fullEventCheck" style={{ fontSize: '0.9rem', cursor: 'pointer' }}>
+                                Full Event Package
+                            </label>
+                        </div>
                     </div>
 
                     {/* Summary */}
                     <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
                         <div style={{ fontWeight: 'bold' }}>{selectedSites.length} sites selected</div>
                         <div style={{ fontSize: '0.9rem', color: '#666' }}>
-                            Total: ${selectedSites.reduce((sum, s) => sum + s.price_per_night, 0).toFixed(2)}
+                            Total: ${selectedSites.reduce((sum, s) => {
+                                if (useFullEventPrice && s.full_event_price) return sum + s.full_event_price;
+                                const nights = Math.max(1, Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)));
+                                return sum + (s.price_per_night * nights);
+                            }, 0).toFixed(2)}
                         </div>
                     </div>
                 </div>
@@ -197,7 +238,7 @@ function CampsiteModal({ event, onClose, onAddToCart, orgSettings }) {
                                                 fontWeight: 'bold',
                                                 boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
                                             }}
-                                            title={`${site.site_number} - $${site.price_per_night}`}
+                                            title={`${site.site_number} - ${site.full_event_price ? `Event: $${site.full_event_price}` : `$${site.price_per_night}/n`}`}
                                         >
                                             {isSelected && '✓'}
                                         </div>

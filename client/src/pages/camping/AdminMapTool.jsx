@@ -38,9 +38,10 @@ function AdminMapTool() {
     const [selectedFile, setSelectedFile] = useState(null);
     const [uploading, setUploading] = useState(false);
 
-    // Rename Modal State
-    const [showRenameModal, setShowRenameModal] = useState(false);
-    const [renameData, setRenameData] = useState({ id: null, name: '' });
+    // Edit Modal State
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editData, setEditData] = useState({ id: null, name: '' });
+    const [editFile, setEditFile] = useState(null);
 
     // Initial Load: Fetch Events & Settings
     useEffect(() => {
@@ -185,35 +186,60 @@ function AdminMapTool() {
         });
     };
 
-    const handleRenameCampground = (id, currentName) => {
-        setRenameData({ id, name: currentName });
-        setShowRenameModal(true);
+    const handleEditCampground = (id, currentName) => {
+        setEditData({ id, name: currentName });
+        setEditFile(null);
+        setShowEditModal(true);
     };
 
-    const submitRename = async () => {
-        if (!renameData.name || !renameData.id) return;
+    const submitEdit = async () => {
+        if (!editData.name || !editData.id) return;
 
+        setUploading(true);
         try {
-            const res = await fetch(`/api/campgrounds/${renameData.id}`, {
+            let mapUrl = undefined;
+
+            if (editFile) {
+                const formData = new FormData();
+                formData.append('file', editFile);
+                const uploadRes = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                if (!uploadRes.ok) throw new Error('Upload failed');
+                const data = await uploadRes.json();
+                mapUrl = data.url;
+            }
+
+            const body = { name: editData.name };
+            if (mapUrl) body.map_image_url = mapUrl;
+
+            const res = await fetch(`/api/campgrounds/${editData.id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
                     'X-Auth-Token': token
                 },
-                body: JSON.stringify({ name: renameData.name })
+                body: JSON.stringify(body)
             });
 
             if (res.ok) {
-                setCampgrounds(prev => prev.map(c => c.campground_id === renameData.id ? { ...c, name: renameData.name } : c));
-                setShowRenameModal(false);
+                setCampgrounds(prev => prev.map(c => c.campground_id === editData.id ? { ...c, name: editData.name } : c));
+                // If current campground, Refresh data to show new map
+                if (selectedCampgroundId === editData.id && mapUrl) {
+                    fetchCampgroundData(editData.id);
+                }
+                setShowEditModal(false);
             } else {
                 const err = await res.json();
-                notify('Failed to rename: ' + (err.error || 'Unknown error'), "error");
+                notify('Failed to update: ' + (err.error || 'Unknown error'), "error");
             }
         } catch (e) {
             console.error(e);
-            notify('Error renaming campground', "error");
+            notify('Error updating campground', "error");
+        } finally {
+            setUploading(false);
         }
     };
 
@@ -292,13 +318,43 @@ function AdminMapTool() {
                     'Authorization': `Bearer ${token}`,
                     'X-Auth-Token': token
                 },
-                body: JSON.stringify({ count: parseInt(qty), prefix, price: parseFloat(document.getElementById('addPrice').value) || 0 })
+                body: JSON.stringify({
+                    count: parseInt(qty),
+                    prefix,
+                    price: parseFloat(document.getElementById('addPrice').value) || 0,
+                    full_event_price: parseFloat(document.getElementById('addFullPrice').value) || 0
+                })
             });
             if (res.ok) {
                 fetchCampgroundData(selectedCampgroundId);
-                document.getElementById('addQty').value = '';
+                // Clear inputs
+                document.getElementById('addQty').value = '1';
             } else { alert('Failed to add sites'); }
         } catch (e) { alert('Error adding sites'); }
+    };
+
+    const handleSingleAdd = async (name, price) => {
+        if (!selectedCampgroundId || !name) return;
+        try {
+            const res = await fetch(`/api/campgrounds/${selectedCampgroundId}/sites`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    'X-Auth-Token': token
+                },
+                body: JSON.stringify({
+                    count: 1, // Dummy
+                    price: parseFloat(price) || 0,
+                    full_event_price: parseFloat(document.getElementById('singleFullPrice').value) || 0,
+                    specific_names: [name]
+                })
+            });
+            if (res.ok) {
+                fetchCampgroundData(selectedCampgroundId);
+                document.getElementById('singleName').value = '';
+            } else { alert('Failed to add site'); }
+        } catch (e) { alert('Error adding site'); }
     };
 
     const handleRename = (id, newName) => {
@@ -333,6 +389,24 @@ function AdminMapTool() {
                     'X-Auth-Token': token
                 },
                 body: JSON.stringify({ price_per_night: parseFloat(newPrice) })
+            });
+        } catch (e) { console.error(e); }
+    };
+
+    const handleFullPriceChange = (id, newPrice) => {
+        setSites(prev => prev.map(s => s.campsite_id === id ? { ...s, full_event_price: newPrice } : s));
+    };
+
+    const handleFullPriceBlur = async (id, newPrice) => {
+        try {
+            await fetch(`/api/campsites/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    'X-Auth-Token': token
+                },
+                body: JSON.stringify({ full_event_price: parseFloat(newPrice) })
             });
         } catch (e) { console.error(e); }
     };
@@ -426,7 +500,7 @@ function AdminMapTool() {
                                 {selectedCampgroundId === cg.campground_id && (
                                     <>
                                         <button
-                                            onClick={() => handleRenameCampground(cg.campground_id, cg.name)}
+                                            onClick={() => handleEditCampground(cg.campground_id, cg.name)}
                                             style={{
                                                 padding: '8px 10px',
                                                 background: '#ffc107',
@@ -435,7 +509,7 @@ function AdminMapTool() {
                                                 cursor: 'pointer',
                                                 borderLeft: '1px solid rgba(0,0,0,0.1)'
                                             }}
-                                            title="Rename Campground"
+                                            title="Edit Campground"
                                         >
                                             ✏️
                                         </button>
@@ -490,48 +564,70 @@ function AdminMapTool() {
                     <div style={{ width: '320px', minWidth: '320px', borderRight: '1px solid #eee', display: 'flex', flexDirection: 'column', background: '#fafafa', flexShrink: 0, zIndex: 20, position: 'relative', boxShadow: '2px 0 5px rgba(0,0,0,0.1)' }}>
 
                         {/* Bulk Add (Styled with Labels) */}
-                        <div style={{ padding: '15px', borderBottom: '1px solid #ddd', background: '#fff', overflow: 'hidden' }}>
-                            <h4 style={{ margin: '0 0 10px 0' }}>Bulk Create</h4>
-                            <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                    <label style={{ fontSize: '0.75rem', fontWeight: 'bold' }}>Number</label>
-                                    <input
-                                        id="addQty"
-                                        type="number"
-                                        defaultValue="1"
-                                        style={{ width: '60px', padding: '5px', border: '1px solid #ccc', borderRadius: '4px' }}
-                                    />
-                                </div>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flex: 1 }}>
-                                    <label style={{ fontSize: '0.75rem', fontWeight: 'bold' }}>Suffix</label>
-                                    <input
-                                        id="addPrefix"
-                                        type="text"
-                                        defaultValue="Site "
-                                        style={{ width: '100%', padding: '5px', border: '1px solid #ccc', borderRadius: '4px' }}
-                                    />
-                                </div>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                    <label style={{ fontSize: '0.75rem', fontWeight: 'bold' }}>Price</label>
-                                    <div style={{ position: 'relative' }}>
-                                        <span style={{ position: 'absolute', left: '5px', top: '50%', transform: 'translateY(-50%)', color: '#666' }}>$</span>
-                                        <input
-                                            id="addPrice"
-                                            type="number"
-                                            defaultValue="0"
-                                            style={{ width: '80px', padding: '5px 5px 5px 15px', border: '1px solid #ccc', borderRadius: '4px' }}
-                                        />
+                        <div style={{ padding: '15px', borderBottom: '1px solid #ddd', background: '#fff' }}>
+                            <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
+                                {/* Bulk Add */}
+                                <div style={{ flex: 1 }}>
+                                    <h4 style={{ margin: '0 0 10px 0' }}>Bulk Create</h4>
+                                    <div style={{ display: 'flex', gap: '5px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                            <label style={{ fontSize: '0.7rem', fontWeight: 'bold' }}>Qty</label>
+                                            <input id="addQty" type="number" defaultValue="1" style={{ width: '50px', padding: '5px', border: '1px solid #ccc', borderRadius: '4px' }} />
+                                        </div>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flex: 1 }}>
+                                            <label style={{ fontSize: '0.7rem', fontWeight: 'bold' }}>Prefix (Opt)</label>
+                                            <input id="addPrefix" type="text" placeholder="" style={{ width: '100%', padding: '5px', border: '1px solid #ccc', borderRadius: '4px' }} />
+                                        </div>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', width: '70px' }}>
+                                            <label style={{ fontSize: '0.7rem', fontWeight: 'bold' }}>Price</label>
+                                            <input id="addPrice" type="number" defaultValue="0" style={{ width: '100%', padding: '5px', border: '1px solid #ccc', borderRadius: '4px' }} />
+                                        </div>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', width: '70px' }}>
+                                            <label style={{ fontSize: '0.7rem', fontWeight: 'bold' }}>FullEvent</label>
+                                            <input id="addFullPrice" type="number" defaultValue="0" style={{ width: '100%', padding: '5px', border: '1px solid #ccc', borderRadius: '4px' }} />
+                                        </div>
+                                        <button
+                                            onClick={() => handleBulkAdd(
+                                                document.getElementById('addQty').value,
+                                                document.getElementById('addPrefix').value
+                                            )}
+                                            style={{ background: '#333', color: 'white', border: 'none', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer', height: '30px', alignSelf: 'flex-end' }}
+                                        >
+                                            Add
+                                        </button>
                                     </div>
                                 </div>
-                                <button
-                                    onClick={() => handleBulkAdd(
-                                        document.getElementById('addQty').value,
-                                        document.getElementById('addPrefix').value
-                                    )}
-                                    style={{ background: 'black', color: 'white', border: 'none', padding: '8px 12px', borderRadius: '4px', cursor: 'pointer', height: '32px' }}
-                                >
-                                    Add
-                                </button>
+
+                                {/* Divider */}
+                                <div style={{ width: '1px', background: '#ddd', alignSelf: 'stretch' }}></div>
+
+                                {/* Single Add */}
+                                <div style={{ flex: 1 }}>
+                                    <h4 style={{ margin: '0 0 10px 0' }}>Single Site</h4>
+                                    <div style={{ display: 'flex', gap: '5px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flex: 1 }}>
+                                            <label style={{ fontSize: '0.7rem', fontWeight: 'bold' }}>Site Name</label>
+                                            <input id="singleName" type="text" placeholder="e.g. 5A" style={{ width: '100%', padding: '5px', border: '1px solid #ccc', borderRadius: '4px' }} />
+                                        </div>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', width: '70px' }}>
+                                            <label style={{ fontSize: '0.7rem', fontWeight: 'bold' }}>Price</label>
+                                            <input id="singlePrice" type="number" defaultValue="0" style={{ width: '100%', padding: '5px', border: '1px solid #ccc', borderRadius: '4px' }} />
+                                        </div>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', width: '70px' }}>
+                                            <label style={{ fontSize: '0.7rem', fontWeight: 'bold' }}>FullEvent</label>
+                                            <input id="singleFullPrice" type="number" defaultValue="0" style={{ width: '100%', padding: '5px', border: '1px solid #ccc', borderRadius: '4px' }} />
+                                        </div>
+                                        <button
+                                            onClick={() => handleSingleAdd(
+                                                document.getElementById('singleName').value,
+                                                document.getElementById('singlePrice').value
+                                            )}
+                                            style={{ background: '#007bff', color: 'white', border: 'none', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer', height: '30px', alignSelf: 'flex-end' }}
+                                        >
+                                            Add
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -549,7 +645,7 @@ function AdminMapTool() {
                                     />
                                 </div>
                                 <div style={{ marginBottom: '10px' }}>
-                                    <label style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>Price</label>
+                                    <label style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>Price (Daily)</label>
                                     <div style={{ position: 'relative' }}>
                                         <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#666' }}>$</span>
                                         <input
@@ -558,6 +654,19 @@ function AdminMapTool() {
                                             value={sites.find(s => s.campsite_id === selectedSiteId)?.price_per_night || ''}
                                             onChange={e => handlePriceChange(selectedSiteId, e.target.value)}
                                             onBlur={e => handlePriceBlur(selectedSiteId, e.target.value)}
+                                        />
+                                    </div>
+                                </div>
+                                <div style={{ marginBottom: '10px' }}>
+                                    <label style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>Full Event Price</label>
+                                    <div style={{ position: 'relative' }}>
+                                        <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#666' }}>$</span>
+                                        <input
+                                            type="number"
+                                            style={{ width: '100%', padding: '5px 5px 5px 25px', border: '1px solid #ced4da', borderRadius: '4px' }}
+                                            value={sites.find(s => s.campsite_id === selectedSiteId)?.full_event_price || ''}
+                                            onChange={e => handleFullPriceChange(selectedSiteId, e.target.value)}
+                                            onBlur={e => handleFullPriceBlur(selectedSiteId, e.target.value)}
                                         />
                                     </div>
                                 </div>
@@ -652,7 +761,8 @@ function AdminMapTool() {
                         )}
                     </div>
                 </div>
-            )}
+            )
+            }
             {/* Create Campground Modal */}
             {
                 showCreateModal && (
@@ -690,27 +800,36 @@ function AdminMapTool() {
                     </div>
                 )
             }
-            {/* Rename Campground Modal */}
+            {/* Edit Campground Modal */}
             {
-                showRenameModal && (
+                showEditModal && (
                     <div style={{
                         position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
                         background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
                     }}>
                         <div style={{ background: 'white', padding: '20px', borderRadius: '8px', width: '400px' }}>
-                            <h3>Rename Campground</h3>
+                            <h3>Edit Campground</h3>
                             <div style={{ marginBottom: '10px' }}>
                                 <label>Name:</label>
                                 <input
                                     style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
-                                    value={renameData.name}
-                                    onChange={e => setRenameData({ ...renameData, name: e.target.value })}
+                                    value={editData.name}
+                                    onChange={e => setEditData({ ...editData, name: e.target.value })}
+                                />
+                            </div>
+                            <div style={{ marginBottom: '10px' }}>
+                                <label>Update Map Image (Optional):</label>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={e => setEditFile(e.target.files[0])}
+                                    style={{ width: '100%', padding: '5px' }}
                                 />
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
-                                <button onClick={() => setShowRenameModal(false)} style={{ padding: '8px 16px' }}>Cancel</button>
-                                <button onClick={submitRename} style={{ padding: '8px 16px', background: 'var(--primary-color, black)', color: 'white', border: 'none' }}>
-                                    Save
+                                <button onClick={() => setShowEditModal(false)} disabled={uploading} style={{ padding: '8px 16px' }}>Cancel</button>
+                                <button onClick={submitEdit} disabled={uploading} style={{ padding: '8px 16px', background: 'var(--primary-color, black)', color: 'white', border: 'none' }}>
+                                    {uploading ? 'Saving...' : 'Save'}
                                 </button>
                             </div>
                         </div>

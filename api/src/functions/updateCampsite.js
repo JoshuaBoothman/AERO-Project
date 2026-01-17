@@ -15,7 +15,7 @@ app.http('updateCampsite', {
 
         const campsiteId = request.params.id;
         const body = await request.json();
-        const { site_number, is_powered, price_per_night, is_active, map_coordinates } = body;
+        const { site_number, is_powered, price_per_night, full_event_price, is_active, map_coordinates } = body;
 
         // Dynamic update query builder would be ideal, but let's stick to explicit updates for now.
         // We'll focus on site_number for renaming, but support others.
@@ -42,6 +42,14 @@ app.http('updateCampsite', {
             if (is_powered !== undefined) {
                 req.input('powered', sql.Bit, is_powered);
                 updates.push("is_powered = @powered");
+            }
+            if (price_per_night !== undefined) {
+                req.input('price', sql.Decimal(10, 2), price_per_night);
+                updates.push("price_per_night = @price");
+            }
+            if (full_event_price !== undefined) {
+                req.input('fprice', sql.Decimal(10, 2), full_event_price);
+                updates.push("full_event_price = @fprice");
             }
             if (map_coordinates === null) {
                 updates.push("map_coordinates = NULL");

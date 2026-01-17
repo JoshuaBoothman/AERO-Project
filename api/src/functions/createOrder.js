@@ -165,8 +165,36 @@ app.http('createOrder', {
                         const availReq = new sql.Request(transaction);
                         const availRes = await availReq
                             .input('cid', sql.Int, campsiteId).input('start', sql.Date, checkIn).input('end', sql.Date, checkOut)
-                            .query(`SELECT 1 FROM campsite_bookings WHERE campsite_id = @cid AND check_in_date < @end AND check_out_date > @start`);
-                        if (availRes.recordset.length > 0) throw new Error(`Campsite ${campsiteId} not available.`);
+                            .query(`
+                                SELECT 
+                                    (SELECT 1 FROM campsite_bookings WHERE campsite_id = @cid AND check_in_date < @end AND check_out_date > @start) as is_booked,
+                                    price_per_night, full_event_price 
+                                FROM campsites WHERE campsite_id = @cid
+                            `);
+
+                        if (availRes.recordset.length === 0) throw new Error(`Invalid campsite ID: ${campsiteId}`);
+                        const { is_booked, price_per_night, full_event_price } = availRes.recordset[0];
+
+                        if (is_booked) throw new Error(`Campsite ${campsiteId} not available.`);
+
+                        // Validate Price
+                        const start = new Date(checkIn);
+                        const end = new Date(checkOut);
+                        const nights = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+                        const dailyTotal = price_per_night * nights;
+
+                        // Allow small float difference or exact match
+                        // User price must match either Daily Total OR Full Event Price
+                        let isValidPrice = false;
+                        if (Math.abs(price - dailyTotal) < 0.5) isValidPrice = true;
+                        if (full_event_price && Math.abs(price - full_event_price) < 0.5) isValidPrice = true;
+
+                        // Identify if "Full Event" was used for tracking? 
+                        // For now just validate. If they paid full event price, that's fine.
+
+                        if (!isValidPrice) {
+                            throw new Error(`Invalid price for campsite ${campsiteId}. Expected ${dailyTotal} or ${full_event_price}, got ${price}`);
+                        }
 
                         totalAmount += price;
                         const itemReq = new sql.Request(transaction);

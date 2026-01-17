@@ -14,7 +14,7 @@ app.http('updateCampground', {
         }
 
         const campgroundId = request.params.id;
-        const { name } = await request.json();
+        const { name, map_image_url } = await request.json();
 
         if (!campgroundId) {
             return { status: 400, body: JSON.stringify({ error: "Missing campground ID" }) };
@@ -27,12 +27,22 @@ app.http('updateCampground', {
         try {
             const pool = await getPool();
 
-            const query = `UPDATE campgrounds SET name = @name WHERE campground_id = @id`;
+            // Dynamic Update Query
+            let query = `UPDATE campgrounds SET name = @name`;
+            if (map_image_url !== undefined) {
+                query += `, map_image_url = @mapUrl`;
+            }
+            query += ` WHERE campground_id = @id`;
 
-            const result = await pool.request()
+            const req = pool.request()
                 .input('id', sql.Int, campgroundId)
-                .input('name', sql.NVarChar, name)
-                .query(query);
+                .input('name', sql.NVarChar, name);
+
+            if (map_image_url !== undefined) {
+                req.input('mapUrl', sql.NVarChar, map_image_url);
+            }
+
+            const result = await req.query(query);
 
             if (result.rowsAffected[0] === 0) {
                 return { status: 404, body: JSON.stringify({ error: "Campground not found" }) };

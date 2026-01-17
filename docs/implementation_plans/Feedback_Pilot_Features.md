@@ -1,10 +1,19 @@
-# Pilot Features Implementation (Existing Schema)
+# Pilot Features Implementation
 
 ## Context
-We are implementing Multi-Plane selection, Heavy Model Cert renaming, and AUS Number capture using the **existing database schema**.
+We are implementing Multi-Plane selection, Heavy Model Cert renaming, High-Model Document Upload, and MOP (Manual of Procedures) Agreement capture.
 
-## Existing Schema Mapping
-We will map the User's requested fields to the existing columns in `planes` and `persons`:
+## Database Schema Changes
+> [!IMPORTANT]
+> **Schema Changes**:
+> The user has been provided the SQL to apply these changes.
+> *   Table: `planes`
+>     *   Column: `heavy_model_cert_image_url` (NVARCHAR(MAX))
+> *   Table: `attendees`
+>     *   Column: `has_agreed_to_mop` (BIT)
+
+## Schema Mapping
+We will map the User's requested fields as follows:
 
 | User Field | Database Table | Database Column | Notes |
 | :--- | :--- | :--- | :--- |
@@ -13,45 +22,56 @@ We will map the User's requested fields to the existing columns in `planes` and 
 | **Plane Model** | `planes` | `model_type` | Mapping "Model" to "model_type". |
 | **Rego** | `planes` | `registration_number` | |
 | **Heavy Cert #**| `planes` | `heavy_model_cert_number`| Already exists. |
-
-> [!NOTE]
-> No database schema changes are required from the User.
+| **Heavy Cert File**| `planes` | `heavy_model_cert_image_url` | **[NEW]** URL of uploaded PDF/Image. |
+| **MOP Agreement**| `attendees` | `has_agreed_to_mop` | **[NEW]** Boolean flag. |
 
 ## Proposed Changes
 
 ### Frontend
 #### [MODIFY] [EventDetails.jsx](file:///c:/laragon/www/AERO-Project/client/src/pages/EventDetails.jsx)
-*   **AUS Number**: Add input for `ausNumber` in the Attendee form (updates `license_number`).
+*   **AUS Number**: Add input for `ausNumber`.
+*   **MOP Agreement**:
+    *   Add a section "Monitor of Procedures (MOP)".
+    *   Display MOP Text (Placeholder text or loaded from Event).
+    *   Add Checkbox: "I have read and agree to the MOP".
+    *   **Validation**: Must be checked to proceed to registration.
 *   **Plane List**:
     *   Replace single plane inputs with a list of planes.
     *   "Add Aircraft" button.
-    *   Inputs: Make (`name`), Model (`model_type`), Rego (`registration_number`), Heavy Model Cert (`heavy_model_cert_number`).
-    *   **Validation**: If "Heavy Model Cert" is filled, ensure it's valid? (MVP: Text input).
-    *   **Label Change**: Rename "CASA License / ARN" to "Heavy Model Cert #".
+    *   **New Fields per Plane**:
+        *   "Is this a heavy model?" (Checkbox/Toggle).
+        *   If YES:
+            *   Show "Heavy Model Cert #" Input (Required).
+            *   Show "Heavy Model Permit" File Upload (Required).
+            *   *Logic*: Upload file -> Get URL -> Store in state.
+    *   **Validation**: Ensure Heavy Model fields are present if toggle is On.
 
 #### [MODIFY] [OrderDetail.jsx](file:///c:/laragon/www/AERO-Project/client/src/pages/OrderDetail.jsx)
-*   **Display**: Show "AUS Number" (License Number).
-*   **Planes**: List all planes linked to the attendee (via Person).
-*   **Edit**: Allow adding/editing planes in the modal.
+*   **Display**: Show "AUS Number".
+*   **Planes**: List planes with their Heavy Model status and link to Cert if present.
 
 ### API
 #### [MODIFY] [createOrder.js](file:///c:/laragon/www/AERO-Project/api/src/functions/createOrder.js)
-*   **Persons**: Update `license_number` if provided.
+*   **Persons**: Update `license_number`.
+*   **Attendees**: Set `has_agreed_to_mop` = 1 (True).
 *   **Planes**:
-    *   Loop through provided planes.
-    *   Insert into `planes` (fields: `person_id`, `name`, `model_type`, `registration_number`, `heavy_model_cert_number`).
-    *   Insert into `event_planes` (fields: `event_id`, `plane_id` - ensure `is_safety_checked` defaults to 0).
+    *   Insert `heavy_model_cert_image_url` if provided.
+    *   Insert `heavy_model_cert_number`.
 
 #### [MODIFY] [updateAttendee.js](file:///c:/laragon/www/AERO-Project/api/src/functions/updateAttendee.js)
-*   Allow updating `license_number`.
-*   Allow adding/editing planes.
-    *   If `plane_id` provided: Update existing record.
-    *   If no `plane_id`: Insert new record and link to event.
+*   Allow updating `has_agreed_to_mop` (though unlikely to change after reg?).
+*   Allow adding/editing planes with new columns.
 
 ## Verification Plan
-1.  **Registration**: Register a pilot with AUS Number "12345" and 2 planes ("Extra 300", "Piper Cub").
-2.  **Verify DB**:
-    *   `SELECT * FROM persons WHERE license_number = '12345'`
-    *   `SELECT * FROM planes WHERE name = 'Extra'`
-    *   `SELECT * FROM event_planes`
-3.  **UI**: Check Order Details page displays the info correctly.
+1.  **Registration Flow**:
+    *   Enter Pilot Info.
+    *   Try to proceed without MOP -> Fail.
+    *   Check MOP -> Pass.
+    *   Add Plane -> Toggle Heavy Model.
+    *   Try to proceed without Upload -> Fail.
+    *   Upload File -> Pass.
+2.  **Database**:
+    *   Verify `planes` has URL.
+    *   Verify `attendees` has `has_agreed_to_mop` = 1.
+3.  **Order Details**:
+    *   Open Order. Click "View Heavy Model Cert" -> Opens URL.

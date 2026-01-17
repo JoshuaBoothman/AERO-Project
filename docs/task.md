@@ -1,33 +1,41 @@
 # Client Feedback Implementation Tasks
 
-- [x] **Ticket Description Field** <!-- id: 0 -->
-    - [x] Implementation Plan Created <!-- id: 1 -->
-    - [x] Schema: `event_ticket_types.description` <!-- id: 2 -->
-    - [ ] Execution (Pending) <!-- id: 3 -->
+- [x] **General Navigation** <!-- id: gen_nav -->
+    - [x] Implementation Plan Created (`Feedback_General_Navigation.md`)
+    - [x] Frontend: Add "Information" Menu (Flightline, FAQ, Schedule placeholders)
 
-- [ ] **Pilot Hangar & Logic** <!-- id: 4 -->
-    - [x] Implementation Plan Created <!-- id: 5 -->
-    - [ ] Schema: Verify `planes`, `persons.license_number` (Confirmed Existing) <!-- id: 6 -->
-    - [ ] Frontend: Multiple Planes UI, Heavy Cert renaming <!-- id: 7 -->
-    - [ ] API: Update `createOrder` / `updateAttendee` <!-- id: 8 -->
+- [x] **Admin Camping Enhancements** <!-- id: admin_camp -->
+    - [x] Implementation Plan Created (`Feedback_Admin_Camping.md`)
+    - [x] Frontend: Remove Suffix, Single Site Add, Map Re-upload
+    - [x] API: Update handlers (`createCampsites`, `updateCampground`)
 
-- [ ] **Default Variants (Templates)** <!-- id: 9 -->
-    - [x] Implementation Plan Created <!-- id: 10 -->
-    - [ ] Schema: `variant_templates`, `variant_template_options` <!-- id: 11 -->
-    - [ ] Frontend: Template Manager, Apply Button <!-- id: 12 -->
-    - [ ] API: Template CRUD <!-- id: 13 -->
+- [x] **Camping Pricing (Full Event)** <!-- id: camp_price -->
+    - [x] Implementation Plan Created (`Feedback_Camping_Pricing.md`)
+    - [x] API: Update `getCampgroundAvailability` (return `full_event_price`)
+    - [x] API: Update `createOrder` (handle pricing logic)
+    - [x] Frontend: Update `CampsiteModal` (display full event option)
+    - [x] Frontend: Update `CampingPage` (Full Event logic and auto-check)
+    - [x] Frontend: Admin Tool Updates (Set Full Event Price)
 
-- [ ] **Asset Pricing Options** <!-- id: 14 -->
-    - [x] Implementation Plan Created <!-- id: 15 -->
-    - [ ] Schema: `full_event_cost`, `show_daily`, `show_full` <!-- id: 16 -->
-    - [ ] UI: Admin Toggle, User Pricing Logic <!-- id: 17 -->
+- [ ] **Pilot Features (Registration)** <!-- id: pilot -->
+    - [x] Implementation Plan Created (`Feedback_Pilot_Features.md`)
+    - [x] Schema: `planes.heavy_model_cert_image_url`, `attendees.has_agreed_to_mop` (Applied)
+    - [ ] Frontend: MOP Agreement Checkbox
+    - [ ] Frontend: Multi-plane list, Heavy Model Toggle, Cert Upload
+    - [ ] API: Handle new fields in `createOrder` & `updateAttendee`
 
-- [ ] **Admin Camping Enhancements** <!-- id: 18 -->
-    - [x] Implementation Plan Created <!-- id: 19 -->
-    - [ ] Frontend: Remove Suffix, Single Site Add, Map Re-upload <!-- id: 20 -->
-    - [ ] API: Update handlers <!-- id: 21 -->
+- [ ] **Ticket Description Field** <!-- id: ticket_desc -->
+    - [x] Implementation Plan Created (`Feedback_Ticket_Description.md`)
+    - [x] Schema: `event_ticket_types.description` (Check validity)
+    - [ ] Frontend: Add Input in Admin, Display in Shop
 
-- [ ] **Legacy Priority Booking** <!-- id: 22 -->
-    - [ ] Research Auth Matching Logic <!-- id: 23 -->
-    - [ ] Define Import Process (Admin UI vs Script) <!-- id: 24 -->
-    - [ ] Implementation Plan <!-- id: 25 -->
+- [ ] **Default Variants (Templates)** <!-- id: var_defaults -->
+    - [x] Implementation Plan Created (`Feedback_Variant_Defaults.md`)
+    - [ ] Schema: `variant_templates` (Verify)
+    - [ ] Frontend: Template Manager
+    - [ ] API: Template CRUD
+
+- [ ] **Legacy Booking / Priority** <!-- id: legacy -->
+    - [x] Implementation Plan Created (`Feedback_Legacy_Booking.md`)
+    - [ ] Research: Encryption/Matching logic
+    - [ ] Execution: TBD

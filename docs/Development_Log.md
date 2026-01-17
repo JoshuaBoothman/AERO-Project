@@ -919,3 +919,36 @@ The "Camping" page for "Festival of Aeromodelling 2026" was displaying "No campg
 
 ### Next Steps
 *   **Testing:** Monitor live usage for potential race conditions (though safeguarded by transactions).
+
+## [2026-01-18] - Process Update
+**Milestone:** Manual Verification Workflow Adopted
+*   **Process Change**: From this point forward, verification of frontend changes will be performed **manually by the user** unless explicit browser automation is requested.
+*   **Documentation**: Verification steps will be provided in the chat response rather than executed by the agent.
+
+## [2026-01-18] - Client Feedback Implementation (Batch 1)
+**Milestone:** Navigation, Admin Camping Tools, & Flexible Camping Pricing
+
+### Completed Items
+*   **General Navigation** [Completed]
+    *   **Frontend**: Added "Information" dropdown menu to Desktop Navigation and Mobile Menu (Layout.jsx).
+    *   **Structure**: Includes placeholders/links for Flightline, FAQ, Schedule, etc.
+
+*   **Admin Camping Enhancements** [Completed]
+    *   **Bulk Create**: Removed mandatory "Suffix" field.
+    *   **Single Site**: Added specific form to add single unique site names (e.g. "5A").
+    *   **Map Updates**: Added ability to re-upload map images for existing campgrounds without data loss.
+
+*   **Camping Pricing (Flexible)** [Completed]
+    *   **Schema**: Utilized `full_event_price` column in `campsites`.
+    *   **Backend**: 
+        *   Updated `getCampgroundAvailability` to return full event prices.
+        *   Updated `createCampsites`/`updateCampsite` to allow setting this price.
+        *   Updated `createOrder` to validate payments against either Daily Total OR Full Event Price.
+    *   **Frontend (Admin)**: Added Full Event Price inputs to Admin Map Tool.
+    *   **Frontend (Public)**: 
+        *   Updated `CampingPage.jsx` logic.
+        *   Added "Full Event Package" checkbox that toggles price calculation.
+        *   **Auto-Check Logic**: Automatically selects "Full Event Package" when user selects the exact event dates.
+
+### Verification
+*   **Manual**: Validated by user via Admin Tool checks and Public Booking Flow.

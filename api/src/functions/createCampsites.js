@@ -15,7 +15,7 @@ app.http('createCampsites', {
 
         const campgroundId = request.params.id;
         const body = await request.json();
-        const { count, prefix, price } = body;
+        const { count, prefix, price, full_event_price } = body;
 
         if (!count || count < 1) {
             return { status: 400, body: JSON.stringify({ error: "Invalid count" }) };
@@ -23,6 +23,7 @@ app.http('createCampsites', {
 
         const sitePrefix = prefix || 'Site ';
         const sitePrice = parseFloat(price) || 0;
+        const siteFullPrice = full_event_price ? parseFloat(full_event_price) : null;
 
         try {
             const pool = await getPool();
@@ -34,23 +35,40 @@ app.http('createCampsites', {
                 // For simplicity, we might just append random or sequential logic, but let's assume the user handles naming via prefix + iteration.
                 // Let's just create N sites. Use a simple loop for now or a bulk insert.
 
-                // Get count of existing sites for this campground to start numbering
-                const countResult = await transaction.request()
-                    .input('id', sql.Int, campgroundId)
-                    .query("SELECT COUNT(*) as count FROM campsites WHERE campground_id = @id");
+                if (Array.isArray(body.specific_names) && body.specific_names.length > 0) {
+                    // Specific Names Mode
+                    for (const name of body.specific_names) {
+                        await transaction.request()
+                            .input('cid', sql.Int, campgroundId)
+                            .input('name', sql.NVarChar, name)
+                            .input('price', sql.Decimal(10, 2), sitePrice)
+                            .input('fprice', sql.Decimal(10, 2), siteFullPrice)
+                            .query(`
+                                INSERT INTO campsites (campground_id, site_number, is_active, is_powered, price_per_night, full_event_price)
+                                VALUES (@cid, @name, 1, 0, @price, @fprice)
+                            `);
+                    }
+                } else {
+                    // Bulk Create Mode
+                    // Get count of existing sites for this campground to start numbering
+                    const countResult = await transaction.request()
+                        .input('id', sql.Int, campgroundId)
+                        .query("SELECT COUNT(*) as count FROM campsites WHERE campground_id = @id");
 
-                let startNum = countResult.recordset[0].count + 1;
+                    let startNum = countResult.recordset[0].count + 1;
 
-                for (let i = 0; i < count; i++) {
-                    const siteName = `${sitePrefix}${startNum + i}`;
-                    await transaction.request()
-                        .input('cid', sql.Int, campgroundId)
-                        .input('name', sql.NVarChar, siteName)
-                        .input('price', sql.Decimal(10, 2), sitePrice)
-                        .query(`
-                            INSERT INTO campsites (campground_id, site_number, is_active, is_powered, price_per_night)
-                            VALUES (@cid, @name, 1, 0, @price)
-                        `);
+                    for (let i = 0; i < count; i++) {
+                        const siteName = `${sitePrefix}${startNum + i}`;
+                        await transaction.request()
+                            .input('cid', sql.Int, campgroundId)
+                            .input('name', sql.NVarChar, siteName)
+                            .input('price', sql.Decimal(10, 2), sitePrice)
+                            .input('fprice', sql.Decimal(10, 2), siteFullPrice)
+                            .query(`
+                                INSERT INTO campsites (campground_id, site_number, is_active, is_powered, price_per_night, full_event_price)
+                                VALUES (@cid, @name, 1, 0, @price, @fprice)
+                            `);
+                    }
                 }
 
                 await transaction.commit();

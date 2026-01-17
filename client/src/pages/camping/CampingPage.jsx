@@ -26,6 +26,8 @@ function CampingPage({ embedded = false }) {
     const [eventId, setEventId] = useState(null);
     const [eventName, setEventName] = useState('');
     const [dates, setDates] = useState({ start: '', end: '' });
+    const [eventBounds, setEventBounds] = useState({ start: '', end: '' });
+    const [useFullEventPrice, setUseFullEventPrice] = useState(false);
     const [campgrounds, setCampgrounds] = useState([]); // [{ id, name, sites: [] }]
     const [activeCampgroundId, setActiveCampgroundId] = useState(null);
 
@@ -78,6 +80,7 @@ function CampingPage({ embedded = false }) {
                     const startRaw = event.start_date.split('T')[0];
                     const endRaw = event.end_date.split('T')[0];
                     setDates({ start: startRaw, end: endRaw });
+                    setEventBounds({ start: startRaw, end: endRaw });
                 }
             }
         } catch (e) { console.error(e); }
@@ -100,6 +103,16 @@ function CampingPage({ embedded = false }) {
         finally { setLoading(false); }
     };
 
+    // --- EFFECT: Auto-Check Full Event ---
+    useEffect(() => {
+        if (selectedSite?.full_event_price && eventBounds.start && eventBounds.end) {
+            const isFullDuration = dates.start === eventBounds.start && dates.end === eventBounds.end;
+            if (isFullDuration) {
+                setUseFullEventPrice(true);
+            }
+        }
+    }, [dates, eventBounds, selectedSite]);
+
     // --- HANDLERS ---
     const handleSiteClick = (site) => {
         if (!site.is_available) return;
@@ -113,7 +126,11 @@ function CampingPage({ embedded = false }) {
         const s = new Date(dates.start);
         const e = new Date(dates.end);
         const nights = Math.max(1, Math.ceil((e - s) / (1000 * 60 * 60 * 24)));
-        const price = (selectedSite.price_per_night || 0) * nights;
+
+        let price = (selectedSite.price_per_night || 0) * nights;
+        if (useFullEventPrice && selectedSite.full_event_price) {
+            price = parseFloat(selectedSite.full_event_price);
+        }
 
         const item = {
             type: 'CAMPSITE',
@@ -189,11 +206,23 @@ function CampingPage({ embedded = false }) {
             <div style={{ marginBottom: '20px', padding: '15px', background: '#f5f5f5', borderRadius: '8px', display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
                 <div>
                     <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Check In</label>
-                    <input type="date" value={dates.start} onChange={e => setDates({ ...dates, start: e.target.value })} style={{ padding: '8px' }} />
+                    <input
+                        type="date"
+                        value={dates.start}
+                        onChange={e => setDates({ ...dates, start: e.target.value })}
+                        style={{ padding: '8px', background: useFullEventPrice ? '#eee' : 'white' }}
+                        disabled={useFullEventPrice}
+                    />
                 </div>
                 <div>
                     <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Check Out</label>
-                    <input type="date" value={dates.end} onChange={e => setDates({ ...dates, end: e.target.value })} style={{ padding: '8px' }} />
+                    <input
+                        type="date"
+                        value={dates.end}
+                        onChange={e => setDates({ ...dates, end: e.target.value })}
+                        style={{ padding: '8px', background: useFullEventPrice ? '#eee' : 'white' }}
+                        disabled={useFullEventPrice}
+                    />
                 </div>
                 <button onClick={fetchAvailability} style={{ height: '38px', marginTop: 'auto', padding: '0 20px', background: 'black', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
                     Check Availability
@@ -301,6 +330,25 @@ function CampingPage({ embedded = false }) {
                                         <div style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '10px' }}>Site {selectedSite.site_number}</div>
                                         <p><strong>Power:</strong> {selectedSite.is_powered ? 'Yes' : 'No'}</p>
                                         <p><strong>Price:</strong> ${selectedSite.price_per_night} / night</p>
+                                        {selectedSite.full_event_price && (
+                                            <div style={{ marginTop: '5px', padding: '10px', background: '#e0f7fa', borderRadius: '4px' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <input
+                                                        type="checkbox"
+                                                        id="fullEventCheck"
+                                                        checked={useFullEventPrice}
+                                                        onChange={e => {
+                                                            setUseFullEventPrice(e.target.checked);
+                                                            if (e.target.checked) setDates({ ...eventBounds });
+                                                        }}
+                                                        style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                                                    />
+                                                    <label htmlFor="fullEventCheck" style={{ cursor: 'pointer', fontWeight: 'bold', flex: 1 }}>
+                                                        Full Event Package (${selectedSite.full_event_price})
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        )}
                                         <hr style={{ margin: '15px 0', border: 'none', borderTop: '1px solid #eee' }} />
 
                                         {/* Price Calc */}
@@ -308,12 +356,17 @@ function CampingPage({ embedded = false }) {
                                             const s = new Date(dates.start);
                                             const e = new Date(dates.end);
                                             const nights = Math.max(1, Math.ceil((e - s) / (1000 * 60 * 60 * 24)));
-                                            const total = (selectedSite.price_per_night || 0) * nights;
+                                            let total = (selectedSite.price_per_night || 0) * nights;
+
+                                            // Override if Full Event
+                                            if (useFullEventPrice && selectedSite.full_event_price) {
+                                                total = parseFloat(selectedSite.full_event_price);
+                                            }
 
                                             return (
                                                 <div style={{ marginBottom: '20px' }}>
                                                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                                        <span>{nights} Night{nights > 1 ? 's' : ''}</span>
+                                                        <span>{useFullEventPrice ? 'Full Event Package' : `${nights} Night${nights > 1 ? 's' : ''}`}</span>
                                                         <span>${total.toFixed(2)}</span>
                                                     </div>
                                                     <div style={{ fontSize: '1.2rem', fontWeight: 'bold', marginTop: '10px', textAlign: 'right' }}>
