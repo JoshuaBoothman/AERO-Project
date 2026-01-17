@@ -952,3 +952,13 @@ The "Camping" page for "Festival of Aeromodelling 2026" was displaying "No campg
 
 ### Verification
 *   **Manual**: Validated by user via Admin Tool checks and Public Booking Flow.
+
+## [2026-01-18] - Admin Map Tool UI Refactor
+**Milestone:** Refactored Admin Map Tool Sidebar for Clarity
+
+### Completed Items
+*   **Frontend (Admin Map)**
+    *   **Refactor:** Redesigned the "Bulk Create" and "Single Site" sidebar sections in `AdminMapTool.jsx`.
+    *   **Layout:** Switched from a horizontal flex layout to a vertical stack to better fit the sidebar width.
+    *   **Labels:** Renamed "Price" to "Daily Price" and "FullEvent" to "Full Event Price" for clarity.
+    *   **Styling:** Added currency indicators ($) to price inputs and improved general alignment.

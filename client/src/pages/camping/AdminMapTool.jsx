@@ -565,70 +565,77 @@ function AdminMapTool() {
 
                         {/* Bulk Add (Styled with Labels) */}
                         <div style={{ padding: '15px', borderBottom: '1px solid #ddd', background: '#fff' }}>
-                            <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
-                                {/* Bulk Add */}
-                                <div style={{ flex: 1 }}>
-                                    <h4 style={{ margin: '0 0 10px 0' }}>Bulk Create</h4>
-                                    <div style={{ display: 'flex', gap: '5px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                            <label style={{ fontSize: '0.7rem', fontWeight: 'bold' }}>Qty</label>
-                                            <input id="addQty" type="number" defaultValue="1" style={{ width: '50px', padding: '5px', border: '1px solid #ccc', borderRadius: '4px' }} />
-                                        </div>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flex: 1 }}>
-                                            <label style={{ fontSize: '0.7rem', fontWeight: 'bold' }}>Prefix (Opt)</label>
-                                            <input id="addPrefix" type="text" placeholder="" style={{ width: '100%', padding: '5px', border: '1px solid #ccc', borderRadius: '4px' }} />
-                                        </div>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', width: '70px' }}>
-                                            <label style={{ fontSize: '0.7rem', fontWeight: 'bold' }}>Price</label>
-                                            <input id="addPrice" type="number" defaultValue="0" style={{ width: '100%', padding: '5px', border: '1px solid #ccc', borderRadius: '4px' }} />
-                                        </div>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', width: '70px' }}>
-                                            <label style={{ fontSize: '0.7rem', fontWeight: 'bold' }}>FullEvent</label>
-                                            <input id="addFullPrice" type="number" defaultValue="0" style={{ width: '100%', padding: '5px', border: '1px solid #ccc', borderRadius: '4px' }} />
-                                        </div>
-                                        <button
-                                            onClick={() => handleBulkAdd(
-                                                document.getElementById('addQty').value,
-                                                document.getElementById('addPrefix').value
-                                            )}
-                                            style={{ background: '#333', color: 'white', border: 'none', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer', height: '30px', alignSelf: 'flex-end' }}
-                                        >
-                                            Add
-                                        </button>
+                            {/* Bulk Create Section */}
+                            <h4 style={{ marginTop: 0, marginBottom: '10px', color: '#333' }}>Bulk Create</h4>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '10px', marginBottom: '10px' }}>
+                                <div>
+                                    <label style={{ fontSize: '0.75rem', fontWeight: 'bold', display: 'block', marginBottom: '4px' }}>Qty</label>
+                                    <input id="addQty" type="number" defaultValue="1" style={{ width: '100%', padding: '6px', border: '1px solid #ccc', borderRadius: '4px' }} />
+                                </div>
+                                <div>
+                                    <label style={{ fontSize: '0.75rem', fontWeight: 'bold', display: 'block', marginBottom: '4px' }}>Prefix (Opt)</label>
+                                    <input id="addPrefix" type="text" style={{ width: '100%', padding: '6px', border: '1px solid #ccc', borderRadius: '4px' }} />
+                                </div>
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
+                                <div>
+                                    <label style={{ fontSize: '0.75rem', fontWeight: 'bold', display: 'block', marginBottom: '4px' }}>Daily Price</label>
+                                    <div style={{ position: 'relative' }}>
+                                        <span style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', color: '#666' }}>$</span>
+                                        <input id="addPrice" type="number" defaultValue="0" style={{ width: '100%', padding: '6px 6px 6px 20px', border: '1px solid #ccc', borderRadius: '4px' }} />
                                     </div>
                                 </div>
-
-                                {/* Divider */}
-                                <div style={{ width: '1px', background: '#ddd', alignSelf: 'stretch' }}></div>
-
-                                {/* Single Add */}
-                                <div style={{ flex: 1 }}>
-                                    <h4 style={{ margin: '0 0 10px 0' }}>Single Site</h4>
-                                    <div style={{ display: 'flex', gap: '5px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flex: 1 }}>
-                                            <label style={{ fontSize: '0.7rem', fontWeight: 'bold' }}>Site Name</label>
-                                            <input id="singleName" type="text" placeholder="e.g. 5A" style={{ width: '100%', padding: '5px', border: '1px solid #ccc', borderRadius: '4px' }} />
-                                        </div>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', width: '70px' }}>
-                                            <label style={{ fontSize: '0.7rem', fontWeight: 'bold' }}>Price</label>
-                                            <input id="singlePrice" type="number" defaultValue="0" style={{ width: '100%', padding: '5px', border: '1px solid #ccc', borderRadius: '4px' }} />
-                                        </div>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', width: '70px' }}>
-                                            <label style={{ fontSize: '0.7rem', fontWeight: 'bold' }}>FullEvent</label>
-                                            <input id="singleFullPrice" type="number" defaultValue="0" style={{ width: '100%', padding: '5px', border: '1px solid #ccc', borderRadius: '4px' }} />
-                                        </div>
-                                        <button
-                                            onClick={() => handleSingleAdd(
-                                                document.getElementById('singleName').value,
-                                                document.getElementById('singlePrice').value
-                                            )}
-                                            style={{ background: '#007bff', color: 'white', border: 'none', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer', height: '30px', alignSelf: 'flex-end' }}
-                                        >
-                                            Add
-                                        </button>
+                                <div>
+                                    <label style={{ fontSize: '0.75rem', fontWeight: 'bold', display: 'block', marginBottom: '4px' }}>Full Event Price</label>
+                                    <div style={{ position: 'relative' }}>
+                                        <span style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', color: '#666' }}>$</span>
+                                        <input id="addFullPrice" type="number" defaultValue="0" style={{ width: '100%', padding: '6px 6px 6px 20px', border: '1px solid #ccc', borderRadius: '4px' }} />
                                     </div>
                                 </div>
                             </div>
+                            <button
+                                onClick={() => handleBulkAdd(
+                                    document.getElementById('addQty').value,
+                                    document.getElementById('addPrefix').value
+                                )}
+                                style={{ width: '100%', background: '#333', color: 'white', border: 'none', padding: '8px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
+                            >
+                                Add Sites
+                            </button>
+
+                            <hr style={{ margin: '20px 0', border: 'none', borderTop: '1px solid #eee' }} />
+
+                            {/* Single Site Section */}
+                            <h4 style={{ marginTop: 0, marginBottom: '10px', color: '#333' }}>Single Site</h4>
+                            <div style={{ marginBottom: '10px' }}>
+                                <label style={{ fontSize: '0.75rem', fontWeight: 'bold', display: 'block', marginBottom: '4px' }}>Site Name</label>
+                                <input id="singleName" type="text" placeholder="e.g. 5A" style={{ width: '100%', padding: '6px', border: '1px solid #ccc', borderRadius: '4px' }} />
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
+                                <div>
+                                    <label style={{ fontSize: '0.75rem', fontWeight: 'bold', display: 'block', marginBottom: '4px' }}>Daily Price</label>
+                                    <div style={{ position: 'relative' }}>
+                                        <span style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', color: '#666' }}>$</span>
+                                        <input id="singlePrice" type="number" defaultValue="0" style={{ width: '100%', padding: '6px 6px 6px 20px', border: '1px solid #ccc', borderRadius: '4px' }} />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label style={{ fontSize: '0.75rem', fontWeight: 'bold', display: 'block', marginBottom: '4px' }}>Full Event Price</label>
+                                    <div style={{ position: 'relative' }}>
+                                        <span style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', color: '#666' }}>$</span>
+                                        <input id="singleFullPrice" type="number" defaultValue="0" style={{ width: '100%', padding: '6px 6px 6px 20px', border: '1px solid #ccc', borderRadius: '4px' }} />
+                                    </div>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => handleSingleAdd(
+                                    document.getElementById('singleName').value,
+                                    document.getElementById('singlePrice').value
+                                )}
+                                style={{ width: '100%', background: '#007bff', color: 'white', border: 'none', padding: '8px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
+                            >
+                                Add Site
+                            </button>
                         </div>
 
                         {/* Selected Site Editor */}
