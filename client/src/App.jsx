@@ -21,6 +21,7 @@ import AssetDashboard from './pages/admin/AssetDashboard';
 import AdminSubevents from './pages/admin/AdminSubevents';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminSettings from './pages/admin/AdminSettings';
+import VariantTemplates from './pages/admin/VariantTemplates';
 
 import OrderDetail from './pages/OrderDetail';
 import CampingPage from './pages/camping/CampingPage';
@@ -123,6 +124,7 @@ function App() {
                 <Route path="admin/assets" element={<AssetDashboard />} />
                 <Route path="admin/subevents" element={<AdminSubevents />} />
                 <Route path="admin/settings" element={<AdminSettings />} />
+                <Route path="admin/variant-templates" element={<VariantTemplates />} />
 
               </Route>
             </Routes>

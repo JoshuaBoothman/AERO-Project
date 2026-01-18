@@ -29,11 +29,11 @@
     - [x] Schema: `event_ticket_types.description` (Check validity)
     - [x] Frontend: Add Input in Admin, Display in Shop
 
-- [ ] **Default Variants (Templates)** <!-- id: var_defaults -->
+- [x] **Default Variants (Templates)** <!-- id: var_defaults -->
     - [x] Implementation Plan Created (`Feedback_Variant_Defaults.md`)
-    - [ ] Schema: `variant_templates` (Verify)
-    - [ ] Frontend: Template Manager
-    - [ ] API: Template CRUD
+    - [x] Schema: `variant_templates` (Verify)
+    - [x] Frontend: Template Manager
+    - [x] API: Template CRUD
 
 - [ ] **Legacy Booking / Priority** <!-- id: legacy -->
     - [x] Implementation Plan Created (`Feedback_Legacy_Booking.md`)

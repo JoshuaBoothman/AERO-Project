@@ -3,6 +3,7 @@ import { useOutletContext } from 'react-router-dom';
 import OrgSettings from './settings/OrgSettings';
 import AdminList from './settings/AdminList';
 import UserList from './settings/UserList';
+import VariantTemplates from './VariantTemplates';
 
 function AdminSettings() {
     const [activeTab, setActiveTab] = useState('organization'); // 'organization' | 'admins'
@@ -41,6 +42,15 @@ function AdminSettings() {
                 >
                     Manage Users
                 </button>
+                <button
+                    onClick={() => setActiveTab('templates')}
+                    className={`pb-3 px-6 font-bold text-lg transition-colors border-b-4 ${activeTab === 'templates'
+                        ? 'border-accent text-primary'
+                        : 'border-transparent text-gray-500 hover:text-primary'
+                        }`}
+                >
+                    Merchandise Templates
+                </button>
             </div>
 
             {/* Content By Tab */}
@@ -48,6 +58,7 @@ function AdminSettings() {
                 {activeTab === 'organization' && <OrgSettings refreshSettings={refreshSettings} />}
                 {activeTab === 'admins' && <AdminList />}
                 {activeTab === 'users' && <UserList />}
+                {activeTab === 'templates' && <VariantTemplates />}
             </div>
         </div>
     );

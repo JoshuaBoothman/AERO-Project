@@ -24,6 +24,11 @@ function ProductEditor() {
     const [newOptValue, setNewOptValue] = useState('');
     const [selectedVariantId, setSelectedVariantId] = useState(null);
 
+    // Template State
+    const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+    const [templates, setTemplates] = useState([]);
+    const [selectedTemplate, setSelectedTemplate] = useState(null);
+
     // Initial Fetch
     useEffect(() => {
         fetchDetails();
@@ -322,6 +327,38 @@ function ProductEditor() {
         } catch (e) { console.error('Failed to save SKU change', e); }
     };
 
+    const fetchTemplates = async () => {
+        try {
+            const res = await fetch('/api/manage/variant-templates');
+            if (res.ok) {
+                const data = await res.json();
+                setTemplates(data);
+            }
+        } catch (e) { console.error(e); }
+    };
+
+    const handleApplyTemplate = async () => {
+        if (!selectedTemplate) return;
+
+        try {
+            // Get full template details with options
+            const res = await fetch(`/api/manage/variant-templates/${selectedTemplate.template_id}`);
+            if (!res.ok) throw new Error('Failed to load template details');
+            const data = await res.json();
+
+            notify('Applying template options...', 'info');
+            setIsTemplateModalOpen(false);
+
+            // Sequentially add options to avoid race conditions or overwhelming server
+            for (const option of data.options) {
+                await handleAddOption(option.category_name, option.option_name);
+            }
+            notify('Template applied successfully!', 'success');
+        } catch (e) {
+            notify('Error applying template: ' + e.message, 'error');
+        }
+    };
+
     if (loading) return <div>Loading...</div>;
 
     return (
@@ -475,7 +512,58 @@ function ProductEditor() {
                                 Create Category
                             </button>
                         </div>
+
+                        {/* Apply Template Button */}
+                        <div style={{ border: '1px dashed #ccc', borderRadius: '8px', padding: '15px', minWidth: '250px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+                            <h3 style={{ marginTop: 0, color: '#666', marginBottom: '15px' }}>Use Template</h3>
+                            <button
+                                onClick={() => { fetchTemplates(); setIsTemplateModalOpen(true); }}
+                                style={{ background: '#2196F3', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
+                            >
+                                Apply Template
+                            </button>
+                            <p style={{ fontSize: '0.8rem', color: '#888', textAlign: 'center', marginTop: '10px' }}>
+                                Pre-fill options from saved templates (e.g. Sizes)
+                            </p>
+                        </div>
                     </div>
+
+                    {/* Template Modal */}
+                    {isTemplateModalOpen && (
+                        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
+                            <div style={{ background: 'white', padding: '20px', borderRadius: '8px', width: '90%', maxWidth: '500px', maxHeight: '80vh', overflowY: 'auto' }}>
+                                <h2 style={{ marginTop: 0 }}>Select Template</h2>
+                                {loading && <p>Loading templates...</p>}
+                                <div style={{ maxHeight: '300px', overflowY: 'auto', border: '1px solid #eee', marginBottom: '15px' }}>
+                                    {templates.map(t => (
+                                        <div
+                                            key={t.template_id}
+                                            onClick={() => setSelectedTemplate(t)}
+                                            style={{
+                                                padding: '10px',
+                                                borderBottom: '1px solid #eee',
+                                                cursor: 'pointer',
+                                                background: selectedTemplate?.template_id === t.template_id ? '#e3f2fd' : 'white'
+                                            }}
+                                        >
+                                            <div style={{ fontWeight: 'bold' }}>{t.name}</div>
+                                            <div style={{ fontSize: '0.8rem', color: '#666' }}>{t.option_count} options</div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                                    <button onClick={() => setIsTemplateModalOpen(false)} style={{ padding: '8px 16px', background: '#eee', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Cancel</button>
+                                    <button
+                                        onClick={handleApplyTemplate}
+                                        disabled={!selectedTemplate}
+                                        style={{ padding: '8px 16px', background: 'blue', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', opacity: selectedTemplate ? 1 : 0.5 }}
+                                    >
+                                        Apply
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     <div style={{ marginTop: '30px', borderTop: '1px solid #eee', paddingTop: '20px' }}>
                         <p style={{ color: '#666' }}>Once you have configured all options (e.g. Sizes: S, M, L and Colors: Red, Blue), click the button below to generate inventory items (SKUs) for selling.</p>

@@ -975,3 +975,30 @@ The "Camping" page for "Festival of Aeromodelling 2026" was displaying "No campg
     *   **Layout:** Switched from a horizontal flex layout to a vertical stack to better fit the sidebar width.
     *   **Labels:** Renamed "Price" to "Daily Price" and "FullEvent" to "Full Event Price" for clarity.
     *   **Styling:** Added currency indicators ($) to price inputs and improved general alignment.
+
+## [2026-01-18] - Variant Templates (Merchandise Defaults)
+**Milestone:** Reusable Product Option Templates
+
+### Completed Items
+*   **Database**
+    *   **Schema:** Created `variant_templates` and `variant_template_options` tables for storing reusable option sets.
+*   **Backend (API)**
+    *   **Feature:** Created `variantTemplates.js` with CRUD endpoints:
+        *   `GET /api/manage/variant-templates`: List all templates with option counts.
+        *   `GET /api/manage/variant-templates/{id}`: Get template details with options.
+        *   `POST /api/manage/variant-templates`: Create new template with options.
+        *   `DELETE /api/manage/variant-templates/{id}`: Delete template.
+    *   **Fix:** Changed route from `admin/variant-templates` to `manage/variant-templates` to avoid Azure Functions reserved path conflict.
+*   **Frontend (Client)**
+    *   **Admin Interface:**
+        *   Created `VariantTemplates.jsx` for managing templates (create, list, delete).
+        *   Added "Merchandise Templates" tab to Admin Settings (`AdminSettings.jsx`).
+        *   Integrated template application into `ProductEditor.jsx` "Options" tab with "Apply Template" button and selection modal.
+    *   **UX:** Removed price adjustment field from template creation based on user feedback.
+    *   **UI:** Simplified buttons to text-only (removed icons from "New Template" and "Save Template").
+*   **Verification**
+    *   Verified template creation, listing, and deletion.
+    *   Verified template application to products correctly populates variant options.
+
+### Next Steps
+*   **Legacy Booking:** Implement priority booking system for returning customers.
