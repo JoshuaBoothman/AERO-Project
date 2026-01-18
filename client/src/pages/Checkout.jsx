@@ -121,7 +121,7 @@ function Checkout() {
                 )}
             </div>
             <div className="flex items-center justify-between w-full sm:w-auto sm:gap-6">
-                <span className="font-bold text-lg text-gray-900">${item.price.toFixed(2)}</span>
+                <span className="font-bold text-lg text-gray-900">${Number(item.price || 0).toFixed(2)}</span>
                 <button
                     onClick={() => removeFromCart(idx)}
                     className="text-gray-400 hover:text-red-600 bg-transparent hover:bg-red-50 rounded-full w-10 h-10 flex items-center justify-center transition-all focus:outline-none"

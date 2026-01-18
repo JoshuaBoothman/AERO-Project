@@ -31,7 +31,7 @@ export function CartProvider({ children }) {
 
     const clearCart = () => setCart([]);
 
-    const cartTotal = cart.reduce((sum, item) => sum + (item.price || 0), 0);
+    const cartTotal = cart.reduce((sum, item) => sum + Number(item.price || 0), 0);
 
     return (
         <CartContext.Provider value={{ cart, addToCart, removeFromCart, clearCart, cartTotal }}>

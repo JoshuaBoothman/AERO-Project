@@ -56,6 +56,30 @@ app.http('createOrder', {
                 let totalAmount = 0;
                 let allAttendeeIds = [];
 
+                // 2.5 VALIDATION: Check for "Service Access" (Camping/Assets/Subevents)
+                // Rule: Must be an Attendee (Have a ticket in DB) OR Buying a Ticket in this Order.
+                const hasRestrictedItems = (campsites && campsites.length > 0) || (assets && assets.length > 0) || (subevents && subevents.length > 0);
+                const isBuyingTicket = items && items.length > 0;
+
+                if (hasRestrictedItems && !isBuyingTicket) {
+                    // Check logic: If not buying a ticket now, they MUST have one already.
+                    const accessCheck = await transaction.request()
+                        .input('eid', sql.Int, eventId)
+                        .input('uid', sql.Int, user.userId)
+                        .query(`
+                            SELECT 1 FROM attendees a
+                            JOIN persons p ON a.person_id = p.person_id
+                            JOIN event_ticket_types tt ON a.ticket_type_id = tt.ticket_type_id
+                            WHERE a.event_id = @eid AND p.user_id = @uid 
+                            AND a.status IN ('Registered', 'CheckedIn')
+                            AND tt.price > 0 -- Assuming paid ticket determines "Attendee" status vs just registered pilot
+                        `);
+
+                    if (accessCheck.recordset.length === 0) {
+                        throw new Error("Access Denied: You must be a registered Event Attendee (Ticket Holder) to book Camping, Assets, or Subevents. Please add an Event Ticket to your order.");
+                    }
+                }
+
                 // 3. Process TICKET Items (Create Attendees)
                 if (items && items.length > 0) {
                     for (const item of items) {

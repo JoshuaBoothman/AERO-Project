@@ -7,10 +7,10 @@ app.http('authRegister', {
     authLevel: 'anonymous',
     handler: async (request, context) => {
         try {
-            const { email, password, firstName, lastName } = await request.json();
+            const { email, password, firstName, lastName, ausNumber } = await request.json();
 
-            if (!email || !password || !firstName || !lastName) {
-                return { status: 400, body: "Missing required fields." };
+            if (!email || !password || !firstName || !lastName || !ausNumber) {
+                return { status: 400, body: "Missing required fields (including AUS Number)." };
             }
 
             // 1. Check if user exists
@@ -37,8 +37,8 @@ app.http('authRegister', {
 
             // 4. Insert User
             const insertQuery = `
-                INSERT INTO users (email, password_hash, first_name, last_name, is_email_verified, verification_token, verification_token_expires)
-                VALUES (@email, @hash, @first, @last, 0, @token, @expires)
+                INSERT INTO users (email, password_hash, first_name, last_name, aus_number, is_email_verified, verification_token, verification_token_expires)
+                VALUES (@email, @hash, @first, @last, @aus, 0, @token, @expires)
             `;
 
             await query(insertQuery, [
@@ -46,6 +46,7 @@ app.http('authRegister', {
                 { name: 'hash', type: sql.NVarChar, value: passwordHash },
                 { name: 'first', type: sql.NVarChar, value: firstName },
                 { name: 'last', type: sql.NVarChar, value: lastName },
+                { name: 'aus', type: sql.NVarChar, value: ausNumber },
                 { name: 'token', type: sql.NVarChar, value: verificationToken },
                 { name: 'expires', type: sql.DateTime, value: tokenExpires }
             ]);

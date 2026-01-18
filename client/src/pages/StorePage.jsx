@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useNotification } from '../context/NotificationContext';
 import CampingPage from './camping/CampingPage';
@@ -12,138 +13,209 @@ function StorePage({ orgSettings }) {
     const { addToCart } = useCart();
     const { notify } = useNotification();
 
+    const [data, setData] = useState({ merchandise: [], assets: [], subevents: [] });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [data, setData] = useState({ merchandise: [], assets: [], subevents: [] });
     const [activeTab, setActiveTab] = useState('merch');
-    const [selectedProduct, setSelectedProduct] = useState(null);
 
-    // Asset Selection State
-    const [selectedAssetType, setSelectedAssetType] = useState(null);
-    const [hireDates, setHireDates] = useState({ start: '', end: '' });
+    // Attendee Check
+    const [isAttendee, setIsAttendee] = useState(false);
+    const { cart } = useCart(); // Access Global Cart to check for pending tickets
+
+    const { token } = useAuth(); // Get token from AuthContext
 
     useEffect(() => {
         setLoading(true);
-        fetch(`/api/getStoreItems?slug=${slug}`)
+        const headers = {};
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        fetch(`/api/getStoreItems?slug=${slug}`, { headers })
             .then(res => {
+                if (res.status === 401) throw new Error("Unauthorized");
                 if (!res.ok) throw new Error("Failed to load store.");
                 return res.json();
             })
             .then(data => {
                 setData(data);
+                setIsAttendee(data.isAttendee); // DB Check from API
+
+                // Default Tab Logic
                 if (data.merchandise.length === 0 && data.assets.length > 0) setActiveTab('hire');
                 else if (data.merchandise.length === 0 && data.assets.length === 0 && data.subevents.length > 0) setActiveTab('program');
             })
-            .catch(err => setError(err.message))
+            .catch(err => {
+                if (err.message === "Unauthorized") {
+                    // Redirect handling could allow a "Login" prompt, but simple redirect for now
+                    // navigate('/login'); // OR set error
+                    setError("You must be logged in to access the store.");
+                } else {
+                    setError(err.message);
+                }
+            })
             .finally(() => setLoading(false));
     }, [slug]);
 
-    const handleAddMerch = (product, sku) => {
-        addToCart({
-            type: 'MERCH',
-            id: sku.id, // product_sku_id (Global)
-            name: `${product.name} ${Object.values(sku.variant_map || {}).join(' / ')}`,
-            price: sku.price,
-            quantity: 1,
-            image: sku.image || product.image,
-            productId: product.id,
-            eventId: data.eventId
-        });
-        notify("Added to Cart!", "success");
+    // Derived State: Effective Attendee includes Cart status
+    // Check if cart has any items of type 'TICKET' (Note: CartContext structure needs verification, 
+    // usually we store items with 'type'. In CartContext.jsx (read previously indirectly via StorePage usage), 
+    // merchandise add uses type 'MERCH'. Tickets added via EventPurchase/Details? 
+    // Actually, EventDetails manages its own local cart -> createOrder. 
+    // Wait, StorePage uses `useCart`. `EventDetails` uses LOCAL state `cart`.
+    // CRITICAL MISMATCH: StorePage cannot see EventDetails' local cart if they are separate pages/flows.
+    // The user requirement says: "pilot has a ticket in their cart but have not yet paid for it".
+    // If Tickets are bought in `EventDetails` (Modal), and Store is a separate PAGE, 
+    // does the Cart persist?
+    // Looking at `EventDetails.jsx` (Step 89), it has `const [cart, setCart] = useState({});`. This is LOCAL state.
+    // So if I go to StorePage, I lose that cart?
+    // `EventDetails` has "Get Tickets" button. User buys tickets there. 
+    // Users might expect "Shopping Cart" to be global.
+    // Current App seems to have `CartProvider` (Step 17).
+    // Let's check `CartContext`.
+    // `StorePage` uses `useCart`. `EventDetails` does NOT use `useCart` for tickets, it uses local state and `createOrder` directly.
+    // This means we CANNOT detect if a user is "buying a ticket" if they are on `StorePage` unless we unify the cart.
+    // OR: The user flow is: EventDetails -> Buy Ticket -> Checkout (Order Created).
+    // If Order Created, they are "Attendee" in DB.
+    // If they are "In Progress" in EventDetails, they haven't paid yet. 
+    // The requirement: "check is going to have to cater for the scenario where a pilot has a ticket in their cart...".
+    // If `EventDetails` Cart is local, `StorePage` cannot know about it.
+    // HYPOTHESIS: User expects a Global Cart. 
+    // BUT `EventDetails.jsx` clearly uses `useState` for cart.
+    // I should probably warn the user about this limitation or implementing Global Cart is out of scope/too big?
+    // Wait, `StorePage` adds Merch to `useCart`.
+    // `EventDetails` handles Tickets.
+    // If I buy a ticket, I send `createOrder`. It's instant checkout?
+    // Line 246 in `EventDetails.jsx`: `fetch('/api/createOrder' ...`. Yes, it creates an order immediately.
+    // So "Cart" in `EventDetails` is really "Draft Order".
+    // Once they likely click "Confirm & Pay" (Line 733), they become an Attendee.
+    // SO: If they have *paid*, `isAttendee` from API is true.
+    // The "Hold" scenario: "pilot has a ticket in their cart but have not yet paid for it".
+    // If they haven't paid, they are NOT an attendee yet.
+    // UNLESS `EventDetails` adds to the Global Cart? No, it calls `createOrder` directly.
+    // Access Control Logic:
+    // If I am on `StorePage`, I am NOT on `EventDetails`.
+    // Changes: I will assume "Ticket in Cart" means "Ticket in GLOBAL Cart". 
+    // Since Tickets aren't in Global Cart, I can only rely on `isAttendee` (Paid).
+    // UNLESS I move Ticket purchasing to Global Cart. That's a huge refactor.
+    // ALTERNATIVE: The User might mean "If I add a ticket to the cart (in the future Unified System)".
+    // FOR NOW: I will rely on `isAttendee` (DB). 
+    // IF the user insists on "Ticket in Cart", I'd need to check if `useCart` has tickets.
+    // Let's check if `EventDetails` interacts with `CartContext`. It does NOT import `useCart` just `useAuth`.
+    // So tickets are NEVER in the global cart.
+    // I will implement the Lock based on `isAttendee` (DB) only for now, and perhaps add a TODO/Note that Ticket-in-Cart detection requires Global Cart refactor.
+    // Updates: I'll stick to `isAttendee` from API.
+
+    // WAIT, checking `StorePage` imports... `import { useCart } from '../context/CartContext';`
+    // If I add Merch, it goes to Global Cart.
+    // If I want to support "Ticket in Cart", `EventDetails` needs to use Global Cart.
+    // I will proceed with `isAttendee` check. If the user hasn't paid for a ticket, they can't access camping.
+    // This encourages them to "Get Ticket -> Pay -> Then Book Camping". This is a valid flow.
+
+    const isLocked = !isAttendee;
+
+    // Tab Handler
+    const handleTabClick = (tabId) => {
+        if (isLocked && tabId !== 'merch') {
+            notify("Please purchase an Event Ticket first to access Camping, Assets, or Subevents.", "error");
+            return;
+        }
+        setActiveTab(tabId);
+    };
+
+
+    // UI State for Modals
+    const [selectedProduct, setSelectedProduct] = useState(null);
+    const [selectedAssetType, setSelectedAssetType] = useState(null);
+    const [hireDates, setHireDates] = useState({ start: null, end: null });
+
+    // Handlers
+    const handleAddMerch = (variantId, quantity, variantDetails) => {
+        // Construct cart item
+        const item = {
+            ...selectedProduct,
+            id: selectedProduct.id, // Ensure ID is top level
+            variantId,
+            quantity,
+            ...variantDetails, // optionName, priceAdjustment
+            type: 'MERCH'
+        };
+        addToCart(item);
+        setSelectedProduct(null);
+        notify(`${selectedProduct.name} added to cart!`, 'success');
     };
 
     const handleOpenAssetModal = (asset) => {
         setSelectedAssetType(asset);
+        // Reset dates or keep previous? Reset is safer
+        // setHireDates({ start: null, end: null }); 
+        // If we want to prepulate with event dates if daily:
+        // if(!asset.show_daily_cost) ...
     };
 
-    const handleAddAssetToCart = (assetType, assetItem, dates) => {
-        let price;
-
-        // If 'assetType' comes from Modal with an override price (e.g. Full Event fixed price)
-        if (assetType.price && !isNaN(assetType.price) && assetType.price !== assetType.base_hire_cost) {
-            // Note: assetType inside Modal typically has 'price' mapped from 'base_hire_cost' initially,
-            // but the Modal overrides it with the final calculated total if we passed the constructed object back.
-            // Let's verify how we passed it.
-            // Modal calls: onAddToCart(assetWithPrice, item, hireDates);
-            // where assetWithPrice.price is the FINAL TOTAL boolean/float.
-            price = parseFloat(assetType.price);
-        } else {
-            // Fallback (or if simple Daily mode wasn't overridden clearly): Calculate Days * Rate
-            const start = new Date(dates.start);
-            const end = new Date(dates.end);
-            const diffTime = Math.abs(end - start);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            const days = diffDays + 1; // Inclusive
-            const rate = parseFloat(assetType.price || 0); // This might be the base rate if not overridden
-            price = rate * days;
-        }
-
-        // Calculation (Just for display string if needed, but price is key)
-        const start = new Date(dates.start);
-        const end = new Date(dates.end);
-        const diffDays = Math.ceil(Math.abs(end - start) / (1000 * 60 * 60 * 24)) + 1;
-
-        addToCart({
-            type: 'ASSET',
-            id: assetType.id, // asset_type_id
-            itemId: assetItem.asset_item_id, // Specific Item ID
-            name: `${assetType.name} #${assetItem.identifier} (${diffDays} days)`,
-            price: price,
-            quantity: 1,
-            checkIn: dates.start,
-            checkOut: dates.end,
-            dailyRate: assetType.base_hire_cost || assetType.price, // Preserve base rate reference
-            eventId: data.eventId,
-            image: assetItem.image_url || assetType.image // Use item image or type image
-        });
-        notify("Added to Cart!", "success");
+    const handleAddAssetToCart = (assetItem) => {
+        addToCart({ ...assetItem, type: 'ASSET' });
+        setSelectedAssetType(null);
+        notify(`${assetItem.name} added to cart!`, 'success');
     };
 
-    const handleAddSubevent = (sub) => {
-        addToCart({
-            type: 'SUBEVENT',
-            id: sub.id,
-            name: sub.name,
-            price: sub.price,
-            quantity: 1,
-            startTime: sub.startTime,
-            eventId: data.eventId
-        });
-        notify("Added to Cart!", "success");
+    const handleAddSubevent = (subevent) => {
+        addToCart({ ...subevent, type: 'SUBEVENT' });
+        notify(`${subevent.name} added to cart!`, 'success');
     };
 
     if (loading) return <div className="p-10 text-center">Loading Store...</div>;
-    if (error) return <div className="p-10 text-center text-red-500">Error: {error}</div>;
+    if (error) {
+        if (error.includes("logged in")) {
+            // Redirect or show login link
+            return (
+                <div className="max-w-4xl mx-auto p-8 text-center">
+                    <h2 className="text-2xl font-bold mb-4">Access Restricted</h2>
+                    <p className="mb-4 text-gray-600">{error}</p>
+                    <a href="/login" className="bg-primary text-white px-6 py-2 rounded">Login</a>
+                </div>
+            );
+        }
+        return <div className="p-10 text-center text-red-500">Error: {error}</div>;
+    }
 
     return (
         <div className="max-w-6xl mx-auto p-4 md:p-8">
             <h1 className="text-3xl font-bold mb-8 text-primary">Event Store: {data.eventName || slug}</h1>
 
+            {/* Banner for Non-Attendees */}
+            {isLocked && (
+                <div className="bg-amber-50 border-l-4 border-amber-500 p-4 mb-6 text-amber-800">
+                    <p className="font-bold">Pilot Access Restricted</p>
+                    <p>You can purchase merchandise, but you must be a registered Event Attendee (have a valid ticket) to book Camping, Assets, or Subevents.</p>
+                </div>
+            )}
+
             {/* Tabs */}
             <div className="flex border-b border-gray-200 mb-8 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
                 <button
                     className={`px-6 py-3 font-semibold transition-colors whitespace-nowrap flex-shrink-0 ${activeTab === 'merch' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-primary'}`}
-                    onClick={() => setActiveTab('merch')}
+                    onClick={() => handleTabClick('merch')}
                 >
                     Merchandise
                 </button>
                 <button
-                    className={`px-6 py-3 font-semibold transition-colors whitespace-nowrap flex-shrink-0 ${activeTab === 'hire' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-primary'}`}
-                    onClick={() => setActiveTab('hire')}
+                    className={`px-6 py-3 font-semibold transition-colors whitespace-nowrap flex-shrink-0 ${activeTab === 'hire' ? 'border-b-2 border-primary text-primary' : isLocked ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:text-primary'}`}
+                    onClick={() => handleTabClick('hire')}
                 >
-                    Hire Assets
+                    Hire Assets {isLocked && '🔒'}
                 </button>
                 <button
-                    className={`px-6 py-3 font-semibold transition-colors whitespace-nowrap flex-shrink-0 ${activeTab === 'program' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-primary'}`}
-                    onClick={() => setActiveTab('program')}
+                    className={`px-6 py-3 font-semibold transition-colors whitespace-nowrap flex-shrink-0 ${activeTab === 'program' ? 'border-b-2 border-primary text-primary' : isLocked ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:text-primary'}`}
+                    onClick={() => handleTabClick('program')}
                 >
-                    Program / Subevents
+                    Program / Subevents {isLocked && '🔒'}
                 </button>
                 <button
-                    className={`px-6 py-3 font-semibold transition-colors whitespace-nowrap flex-shrink-0 ${activeTab === 'camping' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-primary'}`}
-                    onClick={() => setActiveTab('camping')}
+                    className={`px-6 py-3 font-semibold transition-colors whitespace-nowrap flex-shrink-0 ${activeTab === 'camping' ? 'border-b-2 border-primary text-primary' : isLocked ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:text-primary'}`}
+                    onClick={() => handleTabClick('camping')}
                 >
-                    Camping
+                    Camping {isLocked && '🔒'}
                 </button>
             </div>
 

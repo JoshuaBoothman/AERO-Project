@@ -8,7 +8,7 @@ console.log("Loading variantTemplates.js...");
 app.http('getVariantTemplates', {
     methods: ['GET'],
     authLevel: 'anonymous',
-    route: 'admin/variant-templates',
+    route: 'manage/variant-templates',
     handler: async (request, context) => {
         try {
             const user = validateToken(request);
@@ -37,7 +37,7 @@ app.http('getVariantTemplates', {
 app.http('getVariantTemplateDetail', {
     methods: ['GET'],
     authLevel: 'anonymous',
-    route: 'admin/variant-templates/{templateId}',
+    route: 'manage/variant-templates/{templateId}',
     handler: async (request, context) => {
         try {
             const { templateId } = request.params;
@@ -73,7 +73,7 @@ app.http('getVariantTemplateDetail', {
 app.http('createVariantTemplate', {
     methods: ['POST'],
     authLevel: 'anonymous',
-    route: 'admin/variant-templates',
+    route: 'manage/variant-templates',
     handler: async (request, context) => {
         try {
             const user = validateToken(request);
@@ -124,7 +124,7 @@ app.http('createVariantTemplate', {
 app.http('deleteVariantTemplate', {
     methods: ['DELETE'],
     authLevel: 'anonymous',
-    route: 'admin/variant-templates/{templateId}',
+    route: 'manage/variant-templates/{templateId}',
     handler: async (request, context) => {
         try {
             const { templateId } = request.params;

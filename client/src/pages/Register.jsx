@@ -6,6 +6,7 @@ function Register() {
     firstName: '',
     lastName: '',
     email: '',
+    ausNumber: '',
     password: ''
   });
   const [error, setError] = useState('');
@@ -56,12 +57,34 @@ function Register() {
     <div className="auth-container" style={{ maxWidth: '400px', margin: '2rem auto', padding: '2rem' }}>
       <h1>Register</h1>
       {error && <p style={{ color: 'red' }}>{error}</p>}
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        <input name="firstName" placeholder="First Name" onChange={handleChange} required style={{ padding: '0.5rem' }} />
-        <input name="lastName" placeholder="Last Name" onChange={handleChange} required style={{ padding: '0.5rem' }} />
-        <input name="email" type="email" placeholder="Email" onChange={handleChange} required style={{ padding: '0.5rem' }} />
-        <input name="password" type="password" placeholder="Password" onChange={handleChange} required style={{ padding: '0.5rem' }} />
-        <button type="submit" className="primary-button">Create Account</button>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', textAlign: 'left' }}>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+          <label style={{ fontWeight: 600, fontSize: '0.9rem' }}>First Name</label>
+          <input name="firstName" onChange={handleChange} required style={{ padding: '0.75rem', border: '1px solid #ccc', borderRadius: '4px' }} />
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+          <label style={{ fontWeight: 600, fontSize: '0.9rem' }}>Last Name</label>
+          <input name="lastName" onChange={handleChange} required style={{ padding: '0.75rem', border: '1px solid #ccc', borderRadius: '4px' }} />
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+          <label style={{ fontWeight: 600, fontSize: '0.9rem' }}>AUS Number (Pilot ID)</label>
+          <input name="ausNumber" onChange={handleChange} required style={{ padding: '0.75rem', border: '1px solid #ccc', borderRadius: '4px' }} />
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+          <label style={{ fontWeight: 600, fontSize: '0.9rem' }}>Email</label>
+          <input name="email" type="email" onChange={handleChange} required style={{ padding: '0.75rem', border: '1px solid #ccc', borderRadius: '4px' }} />
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+          <label style={{ fontWeight: 600, fontSize: '0.9rem' }}>Password</label>
+          <input name="password" type="password" onChange={handleChange} required style={{ padding: '0.75rem', border: '1px solid #ccc', borderRadius: '4px' }} />
+        </div>
+
+        <button type="submit" className="primary-button" style={{ marginTop: '1rem', padding: '0.75rem' }}>Create Account</button>
       </form>
       <p style={{ marginTop: '1rem' }}>
         Already have an account? <Link to="/login">Log in here</Link>

@@ -117,65 +117,71 @@ function Layout({ orgSettings, loading, error, refreshSettings }) {
             ) : (
               /* ================= PUBLIC / USER NAVIGATION ================= */
               <>
+                {/* Public Nav - Only show Home/Events if not logged in. Show rest if User. */}
                 <NavLink to="/">Home</NavLink>
                 <NavLink to="/events">Events</NavLink>
 
 
-                {/* Information Dropdown */}
-                <div className="relative group z-50">
-                  <button className="flex items-center hover:text-accent transition-colors font-medium h-full px-1">
-                    Information
-                  </button>
-                  <div className="absolute top-full left-0 mt-0 w-56 bg-white text-gray-800 rounded-md shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 overflow-hidden border border-gray-100 transform origin-top scale-95 group-hover:scale-100">
-                    <div className="py-1 flex flex-col">
-                      <Link
-                        to="#"
-                        className="px-4 py-3 hover:bg-gray-50 text-sm border-b border-gray-50 last:border-0 hover:text-accent font-medium"
-                      >
-                        Flightline Roster
-                      </Link>
-                      <Link
-                        to="#"
-                        className="px-4 py-3 hover:bg-gray-50 text-sm border-b border-gray-50 last:border-0 hover:text-accent font-medium"
-                      >
-                        FAQ
-                      </Link>
-                      <Link
-                        to="#"
-                        className="px-4 py-3 hover:bg-gray-50 text-sm border-b border-gray-50 last:border-0 hover:text-accent font-medium"
-                      >
-                        Event Schedule
-                      </Link>
+                {/* Protected Menus */}
+                {user && (
+                  <>
+                    {/* Information Dropdown */}
+                    <div className="relative group z-50">
+                      <button className="flex items-center hover:text-accent transition-colors font-medium h-full px-1">
+                        Information
+                      </button>
+                      <div className="absolute top-full left-0 mt-0 w-56 bg-white text-gray-800 rounded-md shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 overflow-hidden border border-gray-100 transform origin-top scale-95 group-hover:scale-100">
+                        <div className="py-1 flex flex-col">
+                          <Link
+                            to="#"
+                            className="px-4 py-3 hover:bg-gray-50 text-sm border-b border-gray-50 last:border-0 hover:text-accent font-medium"
+                          >
+                            Flightline Roster
+                          </Link>
+                          <Link
+                            to="#"
+                            className="px-4 py-3 hover:bg-gray-50 text-sm border-b border-gray-50 last:border-0 hover:text-accent font-medium"
+                          >
+                            FAQ
+                          </Link>
+                          <Link
+                            to="#"
+                            className="px-4 py-3 hover:bg-gray-50 text-sm border-b border-gray-50 last:border-0 hover:text-accent font-medium"
+                          >
+                            Event Schedule
+                          </Link>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
 
-                <NavLink to="/shop">Shop</NavLink>
+                    <NavLink to="/shop">Shop</NavLink>
 
-                {/* Cart Icon - Desktop */}
-                <Link to="/checkout" className="flex items-center gap-2 hover:text-accent relative px-2">
-                  <ShoppingCart size={20} />
-                  {cart.length > 0 && (
-                    <span className="bg-accent text-primary rounded-full px-1.5 py-0.5 text-xs font-bold absolute -top-2 -right-2 min-w-[18px] text-center">
-                      {cart.length}
-                    </span>
-                  )}
-                </Link>
+                    {/* Cart Icon - Desktop */}
+                    <Link to="/checkout" className="flex items-center gap-2 hover:text-accent relative px-2">
+                      <ShoppingCart size={20} />
+                      {cart.length > 0 && (
+                        <span className="bg-accent text-primary rounded-full px-1.5 py-0.5 text-xs font-bold absolute -top-2 -right-2 min-w-[18px] text-center">
+                          {cart.length}
+                        </span>
+                      )}
+                    </Link>
 
-                {user ? (
-                  <div className="flex gap-4 items-center pl-6 border-l border-white/20">
-                    <span className="font-medium">Hi, {user.firstName}</span>
+                    <div className="flex gap-4 items-center pl-6 border-l border-white/20">
+                      <span className="font-medium">Hi, {user.firstName}</span>
 
-                    <NavLink to="/my-orders">My Orders</NavLink>
+                      <NavLink to="/my-orders">My Orders</NavLink>
 
-                    <button
-                      onClick={handleLogout}
-                      className="bg-black/20 hover:bg-black/30 text-inherit px-3 py-1.5 rounded text-sm transition-colors cursor-pointer"
-                    >
-                      Logout
-                    </button>
-                  </div>
-                ) : (
+                      <button
+                        onClick={handleLogout}
+                        className="bg-black/20 hover:bg-black/30 text-inherit px-3 py-1.5 rounded text-sm transition-colors cursor-pointer"
+                      >
+                        Logout
+                      </button>
+                    </div>
+                  </>
+                )}
+
+                {!user && (
                   <Link
                     to="/login"
                     className="bg-accent text-primary px-4 py-2 rounded font-bold hover:brightness-110 transition-all shadow-sm ml-4"
@@ -206,22 +212,25 @@ function Layout({ orgSettings, loading, error, refreshSettings }) {
               <>
                 <NavLink to="/" className="text-2xl">Home</NavLink>
                 <NavLink to="/events" className="text-2xl">Events</NavLink>
-                <NavLink to="/shop" className="text-2xl">Shop</NavLink>
 
-                <div className="w-16 h-1 bg-white/10 my-1"></div>
-                <span className="text-sm font-bold text-accent uppercase tracking-wider">Information</span>
-                <NavLink to="#" className="text-xl">Flightline Roster</NavLink>
-                <NavLink to="#" className="text-xl">FAQ</NavLink>
-                <NavLink to="#" className="text-xl">Event Schedule</NavLink>
-
-                {user ? (
+                {user && (
                   <>
+                    <NavLink to="/shop" className="text-2xl">Shop</NavLink>
+
+                    <div className="w-16 h-1 bg-white/10 my-1"></div>
+                    <span className="text-sm font-bold text-accent uppercase tracking-wider">Information</span>
+                    <NavLink to="#" className="text-xl">Flightline Roster</NavLink>
+                    <NavLink to="#" className="text-xl">FAQ</NavLink>
+                    <NavLink to="#" className="text-xl">Event Schedule</NavLink>
+
                     <div className="w-16 h-1 bg-white/20 my-2"></div>
                     <span className="text-xl opacity-75">Hi, {user.firstName}</span>
                     <NavLink to="/my-orders" className="text-2xl">My Orders</NavLink>
                     <button onClick={handleLogout} className="text-2xl text-accent font-bold mt-4">Logout</button>
                   </>
-                ) : (
+                )}
+
+                {!user && (
                   <Link
                     to="/login"
                     onClick={() => setIsMobileMenuOpen(false)}

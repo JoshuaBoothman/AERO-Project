@@ -1,10 +1,17 @@
 const { app } = require('@azure/functions');
 const { getPool, sql } = require('../lib/db');
+const { validateToken } = require('../lib/auth');
 
 app.http('getStoreItems', {
     methods: ['GET'],
     authLevel: 'anonymous',
     handler: async (request, context) => {
+        // AUTH CHECK
+        const user = validateToken(request);
+        if (!user) {
+            return { status: 401, body: JSON.stringify({ error: "Unauthorized. Please login." }) };
+        }
+
         const eventIdParam = request.query.get('eventId');
         const slug = request.query.get('slug');
 
@@ -15,13 +22,12 @@ app.http('getStoreItems', {
         try {
             const pool = await getPool();
 
-            // 1. Resolve Event ID
+            // 1. Resolve Event ID & Name
             let eventId = eventIdParam;
             let eventName = '';
             let eventStartDate = null;
             let eventEndDate = null;
 
-            // 1. Resolve Event ID & Name
             if (slug && !eventId) {
                 const eRes = await pool.request()
                     .input('slug', sql.NVarChar, slug)
@@ -42,7 +48,29 @@ app.http('getStoreItems', {
                 }
             }
 
-            // 2. Fetch Merch (Global Products)
+            // 2. CHECK ATTENDEE STATUS
+            // Does this user have a Ticket for this event?
+            // We check the 'attendees' table joining 'persons' on user_id
+            let isAttendee = false;
+            const attCheck = await pool.request()
+                .input('eid', sql.Int, eventId)
+                .input('uid', sql.Int, user.userId)
+                .query(`
+                    SELECT TOP 1 a.attendee_id 
+                    FROM attendees a
+                    JOIN persons p ON a.person_id = p.person_id
+                    JOIN event_ticket_types tt ON a.ticket_type_id = tt.ticket_type_id
+                    WHERE a.event_id = @eid 
+                    AND p.user_id = @uid
+                    AND a.status IN ('Registered', 'CheckedIn')
+                    AND tt.price > 0 -- Ensure it's a real ticket, or maybe just any ticket? Assuming 'Registration' is a ticket.
+                `);
+
+            if (attCheck.recordset.length > 0) {
+                isAttendee = true;
+            }
+
+            // 3. Fetch Merch (Global Products)
             // Fetch all active products and their active SKUs
             const merchQuery = `
                 SELECT 
@@ -115,7 +143,7 @@ app.http('getStoreItems', {
             });
 
 
-            // 3. Fetch Assets
+            // 4. Fetch Assets
             const assetRes = await pool.request().input('eid', sql.Int, eventId).query(`
                 SELECT asset_type_id, name, description, base_hire_cost, full_event_cost, ISNULL(show_daily_cost, 1) as show_daily_cost, ISNULL(show_full_event_cost, 0) as show_full_event_cost, image_url
                 FROM asset_types
@@ -133,7 +161,7 @@ app.http('getStoreItems', {
                 image: a.image_url
             }));
 
-            // 4. Fetch Subevents
+            // 5. Fetch Subevents
             const subRes = await pool.request().input('eid', sql.Int, eventId).query(`
                 SELECT subevent_id, name, description, start_time, end_time, capacity, cost
                 FROM subevents
@@ -156,6 +184,7 @@ app.http('getStoreItems', {
                     eventName,
                     eventStartDate,
                     eventEndDate,
+                    isAttendee, // <-- New Flag
                     merchandise, // Grouped
                     assets,
                     subevents

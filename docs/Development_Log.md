@@ -796,7 +796,24 @@ When ready to deploy to production with a real domain:
         *   **Image Fallback:** Implemented logic to show Asset Item image -> Asset Type image -> No Image placeholder.
         *   **Consistency:** Updated all modals (`ProductModal`, `CampsiteModal`, `AssetSelectionModal`) to use consistent `lucide-react` icons.
     *   **Pricing & Logic:**
-        *   **Date Check:** Updated day count logic to be inclusive (e.g., 1st to 2nd = 2 days) in both the modal and `StorePage`.
+## [2026-01-19] - Pilot Access Control & Critical Bug Fixes
+**Milestone:** Pilot Access Restrictions, Registration UI Polish & Stability Fixes
+
+### Completed Items
+*   **Access Control**
+    *   **Frontend (Layout):** Implemented conditional rendering for Navigation. Hidden "Information", "Shop", and "Cart" for non-logged-in users.
+*   **UI Polish**
+    *   **Registration:** Refined `Register.jsx` by adding explicit field labels, borders, and removing placeholders for a cleaner, professional look.
+*   **Stubborn Bug Fixes**
+    *   **API Startup:** Resolved recurring API startup failure by fixing route conflict in `variantTemplates.js` (Renamed to `manage/variant-templates`).
+    *   **Store Page:**
+        *   Fixed `ReferenceError: loading is not defined` by properly initializing state.
+        *   Fixed "Access Restricted" (401) loop by correctly passing `Authorization` headers in the fetch request.
+        *   Fixed "White Screen" crash by restoring missing state and handler functions (`handleAddMerch`, etc.).
+    *   **Checkout:**
+        *   Fixed "White Screen" on Checkout by safely parsing item prices (`Number()`) before calling `.toFixed()`.
+        *   **CartContext:** Hardened `cartTotal` calculation to handle potential string/null prices gracefully.
+
 
 ## [2026-01-18] - Ticket Description Field
 **Milestone:** Enhanced Ticket Information
