@@ -798,6 +798,19 @@ When ready to deploy to production with a real domain:
     *   **Pricing & Logic:**
         *   **Date Check:** Updated day count logic to be inclusive (e.g., 1st to 2nd = 2 days) in both the modal and `StorePage`.
 
+## [2026-01-18] - Ticket Description Field
+**Milestone:** Enhanced Ticket Information
+
+### Completed Items
+*   **Database**
+    *   **Schema:** Added `description` column to `event_ticket_types` table.
+*   **Backend (API)**
+    *   **Ticket CRUD:** Updated `ticketTypes.js` to handle `description` field in Create and Update operations.
+    *   **Public API:** Updated `getEventDetail.js` to return ticket descriptions.
+*   **Frontend (CLIENT)**
+    *   **Admin UI:** Added Description textarea to the Ticket Type Modal in `EventForm.jsx`.
+    *   **Public UI:** Updated `EventDetails.jsx` to display the description below the ticket name in the ticket list.
+
 ## [2026-01-14] - Mobile Optimization
 **Milestone:** Responsive "Mobile-First" UI Overhaul
 

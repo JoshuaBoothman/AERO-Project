@@ -48,7 +48,8 @@ function EventForm() {
         price: '',
         system_role: 'spectator', // spectator, pilot, staff, etc.
         is_pilot: false,
-        is_pit_crew: false
+        is_pit_crew: false,
+        description: ''
     });
 
     useEffect(() => {
@@ -267,7 +268,7 @@ function EventForm() {
 
             setShowTicketModal(false);
             setEditingTicket(null);
-            setTicketForm({ name: '', price: '', system_role: 'spectator', is_pilot: false, is_pit_crew: false });
+            setTicketForm({ name: '', price: '', system_role: 'spectator', is_pilot: false, is_pit_crew: false, description: '' });
 
         } catch (err) {
             notify(err.message, "error");
@@ -295,7 +296,7 @@ function EventForm() {
 
     const openCreateTicket = () => {
         setEditingTicket(null);
-        setTicketForm({ name: '', price: '', system_role: 'spectator', is_pilot: false, is_pit_crew: false });
+        setTicketForm({ name: '', price: '', system_role: 'spectator', is_pilot: false, is_pit_crew: false, description: '' });
         setShowTicketModal(true);
     };
 
@@ -306,7 +307,8 @@ function EventForm() {
             price: ticket.price,
             system_role: ticket.system_role,
             is_pilot: ticket.is_pilot,
-            is_pit_crew: ticket.is_pit_crew
+            is_pit_crew: ticket.is_pit_crew,
+            description: ticket.description || ''
         });
         setShowTicketModal(true);
     };
@@ -668,6 +670,14 @@ function EventForm() {
                                 <input
                                     type="number" step="0.01" className="form-control" placeholder="0.00"
                                     name="price" value={ticketForm.price} onChange={handleTicketChange}
+                                />
+                            </div>
+
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.3rem' }}>Description</label>
+                                <textarea
+                                    className="form-control" rows="2" placeholder="Brief details about what includes..."
+                                    name="description" value={ticketForm.description} onChange={handleTicketChange}
                                 />
                             </div>
 

@@ -1,5 +1,17 @@
-process.env.SQL_CONNECTION_STRING = "Server=tcp:sql-aero-dev-jb.database.windows.net,1433;Initial Catalog=sqldb-aero-dev;Persist Security Info=False;User ID=aero_admin;Password=ZiJZ2SUjFBAWLeL;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
 const { getPool } = require('./src/lib/db');
+
+// Attempt to load from local.settings.json for dev convenience
+try {
+    const localSettings = require('./local.settings.json');
+    if (localSettings.Values.SQL_CONNECTION_STRING) {
+        process.env.SQL_CONNECTION_STRING = localSettings.Values.SQL_CONNECTION_STRING;
+    }
+} catch (e) {
+    // local.settings.json not found or invalid, rely on existing environment variables
+    if (!process.env.SQL_CONNECTION_STRING) {
+        console.warn("Warning: SQL_CONNECTION_STRING not found in process.env or local.settings.json");
+    }
+}
 
 async function checkSchema() {
     try {

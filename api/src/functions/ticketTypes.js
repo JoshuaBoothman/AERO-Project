@@ -54,16 +54,16 @@ app.http('createTicketType', {
                 return { status: 403, body: JSON.stringify({ error: "Unauthorized" }) };
             }
 
-            const { name, price, system_role, is_pilot, is_pit_crew } = await request.json();
+            const { name, price, system_role, is_pilot, is_pit_crew, description } = await request.json();
 
             if (!name || price === undefined || !system_role) {
                 return { status: 400, body: JSON.stringify({ error: "Missing required fields" }) };
             }
 
             const insertQ = `
-                INSERT INTO event_ticket_types (event_id, name, price, system_role, is_pilot, is_pit_crew)
+                INSERT INTO event_ticket_types (event_id, name, price, system_role, is_pilot, is_pit_crew, description)
                 OUTPUT INSERTED.*
-                VALUES (@eventId, @name, @price, @system_role, @isPilot, @isPitCrew)
+                VALUES (@eventId, @name, @price, @system_role, @isPilot, @isPitCrew, @description)
             `;
 
             const result = await query(insertQ, [
@@ -72,7 +72,8 @@ app.http('createTicketType', {
                 { name: 'price', type: sql.Decimal(10, 2), value: price },
                 { name: 'system_role', type: sql.VarChar, value: system_role },
                 { name: 'isPilot', type: sql.Bit, value: is_pilot ? 1 : 0 },
-                { name: 'isPitCrew', type: sql.Bit, value: is_pit_crew ? 1 : 0 }
+                { name: 'isPitCrew', type: sql.Bit, value: is_pit_crew ? 1 : 0 },
+                { name: 'description', type: sql.NVarChar, value: description || null }
             ]);
 
             return { status: 201, jsonBody: result[0] };
@@ -96,12 +97,12 @@ app.http('updateTicketType', {
                 return { status: 403, body: JSON.stringify({ error: "Unauthorized" }) };
             }
 
-            const { name, price, system_role, is_pilot, is_pit_crew } = await request.json();
+            const { name, price, system_role, is_pilot, is_pit_crew, description } = await request.json();
 
             const updateQ = `
                 UPDATE event_ticket_types
                 SET name = @name, price = @price, system_role = @system_role, 
-                    is_pilot = @isPilot, is_pit_crew = @isPitCrew
+                    is_pilot = @isPilot, is_pit_crew = @isPitCrew, description = @description
                 OUTPUT INSERTED.*
                 WHERE ticket_type_id = @ticketTypeId
             `;
@@ -112,7 +113,8 @@ app.http('updateTicketType', {
                 { name: 'price', type: sql.Decimal(10, 2), value: price },
                 { name: 'system_role', type: sql.VarChar, value: system_role },
                 { name: 'isPilot', type: sql.Bit, value: is_pilot ? 1 : 0 },
-                { name: 'isPitCrew', type: sql.Bit, value: is_pit_crew ? 1 : 0 }
+                { name: 'isPitCrew', type: sql.Bit, value: is_pit_crew ? 1 : 0 },
+                { name: 'description', type: sql.NVarChar, value: description || null }
             ]);
 
             if (result.length === 0) {

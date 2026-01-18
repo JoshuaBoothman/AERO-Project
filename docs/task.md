@@ -24,10 +24,10 @@
     - [x] Frontend: Multi-plane list, Heavy Model Toggle, Cert Upload
     - [x] API: Handle new fields in `createOrder` & `updateAttendee`
 
-- [ ] **Ticket Description Field** <!-- id: ticket_desc -->
+- [x] **Ticket Description Field** <!-- id: ticket_desc -->
     - [x] Implementation Plan Created (`Feedback_Ticket_Description.md`)
     - [x] Schema: `event_ticket_types.description` (Check validity)
-    - [ ] Frontend: Add Input in Admin, Display in Shop
+    - [x] Frontend: Add Input in Admin, Display in Shop
 
 - [ ] **Default Variants (Templates)** <!-- id: var_defaults -->
     - [x] Implementation Plan Created (`Feedback_Variant_Defaults.md`)
@@ -39,3 +39,9 @@
     - [x] Implementation Plan Created (`Feedback_Legacy_Booking.md`)
     - [ ] Research: Encryption/Matching logic
     - [ ] Execution: TBD
+
+- [ ] **Square Integration** <!-- id: square_int -->
+    - [x] Implementation Plan Created (`Square_Integration.md`) (Waiting for Approval)
+    - [ ] Frontend: Install SDK & Add Payment Form
+    - [ ] Backend: Install SDK & Update `createOrder`
+    - [ ] Verification: Test Transaction

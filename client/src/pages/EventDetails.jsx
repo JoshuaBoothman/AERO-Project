@@ -372,6 +372,7 @@ function EventDetails({ propSlug }) {
                                     <div key={t.ticket_type_id} className="flex justify-between items-center py-3 border-b border-gray-100 last:border-0">
                                         <div>
                                             <strong className="text-gray-800">{t.name}</strong>
+                                            {t.description && <div className="text-sm text-gray-500 mt-1 max-w-sm">{t.description}</div>}
                                             <div className="text-gray-600">${t.price}</div>
                                         </div>
                                         <div className="flex items-center gap-3">
