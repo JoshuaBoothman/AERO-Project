@@ -303,6 +303,41 @@ function OrderDetail() {
                                     )}
                                 </div>
                             </div>
+
+                            {/* Pilot Details Section */}
+                            {item.is_pilot && (
+                                <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #eee' }}>
+                                    <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+                                        <div style={{ minWidth: '150px' }}>
+                                            <div style={{ fontSize: '0.8rem', fontWeight: 'bold', textTransform: 'uppercase', color: '#888', marginBottom: '0.25rem' }}>License / AUS #</div>
+                                            <div>{item.license_number || 'N/A'}</div>
+                                        </div>
+                                        <div style={{ flex: 1 }}>
+                                            <div style={{ fontSize: '0.8rem', fontWeight: 'bold', textTransform: 'uppercase', color: '#888', marginBottom: '0.25rem' }}>Registered Aircraft</div>
+                                            {item.planes && item.planes.length > 0 ? (
+                                                <ul style={{ margin: 0, paddingLeft: '1rem', listStyleType: 'disc' }}>
+                                                    {item.planes.map((p, idx) => (
+                                                        <li key={idx} style={{ marginBottom: '0.25rem' }}>
+                                                            <strong>{p.name} {p.model_type}</strong> - {p.registration_number}
+                                                            {(p.heavy_model_cert_number || p.heavy_model_cert_image_url) && (
+                                                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', marginLeft: '0.5rem', backgroundColor: '#fff3cd', padding: '1px 6px', borderRadius: '4px', fontSize: '0.85rem' }}>
+                                                                    <span>⚖️ Heavy Model</span>
+                                                                    {p.heavy_model_cert_number && <span>(Cert: {p.heavy_model_cert_number})</span>}
+                                                                    {p.heavy_model_cert_image_url && (
+                                                                        <a href={p.heavy_model_cert_image_url} target="_blank" rel="noopener noreferrer" style={{ color: '#856404', textDecoration: 'underline' }}>View File</a>
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            ) : (
+                                                <div style={{ color: '#999', fontStyle: 'italic' }}>No aircraft listed.</div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     );
                 })}

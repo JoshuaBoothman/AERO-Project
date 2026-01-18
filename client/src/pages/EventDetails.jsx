@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 import CampsiteModal from '../components/CampsiteModal';
 
 function EventDetails({ propSlug }) {
@@ -9,6 +10,7 @@ function EventDetails({ propSlug }) {
     const navigate = useNavigate();
     const location = useLocation();
     const { user } = useAuth();
+    const { notify } = useNotification();
 
     const [event, setEvent] = useState(null);
     const [tickets, setTickets] = useState([]);
@@ -133,14 +135,91 @@ function EventDetails({ propSlug }) {
         }));
     };
 
+    const handleUpload = async (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        const res = await fetch('/api/upload', { method: 'POST', body: formData });
+        if (!res.ok) throw new Error('Upload failed');
+        const data = await res.json();
+        return data.url;
+    };
+
+    const addPlane = (key) => {
+        setAttendeeDetails(prev => {
+            const currentPlanes = prev[key]?.planes || [];
+            return {
+                ...prev,
+                [key]: {
+                    ...prev[key],
+                    planes: [...currentPlanes, { make: '', model: '', rego: '', isHeavy: false, heavyCertNumber: '', heavyCertFile: '' }]
+                }
+            };
+        });
+    };
+
+    const removePlane = (key, index) => {
+        setAttendeeDetails(prev => {
+            const currentPlanes = prev[key]?.planes || [];
+            const newPlanes = currentPlanes.filter((_, i) => i !== index);
+            return {
+                ...prev,
+                [key]: { ...prev[key], planes: newPlanes }
+            };
+        });
+    };
+
+    const updatePlane = (key, index, field, value) => {
+        setAttendeeDetails(prev => {
+            const currentPlanes = prev[key]?.planes || [{}]; // Ensure at least one if initializing
+            const newPlanes = [...currentPlanes];
+            if (!newPlanes[index]) newPlanes[index] = {};
+            newPlanes[index] = { ...newPlanes[index], [field]: value };
+            return {
+                ...prev,
+                [key]: { ...prev[key], planes: newPlanes }
+            };
+        });
+    };
+
     const handleFinalCheckout = async () => {
         if (!user) {
             navigate('/login', { state: { from: location } });
             return;
         }
 
+        // Validation
+        for (const [ticketTypeId, quantity] of Object.entries(cart)) {
+            const ticket = tickets.find(t => t.ticket_type_id === parseInt(ticketTypeId));
+            if (ticket?.is_pilot) {
+                for (let i = 0; i < quantity; i++) {
+                    const key = `${ticketTypeId}_${i}`;
+                    const details = attendeeDetails[key] || {};
+                    const label = details.firstName ? `${details.firstName} (Pilot)` : `Pilot #${i + 1}`;
+
+                    if (!details.hasReadMop) {
+                        notify(`${label}: You must read and agree to the Monitor of Procedures (MOP).`, "error");
+                        return;
+                    }
+
+                    const planes = details.planes || [{}];
+                    for (const p of planes) {
+                        if (p.isHeavy) {
+                            if (!p.heavyCertNumber) {
+                                notify(`${label}: Heavy Model requires a Certificate Number.`, "error");
+                                return;
+                            }
+                            if (!p.heavyCertFile) {
+                                notify(`${label}: Heavy Model requires a Certificate File Upload.`, "error");
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         setPurchasing(true);
-        setError(null);
+        // setError(null); // Don't reset global error, just proceed
 
         // Prepare payload
         const itemsPayload = Object.entries(cart).map(([ticketTypeId, quantity]) => {
@@ -186,12 +265,12 @@ function EventDetails({ propSlug }) {
                 setAttendeeDetails({});
                 setShowAttendeeModal(false);
             } else {
-                setError(data.error + (data.details ? `: ${data.details}` : '') || 'Purchase failed');
+                notify(data.error + (data.details ? `: ${data.details}` : '') || 'Purchase failed', "error");
                 setShowAttendeeModal(false);
                 setShowTicketModal(true);
             }
         } catch (err) {
-            setError(err.message);
+            notify(err.message, "error");
         } finally {
             setPurchasing(false);
         }
@@ -411,48 +490,153 @@ function EventDetails({ propSlug }) {
                                             {/* Pilot Specific Fields */}
                                             {tickets.find(t => t.ticket_type_id === parseInt(ticketId))?.is_pilot && (
                                                 <div style={{ marginTop: '0.5rem', padding: '0.5rem', border: '1px solid #e0e0e0', borderRadius: '4px' }}>
-                                                    <h5 style={{ margin: '0 0 0.5rem' }}>✈️ Pilot & Aircraft</h5>
+                                                    <h5 style={{ margin: '0 0 0.5rem' }}>✈️ Pilot & Aircraft Registration</h5>
+
+                                                    {/* MOP Agreement */}
+                                                    <div className="mb-4 p-3 bg-blue-50 border border-blue-100 rounded">
+                                                        <h6 className="font-bold text-sm mb-2 text-blue-800">Monitor of Procedures (MOP)</h6>
+                                                        <p className="text-xs text-blue-700 mb-2">
+                                                            Plese read the <a href="#" className="underline text-blue-900" onClick={(e) => { e.preventDefault(); alert("MOP Content Placeholder"); }}>Event MOP</a>. All pilots must agree to these terms.
+                                                        </p>
+                                                        <label className="flex items-center gap-2 cursor-pointer">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={data.hasReadMop || false}
+                                                                onChange={e => handleAttendeeChange(key, 'hasReadMop', e.target.checked)}
+                                                            />
+                                                            <span className="text-sm font-medium">I have read and agree to the MOP</span>
+                                                        </label>
+                                                    </div>
+
                                                     <input
                                                         className="attendee-input"
                                                         type="text" placeholder="CASA License / ARN"
                                                         value={data.licenseNumber || ''}
                                                         onChange={e => handleAttendeeChange(key, 'licenseNumber', e.target.value)}
-                                                        style={{ width: '100%', marginBottom: '0.5rem' }}
+                                                        style={{ width: '100%', marginBottom: '1rem' }}
                                                     />
 
-                                                    {/* Single Aircraft Entry (MVP) */}
-                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem' }}>
-                                                        <input
-                                                            className="attendee-input"
-                                                            type="text" placeholder="Make (e.g. Extra)"
-                                                            value={data.planes?.[0]?.make || ''}
-                                                            onChange={e => {
-                                                                const currentPlanes = data.planes || [{}];
-                                                                const updatedPlane = { ...currentPlanes[0], make: e.target.value };
-                                                                handleAttendeeChange(key, 'planes', [updatedPlane]);
-                                                            }}
-                                                        />
-                                                        <input
-                                                            className="attendee-input"
-                                                            type="text" placeholder="Model (e.g. 300L)"
-                                                            value={data.planes?.[0]?.model || ''}
-                                                            onChange={e => {
-                                                                const currentPlanes = data.planes || [{}];
-                                                                const updatedPlane = { ...currentPlanes[0], model: e.target.value };
-                                                                handleAttendeeChange(key, 'planes', [updatedPlane]);
-                                                            }}
-                                                        />
-                                                        <input
-                                                            className="attendee-input"
-                                                            type="text" placeholder="Rego (e.g. VH-XYZ)"
-                                                            value={data.planes?.[0]?.rego || ''}
-                                                            onChange={e => {
-                                                                const currentPlanes = data.planes || [{}];
-                                                                const updatedPlane = { ...currentPlanes[0], rego: e.target.value };
-                                                                handleAttendeeChange(key, 'planes', [updatedPlane]);
-                                                            }}
-                                                        />
-                                                    </div>
+                                                    <h6 className="font-bold text-sm mb-2">Aircraft List</h6>
+                                                    {(data.planes && data.planes.length > 0 ? data.planes : [{}]).map((plane, pIdx) => (
+                                                        <div key={pIdx} className="mb-4 pb-4 border-b border-gray-200 last:border-0" style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+                                                            <div style={{ flex: 1 }}>
+                                                                <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr)', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                                                                    <input
+                                                                        className="attendee-input"
+                                                                        placeholder="Make / Name (e.g. Extra 300)"
+                                                                        value={plane.make || ''}
+                                                                        onChange={e => updatePlane(key, pIdx, 'make', e.target.value)}
+                                                                        disabled={purchasing}
+                                                                    />
+                                                                    <input
+                                                                        className="attendee-input"
+                                                                        placeholder="Model Type"
+                                                                        value={plane.model || ''}
+                                                                        onChange={e => updatePlane(key, pIdx, 'model', e.target.value)}
+                                                                        disabled={purchasing}
+                                                                    />
+                                                                    <input
+                                                                        className="attendee-input"
+                                                                        placeholder="Registration"
+                                                                        value={plane.rego || ''}
+                                                                        onChange={e => updatePlane(key, pIdx, 'rego', e.target.value)}
+                                                                        disabled={purchasing}
+                                                                    />
+                                                                </div>
+
+                                                                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', marginBottom: '0.5rem', cursor: 'pointer' }}>
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        checked={plane.isHeavy || false}
+                                                                        onChange={e => updatePlane(key, pIdx, 'isHeavy', e.target.checked)}
+                                                                        disabled={purchasing}
+                                                                    />
+                                                                    <span style={{ fontWeight: '500', color: '#666' }}>Is this a heavy model (&gt; 7kg / 15lbs)?</span>
+                                                                </label>
+
+                                                                {plane.isHeavy && (
+                                                                    <div style={{ background: '#fff9c4', padding: '0.75rem', borderRadius: '4px', border: '1px solid #fbc02d' }}>
+                                                                        <div style={{ marginBottom: '0.5rem' }}>
+                                                                            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>Heavy Model Cert #</label>
+                                                                            <input
+                                                                                className="attendee-input"
+                                                                                placeholder="Cert Number"
+                                                                                value={plane.heavyCertNumber || ''}
+                                                                                onChange={e => updatePlane(key, pIdx, 'heavyCertNumber', e.target.value)}
+                                                                                style={{ background: 'white' }}
+                                                                                disabled={purchasing}
+                                                                            />
+                                                                        </div>
+                                                                        <div>
+                                                                            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>Upload Certificate (PDF/Image)</label>
+                                                                            {plane.heavyCertFile ? (
+                                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', color: '#2e7d32' }}>
+                                                                                    <span>✓ Uploaded</span>
+                                                                                    {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
+                                                                                    <a href={plane.heavyCertFile} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'underline', color: '#2e7d32' }}>View</a>
+                                                                                    <button
+                                                                                        type="button"
+                                                                                        onClick={() => updatePlane(key, pIdx, 'heavyCertFile', null)}
+                                                                                        style={{ color: '#d32f2f', background: 'none', border: 'none', padding: 0, marginLeft: '0.5rem', cursor: 'pointer', textDecoration: 'underline' }}
+                                                                                        disabled={purchasing}
+                                                                                    >
+                                                                                        Remove
+                                                                                    </button>
+                                                                                </div>
+                                                                            ) : (
+                                                                                <input
+                                                                                    type="file"
+                                                                                    accept="image/*,application/pdf"
+                                                                                    onChange={e => {
+                                                                                        if (e.target.files?.[0]) {
+                                                                                            handleUpload(e.target.files[0]).then(url => {
+                                                                                                updatePlane(key, pIdx, 'heavyCertFile', url);
+                                                                                            }).catch(err => alert("Upload failed: " + err.message));
+                                                                                        }
+                                                                                    }}
+                                                                                    disabled={purchasing}
+                                                                                />
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+
+                                                            {(data.planes || []).length > 1 && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => removePlane(key, pIdx)}
+                                                                    style={{
+                                                                        background: '#fee2e2',
+                                                                        color: '#ef4444',
+                                                                        border: 'none',
+                                                                        borderRadius: '4px',
+                                                                        width: '32px',
+                                                                        height: '32px',
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'center',
+                                                                        cursor: 'pointer',
+                                                                        fontSize: '1.2rem',
+                                                                        lineHeight: 1,
+                                                                        flexShrink: 0,
+                                                                        marginTop: '0px'
+                                                                    }}
+                                                                    title="Remove Aircraft"
+                                                                    disabled={purchasing}
+                                                                >
+                                                                    &times;
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    ))}
+
+                                                    <button
+                                                        className="text-primary text-sm font-bold hover:underline"
+                                                        onClick={() => addPlane(key)}
+                                                    >
+                                                        + Add Another Aircraft
+                                                    </button>
                                                 </div>
                                             )}
 

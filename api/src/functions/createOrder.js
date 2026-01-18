@@ -104,9 +104,39 @@ app.http('createOrder', {
                                 .input('pid', sql.Int, attendeePersonId)
                                 .input('ttid', sql.Int, item.ticketTypeId)
                                 .input('tcode', sql.VarChar, ticketCode)
-                                .query(`INSERT INTO attendees (event_id, person_id, ticket_type_id, status, ticket_code) VALUES (@eid, @pid, @ttid, 'Registered', @tcode); SELECT SCOPE_IDENTITY() AS id;`);
+                                .input('mop', sql.Bit, attendeeData.hasReadMop ? 1 : 0)
+                                .query(`INSERT INTO attendees (event_id, person_id, ticket_type_id, status, ticket_code, has_agreed_to_mop) VALUES (@eid, @pid, @ttid, 'Registered', @tcode, @mop); SELECT SCOPE_IDENTITY() AS id;`);
                             const attendeeId = attRes.recordset[0].id;
                             allAttendeeIds.push(attendeeId);
+
+                            // Update License Number if provided
+                            if (attendeeData.licenseNumber) {
+                                await new sql.Request(transaction)
+                                    .input('pid', sql.Int, attendeePersonId)
+                                    .input('lic', sql.NVarChar, attendeeData.licenseNumber)
+                                    .query("UPDATE persons SET license_number = @lic WHERE person_id = @pid");
+                            }
+
+                            // Insert Planes
+                            if (attendeeData.planes && attendeeData.planes.length > 0) {
+                                for (const plane of attendeeData.planes) {
+                                    if (plane.make || plane.model || plane.rego) {
+                                        await new sql.Request(transaction)
+                                            .input('pid', sql.Int, attendeePersonId)
+                                            .input('name', sql.NVarChar, plane.make || 'Unknown')
+                                            .input('model', sql.NVarChar, plane.model || '')
+                                            .input('rego', sql.NVarChar, plane.rego || '')
+                                            .input('is_heavy', sql.Bit, plane.isHeavy ? 1 : 0)
+                                            .input('h_cert', sql.NVarChar, plane.heavyCertNumber || null)
+                                            .input('h_url', sql.NVarChar, plane.heavyCertFile || null)
+                                            .input('weight', sql.Decimal(10, 2), 0)
+                                            .query(`
+                                                INSERT INTO planes (person_id, name, model_type, registration_number, is_heavy_model, heavy_model_cert_number, heavy_model_cert_image_url, weight_kg)
+                                                VALUES (@pid, @name, @model, @rego, @is_heavy, @h_cert, @h_url, @weight)
+                                            `);
+                                    }
+                                }
+                            }
 
                             // Create Order Item
                             const itemReq = new sql.Request(transaction);

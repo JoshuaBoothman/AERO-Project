@@ -20,9 +20,9 @@
 - [ ] **Pilot Features (Registration)** <!-- id: pilot -->
     - [x] Implementation Plan Created (`Feedback_Pilot_Features.md`)
     - [x] Schema: `planes.heavy_model_cert_image_url`, `attendees.has_agreed_to_mop` (Applied)
-    - [ ] Frontend: MOP Agreement Checkbox
-    - [ ] Frontend: Multi-plane list, Heavy Model Toggle, Cert Upload
-    - [ ] API: Handle new fields in `createOrder` & `updateAttendee`
+    - [x] Frontend: MOP Agreement Checkbox
+    - [x] Frontend: Multi-plane list, Heavy Model Toggle, Cert Upload
+    - [x] API: Handle new fields in `createOrder` & `updateAttendee`
 
 - [ ] **Ticket Description Field** <!-- id: ticket_desc -->
     - [x] Implementation Plan Created (`Feedback_Ticket_Description.md`)

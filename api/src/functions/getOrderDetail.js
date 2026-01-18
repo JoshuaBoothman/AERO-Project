@@ -56,6 +56,8 @@ app.http('getOrderDetail', {
                     p.first_name,
                     p.last_name,
                     p.email,
+                    p.license_number,
+                    p.person_id,
                     a.status as attendee_status,
                     a.ticket_code,
                     a.attendee_id,
@@ -74,6 +76,33 @@ app.http('getOrderDetail', {
                 { name: 'orderId', type: sql.Int, value: orderId }
             ]);
 
+            // 3.5 Fetch Planes for Pilot Attendees
+            // Extract unique person IDs for pilots
+            const pilotPersonIds = [...new Set(itemsResult.filter(i => i.is_pilot).map(i => i.person_id))];
+            let planesMap = {};
+
+            if (pilotPersonIds.length > 0) {
+                const idsList = pilotPersonIds.join(',');
+                // Ensure idsList only contains numbers to avoid injection (though map returning ints is safe)
+
+                const planesReq = new sql.Request(await require('../lib/db').getPool());
+                const planesQuery = `SELECT * FROM planes WHERE person_id IN (${idsList})`;
+
+                const planesResult = await planesReq.query(planesQuery);
+
+                // Group by person_id
+                planesResult.recordset.forEach(plane => {
+                    if (!planesMap[plane.person_id]) planesMap[plane.person_id] = [];
+                    planesMap[plane.person_id].push(plane);
+                });
+            }
+
+            // Attach planes to items
+            const itemsWithPlanes = itemsResult.map(item => ({
+                ...item,
+                planes: planesMap[item.person_id] || []
+            }));
+
             // 4. Construct Response
             // We'll attach the items to the order object
             // If there are multiple events (unlikely but possible), we pick the first one for the header
@@ -84,7 +113,8 @@ app.http('getOrderDetail', {
                 event_name: itemsResult.length > 0 ? itemsResult[0].event_name : "Unknown Event",
                 event_slug: itemsResult.length > 0 ? itemsResult[0].event_slug : "",
                 banner_url: itemsResult.length > 0 ? itemsResult[0].banner_url : "",
-                items: itemsResult
+                banner_url: itemsResult.length > 0 ? itemsResult[0].banner_url : "",
+                items: itemsWithPlanes
             };
 
             return {
