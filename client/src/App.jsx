@@ -27,6 +27,7 @@ import OrderDetail from './pages/OrderDetail';
 import CampingPage from './pages/camping/CampingPage';
 import StorePage from './pages/StorePage';
 import ShopIndex from './pages/ShopIndex';
+import FAQ from './pages/FAQ';
 import Checkout from './pages/Checkout';
 import { CartProvider } from './context/CartContext';
 import { NotificationProvider } from './context/NotificationContext';
@@ -110,6 +111,7 @@ function App() {
                 <Route path="events/:slug/shop" element={<StorePage />} /> {/* New Store Page */}
                 <Route path="shop" element={<ShopIndex />} />
                 <Route path="store/:slug" element={<StorePage />} />
+                <Route path="faq" element={<FAQ />} />
                 <Route path="camping" element={<CampingPage />} /> {/* Generic Camping Route */}
                 <Route path="events/:slug/camping" element={<CampingPage />} />
                 <Route path="checkout" element={<Checkout />} /> {/* Added Checkout Route */}

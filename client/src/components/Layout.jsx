@@ -139,7 +139,7 @@ function Layout({ orgSettings, loading, error, refreshSettings }) {
                             Flightline Roster
                           </Link>
                           <Link
-                            to="#"
+                            to="/faq"
                             className="px-4 py-3 hover:bg-gray-50 text-sm border-b border-gray-50 last:border-0 hover:text-accent font-medium"
                           >
                             FAQ
@@ -220,7 +220,7 @@ function Layout({ orgSettings, loading, error, refreshSettings }) {
                     <div className="w-16 h-1 bg-white/10 my-1"></div>
                     <span className="text-sm font-bold text-accent uppercase tracking-wider">Information</span>
                     <NavLink to="#" className="text-xl">Flightline Roster</NavLink>
-                    <NavLink to="#" className="text-xl">FAQ</NavLink>
+                    <NavLink to="/faq" className="text-xl">FAQ</NavLink>
                     <NavLink to="#" className="text-xl">Event Schedule</NavLink>
 
                     <div className="w-16 h-1 bg-white/20 my-2"></div>

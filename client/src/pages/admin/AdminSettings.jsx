@@ -4,6 +4,7 @@ import OrgSettings from './settings/OrgSettings';
 import AdminList from './settings/AdminList';
 import UserList from './settings/UserList';
 import VariantTemplates from './VariantTemplates';
+import FAQManager from './settings/FAQManager';
 
 function AdminSettings() {
     const [activeTab, setActiveTab] = useState('organization'); // 'organization' | 'admins'
@@ -51,6 +52,15 @@ function AdminSettings() {
                 >
                     Merchandise Templates
                 </button>
+                <button
+                    onClick={() => setActiveTab('faq')}
+                    className={`pb-3 px-6 font-bold text-lg transition-colors border-b-4 ${activeTab === 'faq'
+                        ? 'border-accent text-primary'
+                        : 'border-transparent text-gray-500 hover:text-primary'
+                        }`}
+                >
+                    FAQ
+                </button>
             </div>
 
             {/* Content By Tab */}
@@ -59,6 +69,7 @@ function AdminSettings() {
                 {activeTab === 'admins' && <AdminList />}
                 {activeTab === 'users' && <UserList />}
                 {activeTab === 'templates' && <VariantTemplates />}
+                {activeTab === 'faq' && <FAQManager />}
             </div>
         </div>
     );

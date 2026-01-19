@@ -61,7 +61,7 @@ function Register() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
           <label style={{ fontWeight: 600, fontSize: '0.9rem' }}>First Name</label>
-          <input name="firstName" onChange={handleChange} required style={{ padding: '0.75rem', border: '1px solid #ccc', borderRadius: '4px' }} />
+          <input name="firstName" onChange={handleChange} required autoFocus style={{ padding: '0.75rem', border: '1px solid #ccc', borderRadius: '4px' }} />
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>

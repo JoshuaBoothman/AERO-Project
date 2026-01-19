@@ -44,6 +44,7 @@ function Login() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
+          autoFocus
           style={{ padding: '0.5rem' }}
         />
         <input

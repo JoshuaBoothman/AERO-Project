@@ -26,4 +26,9 @@ function validateToken(request) {
     }
 }
 
-module.exports = { validateToken };
+const isAdmin = (request) => {
+    const user = validateToken(request);
+    return user && user.role === 'admin';
+};
+
+module.exports = { validateToken, isAdmin };
