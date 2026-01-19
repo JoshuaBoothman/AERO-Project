@@ -177,6 +177,21 @@ app.http('getStoreItems', {
                 capacity: s.capacity
             }));
 
+            // 6. Fetch Ticket Types (NEW)
+            const ticketRes = await pool.request().input('eid', sql.Int, eventId).query(`
+                SELECT ticket_type_id, name, description, price, is_pit_crew, is_pilot
+                FROM event_ticket_types
+                WHERE event_id = @eid
+            `);
+            const tickets = ticketRes.recordset.map(t => ({
+                id: t.ticket_type_id,
+                name: t.name,
+                description: t.description,
+                price: t.price,
+                isPitCrew: t.is_pit_crew,
+                is_pilot: t.is_pilot
+            }));
+
             return {
                 status: 200,
                 body: JSON.stringify({
@@ -184,10 +199,11 @@ app.http('getStoreItems', {
                     eventName,
                     eventStartDate,
                     eventEndDate,
-                    isAttendee, // <-- New Flag
-                    merchandise, // Grouped
+                    isAttendee,
+                    merchandise,
                     assets,
-                    subevents
+                    subevents,
+                    tickets // <--- Added Tickets
                 })
             };
 

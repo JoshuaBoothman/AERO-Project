@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 function ShopIndex() {
     const [allEvents, setAllEvents] = useState([]);
     const [loading, setLoading] = useState(true);
     const { user } = useAuth();
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchEvents = async () => {
@@ -13,16 +14,28 @@ function ShopIndex() {
                 const res = await fetch('/api/events');
                 if (res.ok) {
                     const data = await res.json();
-                    // Filter for Current & Upcoming
+
                     const now = new Date();
                     const relevant = data.filter(e => new Date(e.end_date) >= now);
                     setAllEvents(relevant);
+
+                    if (relevant.length === 1) {
+                        navigate(`/store/${relevant[0].slug}`);
+                        // Don't setLoading(false) to prevent flicker
+                    } else {
+                        setLoading(false);
+                    }
+                } else {
+                    setLoading(false);
                 }
-            } catch (e) { console.error(e); }
-            finally { setLoading(false); }
+            } catch (e) {
+                console.error(e);
+                setLoading(false);
+            }
         };
         fetchEvents();
-    }, []);
+    }, [navigate]);
+
 
     if (loading) return <div style={{ padding: '20px' }}>Loading shop...</div>;
 

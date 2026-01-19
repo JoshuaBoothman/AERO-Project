@@ -800,6 +800,21 @@ When ready to deploy to production with a real domain:
 **Milestone:** Pilot Access Restrictions, Registration UI Polish & Stability Fixes
 
 ### Completed Items
+*   **Access Control:**
+    *   **Logic:** Implemented `pilot_registration_open` flag logic to restrict access to Pilot Registration forms based on Event Settings.
+    *   **UI:** Updated `Register.jsx` to disable/hide Pilot options if registration is closed (or user is not an Admin).
+*   **Frontend (Store Page):**
+    *   **Feature:** Implemented "Event Tickets" tab on the Store Page.
+    *   **Logic:** Created `AttendeeModal.jsx` - a reusable component for collecting attendee details (inc. Pilot info, MOP, Aircraft) during the "Add to Cart" flow.
+    *   **Bug Fix:** Updated `AttendeeModal` validation logic to correctly identify Pilot tickets using both `ticket_type_id` and `id` properties, resolving the issue where Pilot fields were hidden.
+*   **Backend (API):**
+    *   **Schema:** Updated `getStoreItems.js` to include `is_pilot` flag in the tickets response.
+    *   **Fix:** Removed invalid `is_active` column check from `getStoreItems.js` which was causing 500 Errors.
+*   **Verification:**
+    *   Verified "Add to Cart" flow for Pilot tickets correctly triggers the Pilot Detail modal (MOP, Aircraft).
+    *   Verified Store Page correctly redirects to the specific event store if only one active event exists.
+
+### Completed Items
 *   **Access Control**
     *   **Frontend (Layout):** Implemented conditional rendering for Navigation. Hidden "Information", "Shop", and "Cart" for non-logged-in users.
 *   **UI Polish**
