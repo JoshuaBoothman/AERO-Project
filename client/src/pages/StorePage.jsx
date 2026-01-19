@@ -11,7 +11,7 @@ import AttendeeModal from '../components/AttendeeModal';
 
 function StorePage({ orgSettings }) {
     const { slug } = useParams();
-    const { addToCart } = useCart();
+    const { addToCart, cart } = useCart();
     const { notify } = useNotification();
     const { user, token } = useAuth(); // Get token from AuthContext
 
@@ -23,8 +23,6 @@ function StorePage({ orgSettings }) {
     // Attendee Check
     const [isAttendee, setIsAttendee] = useState(false);
     const [myPilots, setMyPilots] = useState([]); // For dropdown in modal
-
-    const { cart } = useCart();
 
     useEffect(() => {
         setLoading(true);
@@ -75,7 +73,8 @@ function StorePage({ orgSettings }) {
         }
     }, [user, slug]);
 
-    const isLocked = !isAttendee;
+    const hasTicketInCart = cart.some(item => item.type === 'TICKET');
+    const isLocked = !isAttendee && !hasTicketInCart;
 
     // Tab Handler
     const handleTabClick = (tabId) => {

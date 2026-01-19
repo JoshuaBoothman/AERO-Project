@@ -1034,3 +1034,32 @@ The "Camping" page for "Festival of Aeromodelling 2026" was displaying "No campg
 
 ### Next Steps
 *   **Legacy Booking:** Implement priority booking system for returning customers.
+
+## [2026-01-19] - Pilot Registration Refactor & Attendee Data
+**Milestone:** Enhanced Pilot Data Capture, Validation & Store Logic Refactor
+
+### Completed Items
+*   **Database**
+    *   **Updates:**
+        *   Added `date_of_birth`, `address_line_1`, `city`, `state`, `postcode`, `emergency_contact_name`, `emergency_contact_phone` to `persons` table.
+        *   Added `arrival_date`, `departure_date`, `flight_line_duties` to `attendees` table.
+*   **Backend (API)**
+    *   **Logic:** Updated `createOrder.js` to:
+        *   Validate existence of all new mandatory fields.
+        *   Update `persons` and `attendees` tables with new data during order creation.
+        *   Handle "Duplicate Variable" bug for date fields.
+*   **Frontend (Client)**
+    *   **Pilot Registration (AttendeeModal):**
+        *   **Validation:** Implemented Toast Notifications (`useNotification`) for all validation errors.
+        *   **Data Capture:** Added input fields for Address, DOB, Emergency Contact, and Travel Dates.
+        *   **Refactor:**
+            *   Changed "CASA Licence / ARN" label to **"AUS Number"**.
+            *   Simplifed Heavy Model logic: "Are you bringing any Heavy Models?" checkbox now reveals the aircraft list. All planes in this list are treated as Heavy Models (requiring Cert # and Upload).
+            *   Added **Flight Line Duties** agreement checkbox.
+    *   **Store Access:**
+        *   **Constraint:** Users must now have an active Ticket (or a Ticket in their Cart) to access Subevents, Camping, and Assets.
+        *   **UX:** Removed legacy "Get Tickets" button from Event Details; simplified flow to direct all purchases through the Store.
+
+### Next Steps
+*   **Verification:** Confirm data flows correctly into Admin exports/reports.
+

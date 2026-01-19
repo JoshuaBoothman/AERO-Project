@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNotification } from '../context/NotificationContext';
 
 /**
  * Reusable Modal for collecting Attendee Details (Pilots, Crew, etc.)
@@ -28,6 +29,7 @@ function AttendeeModal({
 }) {
     if (!show) return null;
 
+    const { notify } = useNotification();
     const [details, setDetails] = useState(initialDetails);
 
     // Initialize slots if empty
@@ -86,7 +88,7 @@ function AttendeeModal({
                 ...prev,
                 [key]: {
                     ...prev[key],
-                    planes: [...currentPlanes, { make: '', model: '', rego: '', isHeavy: false }]
+                    planes: [...currentPlanes, { make: '', model: '', rego: '', isHeavy: true }]
                 }
             };
         });
@@ -112,22 +114,50 @@ function AttendeeModal({
                 for (let i = 0; i < quantity; i++) {
                     const key = `${ticketTypeId}_${i}`;
                     const d = details[key] || {};
-                    const label = d.firstName ? `${d.firstName} (Pilot)` : `Pilot #${i + 1}`;
+                    const label = d.firstName ? `${d.firstName} ${d.lastName}` : `Attendee #${i + 1}`;
+
+                    // Mandatory Fields Validation
+                    const requiredFields = [
+                        { field: 'firstName', name: 'First Name' },
+                        { field: 'lastName', name: 'Last Name' },
+                        { field: 'dateOfBirth', name: 'Date of Birth' },
+                        { field: 'address', name: 'Address' },
+                        { field: 'city', name: 'City' },
+                        { field: 'state', name: 'State' },
+                        { field: 'postcode', name: 'Postcode' },
+                        { field: 'emergencyName', name: 'Emergency Contact Name' },
+                        { field: 'emergencyPhone', name: 'Emergency Contact Phone' },
+                        { field: 'arrivalDate', name: 'Arrival Date' },
+                        { field: 'departureDate', name: 'Departure Date' }
+                    ];
+
+                    for (const req of requiredFields) {
+                        if (!d[req.field] || !d[req.field].trim()) {
+                            notify(`${label}: Please enter ${req.name}.`, "error");
+                            return;
+                        }
+                    }
+
 
                     if (!d.hasReadMop) {
-                        alert(`${label}: You must read and agree to the Monitor of Procedures (MOP).`);
+                        notify(`${label}: You must read and agree to the Monitor of Procedures (MOP).`, "error");
                         return;
                     }
 
-                    const planes = d.planes || [{}];
-                    for (const p of planes) {
-                        if (p.isHeavy) {
+                    if (!d.licenseNumber || !d.licenseNumber.trim()) {
+                        notify(`${label}: Please enter AUS Number.`, "error");
+                        return;
+                    }
+
+                    if (d.bringingHeavyModels) {
+                        const planes = d.planes || [{}];
+                        for (const p of planes) {
                             if (!p.heavyCertNumber) {
-                                alert(`${label}: Heavy Model requires a Certificate Number.`);
+                                notify(`${label}: Heavy Model requires a Certificate Number.`, "error");
                                 return;
                             }
                             if (!p.heavyCertFile) {
-                                alert(`${label}: Heavy Model requires a Certificate File Upload.`);
+                                notify(`${label}: Heavy Model requires a Certificate File Upload.`, "error");
                                 return;
                             }
                         }
@@ -174,6 +204,15 @@ function AttendeeModal({
                                         onChange={e => handleChange(key, 'lastName', e.target.value)}
                                         style={inputStyle}
                                     />
+
+                                    <input
+                                        type="date"
+                                        placeholder="Date of Birth"
+                                        title="Date of Birth"
+                                        value={data.dateOfBirth || ''}
+                                        onChange={e => handleChange(key, 'dateOfBirth', e.target.value)}
+                                        style={inputStyle}
+                                    />
                                 </div>
                                 <input
                                     type="email" placeholder="Email"
@@ -181,6 +220,37 @@ function AttendeeModal({
                                     onChange={e => handleChange(key, 'email', e.target.value)}
                                     style={{ ...inputStyle, marginBottom: '1rem' }}
                                 />
+
+                                <h5 className="font-bold text-sm mb-2 mt-4 text-gray-700">Address & Contact</h5>
+                                <div className="mb-4 space-y-3">
+                                    <input
+                                        placeholder="Address Line 1"
+                                        value={data.address || ''}
+                                        onChange={e => handleChange(key, 'address', e.target.value)}
+                                        style={inputStyle}
+                                    />
+                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                        <input placeholder="City" value={data.city || ''} onChange={e => handleChange(key, 'city', e.target.value)} style={inputStyle} />
+                                        <input placeholder="State" value={data.state || ''} onChange={e => handleChange(key, 'state', e.target.value)} style={inputStyle} />
+                                        <input placeholder="Postcode" value={data.postcode || ''} onChange={e => handleChange(key, 'postcode', e.target.value)} style={inputStyle} />
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                        <input placeholder="Emergency Contact Name" value={data.emergencyName || ''} onChange={e => handleChange(key, 'emergencyName', e.target.value)} style={inputStyle} />
+                                        <input placeholder="Emergency Phone" value={data.emergencyPhone || ''} onChange={e => handleChange(key, 'emergencyPhone', e.target.value)} style={inputStyle} />
+                                    </div>
+                                </div>
+
+                                <h5 className="font-bold text-sm mb-2 mt-4 text-gray-700">Attendance Dates</h5>
+                                <div className="grid grid-cols-2 gap-4 mb-4">
+                                    <div>
+                                        <label className="text-xs text-gray-500">Arrival Date</label>
+                                        <input type="date" value={data.arrivalDate || ''} onChange={e => handleChange(key, 'arrivalDate', e.target.value)} style={inputStyle} />
+                                    </div>
+                                    <div>
+                                        <label className="text-xs text-gray-500">Departure Date</label>
+                                        <input type="date" value={data.departureDate || ''} onChange={e => handleChange(key, 'departureDate', e.target.value)} style={inputStyle} />
+                                    </div>
+                                </div>
 
                                 {/* Pilot Fields */}
                                 {ticket?.is_pilot && (
@@ -204,54 +274,78 @@ function AttendeeModal({
                                         </div>
 
                                         <input
-                                            placeholder="CASA License / ARN"
+                                            placeholder="AUS Number"
                                             value={data.licenseNumber || ''}
                                             onChange={e => handleChange(key, 'licenseNumber', e.target.value)}
                                             style={{ ...inputStyle, marginBottom: '1rem' }}
                                         />
 
-                                        <h6 className="font-bold text-sm mb-2">Aircraft List</h6>
-                                        {(data.planes || [{}]).map((plane, pIdx) => (
-                                            <div key={pIdx} className="mb-4 pb-4 border-b border-gray-100 last:border-0">
-                                                <div className="grid grid-cols-3 gap-2 mb-2">
-                                                    <input placeholder="Make" value={plane.make || ''} onChange={e => updatePlane(key, pIdx, 'make', e.target.value)} style={inputStyle} />
-                                                    <input placeholder="Model" value={plane.model || ''} onChange={e => updatePlane(key, pIdx, 'model', e.target.value)} style={inputStyle} />
-                                                    <input placeholder="Rego" value={plane.rego || ''} onChange={e => updatePlane(key, pIdx, 'rego', e.target.value)} style={inputStyle} />
-                                                </div>
-                                                <label className="flex items-center gap-2 text-sm mb-2">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={plane.isHeavy || false}
-                                                        onChange={e => updatePlane(key, pIdx, 'isHeavy', e.target.checked)}
-                                                    />
-                                                    Is Heavy Model (&gt; 7kg)?
-                                                </label>
+                                        {/* Flight Line Duties (New) */}
+                                        <div className="mb-4">
+                                            <label className="flex items-center gap-2 cursor-pointer">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={data.flightLineDuties || false}
+                                                    onChange={e => handleChange(key, 'flightLineDuties', e.target.checked)}
+                                                />
+                                                <span className="font-medium text-sm">I agree to perform flight line duties</span>
+                                            </label>
+                                        </div>
 
-                                                {plane.isHeavy && (
-                                                    <div className="p-3 bg-yellow-50 border border-yellow-200 rounded text-sm">
-                                                        <div className="mb-2">
-                                                            <label>Height Cert #</label>
-                                                            <input placeholder="Cert #" value={plane.heavyCertNumber || ''} onChange={e => updatePlane(key, pIdx, 'heavyCertNumber', e.target.value)} style={inputStyle} />
+                                        {/* Heavy Models Toggle */}
+                                        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-sm">
+                                            <label className="flex items-center gap-2 cursor-pointer font-bold">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={data.bringingHeavyModels || false}
+                                                    onChange={e => {
+                                                        const newVal = e.target.checked;
+                                                        handleChange(key, 'bringingHeavyModels', newVal);
+                                                        // Optional: Clear planes if unchecked? leaving for now in case of accidental toggle
+                                                    }}
+                                                />
+                                                Are you bringing any Heavy Models?
+                                            </label>
+                                        </div>
+
+                                        {/* Aircraft List - Only if Bringing Heavy Models */}
+                                        {data.bringingHeavyModels && (
+                                            <div>
+                                                <h6 className="font-bold text-sm mb-2">Heavy Aircraft List</h6>
+                                                {(data.planes || [{}]).map((plane, pIdx) => (
+                                                    <div key={pIdx} className="mb-4 pb-4 border-b border-gray-100 last:border-0">
+                                                        <div className="grid grid-cols-3 gap-2 mb-2">
+                                                            <input placeholder="Make" value={plane.make || ''} onChange={e => updatePlane(key, pIdx, 'make', e.target.value)} style={inputStyle} />
+                                                            <input placeholder="Model" value={plane.model || ''} onChange={e => updatePlane(key, pIdx, 'model', e.target.value)} style={inputStyle} />
+                                                            <input placeholder="Rego" value={plane.rego || ''} onChange={e => updatePlane(key, pIdx, 'rego', e.target.value)} style={inputStyle} />
                                                         </div>
-                                                        <div>
-                                                            <label>Upload Certificate</label>
-                                                            {plane.heavyCertFile ? (
-                                                                <div className="text-green-600">✓ Uploaded <span className="text-red-500 cursor-pointer ml-2" onClick={() => updatePlane(key, pIdx, 'heavyCertFile', null)}>Remove</span></div>
-                                                            ) : (
-                                                                <input type="file" onChange={e => {
-                                                                    if (e.target.files?.[0]) handleUpload(e.target.files[0]).then(url => updatePlane(key, pIdx, 'heavyCertFile', url));
-                                                                }} />
-                                                            )}
+
+                                                        {/* Forced Heavy Fields */}
+                                                        <div className="p-3 bg-gray-50 border border-gray-200 rounded text-sm">
+                                                            <div className="mb-2">
+                                                                <label className="block text-xs font-bold mb-1">Heavy Model Cert #</label>
+                                                                <input placeholder="Cert #" value={plane.heavyCertNumber || ''} onChange={e => updatePlane(key, pIdx, 'heavyCertNumber', e.target.value)} style={inputStyle} />
+                                                            </div>
+                                                            <div>
+                                                                <label className="block text-xs font-bold mb-1">Upload Certificate</label>
+                                                                {plane.heavyCertFile ? (
+                                                                    <div className="text-green-600">✓ Uploaded <span className="text-red-500 cursor-pointer ml-2 hover:underline" onClick={() => updatePlane(key, pIdx, 'heavyCertFile', null)}>Remove</span></div>
+                                                                ) : (
+                                                                    <input type="file" onChange={e => {
+                                                                        if (e.target.files?.[0]) handleUpload(e.target.files[0]).then(url => updatePlane(key, pIdx, 'heavyCertFile', url));
+                                                                    }} />
+                                                                )}
+                                                            </div>
                                                         </div>
+
+                                                        {(data.planes || []).length > 1 && (
+                                                            <button onClick={() => removePlane(key, pIdx)} className="text-red-500 text-xs underline mt-1">Remove Plane</button>
+                                                        )}
                                                     </div>
-                                                )}
-
-                                                {(data.planes || []).length > 1 && (
-                                                    <button onClick={() => removePlane(key, pIdx)} className="text-red-500 text-xs underline mt-1">Remove Plane</button>
-                                                )}
+                                                ))}
+                                                <button onClick={() => addPlane(key)} className="text-primary text-sm font-bold">+ Add Aircraft</button>
                                             </div>
-                                        ))}
-                                        <button onClick={() => addPlane(key)} className="text-primary text-sm font-bold">+ Add Aircraft</button>
+                                        )}
                                     </div>
                                 )}
                             </div>

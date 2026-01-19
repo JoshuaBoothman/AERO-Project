@@ -329,24 +329,7 @@ function EventDetails({ propSlug }) {
                 <p className="whitespace-pre-wrap mb-8 text-gray-700 leading-relaxed text-lg text-left md:text-center">{event.description}</p>
 
                 <div className="flex flex-col sm:flex-row justify-center gap-4">
-                    {user ? (
-                        <button
-                            className="bg-primary hover:bg-primary/90 text-secondary font-bold py-3 px-8 rounded-lg text-lg transition-all shadow-lg w-full sm:w-auto"
-                            onClick={() => setShowTicketModal(true)}
-                        >
-                            Get Tickets
-                        </button>
-                    ) : (
-                        <div className="text-center p-4 bg-gray-50 rounded-lg border border-gray-200">
-                            <p className="mb-2 text-gray-600">Please login to purchase tickets or access the store.</p>
-                            <button
-                                className="bg-gray-800 text-white font-bold py-2 px-6 rounded hover:bg-gray-700 transition-colors"
-                                onClick={() => navigate('/login', { state: { from: location } })}
-                            >
-                                Login / Register
-                            </button>
-                        </div>
-                    )}
+                    {/* Get Tickets button removed - Tickets purchased via Store */}
                     {/* Campsite Booking Button Removed as per request */}
                 </div>
 

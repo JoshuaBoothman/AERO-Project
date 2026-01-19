@@ -105,23 +105,110 @@ app.http('createOrder', {
                             const safeUserEmail = (user.email || '').toLowerCase();
                             const safeAttendeeEmail = (attendeeData.email || '').toLowerCase();
 
+                            // Prepare Person Fields
+                            const pFirstName = attendeeData.firstName || 'Guest';
+                            const pLastName = attendeeData.lastName || 'User';
+                            const pDob = attendeeData.dateOfBirth || null;
+                            const pAddr = attendeeData.address || null;
+                            const pCity = attendeeData.city || null;
+                            const pState = attendeeData.state || null;
+                            const pPost = attendeeData.postcode || null;
+                            const pEmergName = attendeeData.emergencyName || null;
+                            const pEmergPhone = attendeeData.emergencyPhone || null;
+                            const arrDate = attendeeData.arrivalDate || null;
+                            const depDate = attendeeData.departureDate || null;
+
+                            // STRICT VALIDATION
+                            if (!pDob || !pAddr || !pCity || !pState || !pPost || !pEmergName || !pEmergPhone || !arrDate || !depDate) {
+                                throw new Error(`Missing mandatory attendee details for ${pFirstName} ${pLastName}. Please ensure all fields (DOB, Address, Emergency Contact, Trip Dates) are filled.`);
+                            }
+
                             if (safeUserEmail && safeAttendeeEmail && safeUserEmail === safeAttendeeEmail) {
                                 attendeePersonId = mainPersonId;
+                                // UPDATE Main Person Details
+                                await new sql.Request(transaction)
+                                    .input('pid', sql.Int, attendeePersonId)
+                                    .input('fn', sql.NVarChar, pFirstName)
+                                    .input('ln', sql.NVarChar, pLastName)
+                                    .input('dob', sql.Date, pDob)
+                                    .input('addr', sql.NVarChar, pAddr)
+                                    .input('city', sql.NVarChar, pCity)
+                                    .input('state', sql.NVarChar, pState)
+                                    .input('post', sql.NVarChar, pPost)
+                                    .input('emg_n', sql.NVarChar, pEmergName)
+                                    .input('emg_p', sql.NVarChar, pEmergPhone)
+                                    .query(`
+                                        UPDATE persons SET 
+                                            first_name = @fn, last_name = @ln, 
+                                            date_of_birth = @dob,
+                                            address_line_1 = @addr, city = @city, state = @state, postcode = @post,
+                                            emergency_contact_name = @emg_n, emergency_contact_phone = @emg_p
+                                        WHERE person_id = @pid
+                                    `);
+
                             } else if (attendeeData.firstName || attendeeData.lastName || safeAttendeeEmail) {
-                                const pReq = new sql.Request(transaction);
-                                const pRes = await pReq
-                                    .input('fn', sql.NVarChar, attendeeData.firstName || 'Guest')
-                                    .input('ln', sql.NVarChar, attendeeData.lastName || 'User')
-                                    .input('em', sql.NVarChar, attendeeData.email || null)
-                                    .input('uid', sql.Int, user.userId)
-                                    .query(`INSERT INTO persons (first_name, last_name, email, user_id) VALUES (@fn, @ln, @em, @uid); SELECT SCOPE_IDENTITY() AS id`);
-                                attendeePersonId = pRes.recordset[0].id;
+                                // Check if person exists by email first (to avoid duplicates if they bought before)
+                                const checkPReq = new sql.Request(transaction);
+                                const checkPRes = await checkPReq.input('em', sql.NVarChar, safeAttendeeEmail).query("SELECT person_id FROM persons WHERE email = @em");
+
+                                if (checkPRes.recordset.length > 0) {
+                                    attendeePersonId = checkPRes.recordset[0].person_id;
+                                    // UPDATE Existing Guest Person
+                                    await new sql.Request(transaction)
+                                        .input('pid', sql.Int, attendeePersonId)
+                                        .input('fn', sql.NVarChar, pFirstName)
+                                        .input('ln', sql.NVarChar, pLastName)
+                                        .input('dob', sql.Date, pDob)
+                                        .input('addr', sql.NVarChar, pAddr)
+                                        .input('city', sql.NVarChar, pCity)
+                                        .input('state', sql.NVarChar, pState)
+                                        .input('post', sql.NVarChar, pPost)
+                                        .input('emg_n', sql.NVarChar, pEmergName)
+                                        .input('emg_p', sql.NVarChar, pEmergPhone)
+                                        .query(`
+                                        UPDATE persons SET 
+                                            first_name = @fn, last_name = @ln, 
+                                            date_of_birth = @dob,
+                                            address_line_1 = @addr, city = @city, state = @state, postcode = @post,
+                                            emergency_contact_name = @emg_n, emergency_contact_phone = @emg_p
+                                        WHERE person_id = @pid
+                                    `);
+                                } else {
+                                    // INSERT New Person
+                                    const pReq = new sql.Request(transaction);
+                                    const pRes = await pReq
+                                        .input('fn', sql.NVarChar, pFirstName)
+                                        .input('ln', sql.NVarChar, pLastName)
+                                        .input('em', sql.NVarChar, safeAttendeeEmail || null)
+                                        .input('uid', sql.Int, null) // Guest, no user_id usually
+                                        .input('dob', sql.Date, pDob)
+                                        .input('addr', sql.NVarChar, pAddr)
+                                        .input('city', sql.NVarChar, pCity)
+                                        .input('state', sql.NVarChar, pState)
+                                        .input('post', sql.NVarChar, pPost)
+                                        .input('emg_n', sql.NVarChar, pEmergName)
+                                        .input('emg_p', sql.NVarChar, pEmergPhone)
+                                        .query(`
+                                            INSERT INTO persons (
+                                                first_name, last_name, email, user_id, 
+                                                date_of_birth, address_line_1, city, state, postcode, 
+                                                emergency_contact_name, emergency_contact_phone
+                                            ) VALUES (
+                                                @fn, @ln, @em, @uid,
+                                                @dob, @addr, @city, @state, @post,
+                                                @emg_n, @emg_p
+                                            ); 
+                                            SELECT SCOPE_IDENTITY() AS id
+                                        `);
+                                    attendeePersonId = pRes.recordset[0].id;
+                                }
                             } else {
                                 attendeePersonId = mainPersonId;
                             }
 
                             // Create Attendee
                             const ticketCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+
                             const attReq = new sql.Request(transaction);
                             const attRes = await attReq
                                 .input('eid', sql.Int, eventId)
@@ -129,7 +216,19 @@ app.http('createOrder', {
                                 .input('ttid', sql.Int, item.ticketTypeId)
                                 .input('tcode', sql.VarChar, ticketCode)
                                 .input('mop', sql.Bit, attendeeData.hasReadMop ? 1 : 0)
-                                .query(`INSERT INTO attendees (event_id, person_id, ticket_type_id, status, ticket_code, has_agreed_to_mop) VALUES (@eid, @pid, @ttid, 'Registered', @tcode, @mop); SELECT SCOPE_IDENTITY() AS id;`);
+                                .input('arr', sql.Date, arrDate)
+                                .input('dep', sql.Date, depDate)
+                                .input('fld', sql.Bit, attendeeData.flightLineDuties ? 1 : 0)
+                                .query(`
+                                    INSERT INTO attendees (
+                                        event_id, person_id, ticket_type_id, status, ticket_code, has_agreed_to_mop,
+                                        arrival_date, departure_date, flight_line_duties
+                                    ) VALUES (
+                                        @eid, @pid, @ttid, 'Registered', @tcode, @mop,
+                                        @arr, @dep, @fld
+                                    ); 
+                                    SELECT SCOPE_IDENTITY() AS id;
+                                `);
                             const attendeeId = attRes.recordset[0].id;
                             allAttendeeIds.push(attendeeId);
 
