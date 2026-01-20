@@ -64,7 +64,10 @@ function EventDetails({ propSlug }) {
     useEffect(() => {
         if (user && event && event.slug) {
             fetch(`/api/events/${event.slug}/my-attendees`, {
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'X-Auth-Token': localStorage.getItem('token')
+                }
             })
                 .then(res => res.json())
                 .then(data => {
@@ -250,7 +253,8 @@ function EventDetails({ propSlug }) {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`,
+                    'X-Auth-Token': token
                 },
                 body: JSON.stringify({
                     eventId: event.event_id,

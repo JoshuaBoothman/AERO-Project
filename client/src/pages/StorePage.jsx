@@ -29,6 +29,7 @@ function StorePage({ orgSettings }) {
         const headers = {};
         if (token) {
             headers['Authorization'] = `Bearer ${token}`;
+            headers['X-Auth-Token'] = token;
         }
 
         fetch(`/api/getStoreItems?slug=${slug}`, { headers })

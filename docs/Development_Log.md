@@ -13,6 +13,13 @@
         - Visualized reordering with a draggable handle (☰).
     - **Verification**: Verified Admin persistence and Storefront sort order reflection.
 
+## [2026-01-20] - Access Restricted Fix (Live Environment)
+- **Time**: 14:15 - 14:30
+- **Completed Items**:
+    - **Bug Fix**: Resolved "Access Restricted" error on the live store (`StorePage.jsx`) by adding the `X-Auth-Token` header to fetch requests.
+    - **Proactive Fix**: Applied the same header fix to `EventDetails.jsx` (Order Creation) and `OrderDetail.jsx` (View/Edit) to ensure consistent authentication on Azure.
+    - **Documentation**: Created `walkthrough_access_restricted_fix.md` detailing the root cause and solution.
+
 ## [2026-01-20] - Admin Dashboard Refinement (Completed)
 - **Time**: 12:00 - 12:10
 - **Completed Items**:

@@ -24,7 +24,8 @@ function OrderDetail() {
                 const token = localStorage.getItem('token');
                 const response = await fetch(`/api/orders/${orderId}`, {
                     headers: {
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${token}`,
+                        'X-Auth-Token': token
                     }
                 });
 
@@ -72,7 +73,8 @@ function OrderDetail() {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`,
+                    'X-Auth-Token': token
                 },
                 body: JSON.stringify(editFormData)
             });
