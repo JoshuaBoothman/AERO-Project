@@ -33,3 +33,49 @@ Client (Dave) asked about hosting. IT contact (Dennis) suggested moving to a Win
 > Joshua Boothman
 >
 > (03) 6363 2095
+
+## 2026-01-20 - System Updates & Next Steps
+
+**Context:**
+Summary of work completed over Jan 19-20 sent to Dave & Gemma, including notes on upcoming priorities.
+
+### Email Sent
+> Hi Dave & Gemma
+>
+> Just a heads up, I won't be around tomorrow, and some of Thursday, but there is lots of new stuff for you to look at on the site...
+>
+> **Public Air Show Registration:**
+> *   Enabled public registration for the Air Show. Email will be sent to people that register with a code to show at the gate
+> *   Added a new "Air Show Attendees" report to the Admin Dashboard to track these registrations.
+> *   Updated the event details page to display public event days.
+>
+> **FAQ System:**
+> *   Added a new "FAQ" section to the public website.
+> *   Created an Admin tool to easily add, edit, sort, and upload images for FAQs.
+>
+> **Camping Fees & Booking:**
+> *   The system now correctly calculates and displays fees for extra adults.
+> *   The booking screen now shows a transparent breakdown of costs so users see exactly what they are paying for.
+>
+> **Merchandise Ordering:**
+> *   You can now drag and drop products in the Admin panel to change their order.
+> *   This new order instantly updates on the public Store page.
+>
+> **Admin Dashboard:**
+> *   Added a new "Air Show Attendees" card for quick stats.
+> *   Improved the "Camping" card layout and fixed display issues.
+>
+> **Reports:**
+> *   Added a "Camping Availability Report" to track booked vs. available sites.
+> *   Users can now view available campsites in a "List View" in addition to the map.
+>
+> **Still to Do:**
+> *   **Flight Line Duties:** Managing rosters, schedules, and pilot assignments for the flight line.
+> *   **Square Integration:** Switching from testing mode to live credit card processing.
+> *   **Subevent Variations:** Adding options for event tickets (e.g., "Steak Choice: Rare/Medium").
+> *   **Legacy Booking Import:** Allowing manually reserved campsites for previous attendees to be linked when they register.
+>
+> Regards
+> Joshua Boothman
+>
+> (03) 6363 2095
