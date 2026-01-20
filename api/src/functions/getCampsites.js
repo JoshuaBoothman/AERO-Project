@@ -38,6 +38,9 @@ app.http('getCampsites', {
                     c.site_number, 
                     c.is_powered, 
                     c.price_per_night, 
+                    c.full_event_price,
+                    c.extra_adult_price_per_night,
+                    c.extra_adult_full_event_price,
                     c.map_coordinates, 
                     c.is_active,
                     0 as is_booked
@@ -54,6 +57,9 @@ app.http('getCampsites', {
                         c.site_number, 
                         c.is_powered, 
                         c.price_per_night, 
+                        c.full_event_price,
+                        c.extra_adult_price_per_night,
+                        c.extra_adult_full_event_price,
                         c.map_coordinates, 
                         c.is_active,
                         CASE WHEN EXISTS (

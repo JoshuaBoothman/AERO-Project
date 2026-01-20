@@ -24,6 +24,8 @@ app.http('createCampsites', {
         const sitePrefix = prefix || 'Site ';
         const sitePrice = parseFloat(price) || 0;
         const siteFullPrice = full_event_price ? parseFloat(full_event_price) : null;
+        const extraAdultDaily = body.extra_adult_price_per_night ? parseFloat(body.extra_adult_price_per_night) : 0;
+        const extraAdultFull = body.extra_adult_full_event_price ? parseFloat(body.extra_adult_full_event_price) : 0;
 
         try {
             const pool = await getPool();
@@ -43,9 +45,11 @@ app.http('createCampsites', {
                             .input('name', sql.NVarChar, name)
                             .input('price', sql.Decimal(10, 2), sitePrice)
                             .input('fprice', sql.Decimal(10, 2), siteFullPrice)
+                            .input('ead', sql.Decimal(10, 2), extraAdultDaily)
+                            .input('eaf', sql.Decimal(10, 2), extraAdultFull)
                             .query(`
-                                INSERT INTO campsites (campground_id, site_number, is_active, is_powered, price_per_night, full_event_price)
-                                VALUES (@cid, @name, 1, 0, @price, @fprice)
+                                INSERT INTO campsites (campground_id, site_number, is_active, is_powered, price_per_night, full_event_price, extra_adult_price_per_night, extra_adult_full_event_price)
+                                VALUES (@cid, @name, 1, 0, @price, @fprice, @ead, @eaf)
                             `);
                     }
                 } else {
@@ -64,9 +68,11 @@ app.http('createCampsites', {
                             .input('name', sql.NVarChar, siteName)
                             .input('price', sql.Decimal(10, 2), sitePrice)
                             .input('fprice', sql.Decimal(10, 2), siteFullPrice)
+                            .input('ead', sql.Decimal(10, 2), extraAdultDaily)
+                            .input('eaf', sql.Decimal(10, 2), extraAdultFull)
                             .query(`
-                                INSERT INTO campsites (campground_id, site_number, is_active, is_powered, price_per_night, full_event_price)
-                                VALUES (@cid, @name, 1, 0, @price, @fprice)
+                                INSERT INTO campsites (campground_id, site_number, is_active, is_powered, price_per_night, full_event_price, extra_adult_price_per_night, extra_adult_full_event_price)
+                                VALUES (@cid, @name, 1, 0, @price, @fprice, @ead, @eaf)
                             `);
                     }
                 }

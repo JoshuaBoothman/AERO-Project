@@ -312,7 +312,7 @@ app.http('createOrder', {
                 // 4. Process CAMPSITE Items
                 if (campsites && campsites.length > 0) {
                     for (const camp of campsites) {
-                        const { campsiteId, checkIn, checkOut, price } = camp;
+                        const { campsiteId, checkIn, checkOut, price, adults = 1, children = 0 } = camp;
 
                         // Check Availability
                         const availReq = new sql.Request(transaction);
@@ -321,12 +321,13 @@ app.http('createOrder', {
                             .query(`
                                 SELECT 
                                     (SELECT 1 FROM campsite_bookings WHERE campsite_id = @cid AND check_in_date < @end AND check_out_date > @start) as is_booked,
-                                    price_per_night, full_event_price 
+                                    price_per_night, full_event_price,
+                                    extra_adult_price_per_night, extra_adult_full_event_price
                                 FROM campsites WHERE campsite_id = @cid
                             `);
 
                         if (availRes.recordset.length === 0) throw new Error(`Invalid campsite ID: ${campsiteId}`);
-                        const { is_booked, price_per_night, full_event_price } = availRes.recordset[0];
+                        const { is_booked, price_per_night, full_event_price, extra_adult_price_per_night, extra_adult_full_event_price } = availRes.recordset[0];
 
                         if (is_booked) throw new Error(`Campsite ${campsiteId} not available.`);
 
@@ -334,19 +335,29 @@ app.http('createOrder', {
                         const start = new Date(checkIn);
                         const end = new Date(checkOut);
                         const nights = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
-                        const dailyTotal = price_per_night * nights;
+
+                        const extraAdults = Math.max(0, adults - 1);
+
+                        // Option 1: Daily Rate
+                        const baseDaily = price_per_night * nights;
+                        const extraDaily = extraAdults * (extra_adult_price_per_night || 0) * nights;
+                        const totalDaily = baseDaily + extraDaily;
+
+                        // Option 2: Full Event Rate
+                        let totalFull = null;
+                        if (full_event_price) {
+                            const baseFull = full_event_price;
+                            const extraFull = extraAdults * (extra_adult_full_event_price || 0);
+                            totalFull = baseFull + extraFull;
+                        }
 
                         // Allow small float difference or exact match
-                        // User price must match either Daily Total OR Full Event Price
                         let isValidPrice = false;
-                        if (Math.abs(price - dailyTotal) < 0.5) isValidPrice = true;
-                        if (full_event_price && Math.abs(price - full_event_price) < 0.5) isValidPrice = true;
-
-                        // Identify if "Full Event" was used for tracking? 
-                        // For now just validate. If they paid full event price, that's fine.
+                        if (Math.abs(price - totalDaily) < 0.5) isValidPrice = true;
+                        if (totalFull !== null && Math.abs(price - totalFull) < 0.5) isValidPrice = true;
 
                         if (!isValidPrice) {
-                            throw new Error(`Invalid price for campsite ${campsiteId}. Expected ${dailyTotal} or ${full_event_price}, got ${price}`);
+                            throw new Error(`Invalid price for campsite ${campsiteId}. Expected ${totalDaily.toFixed(2)} (Daily) or ${totalFull ? totalFull.toFixed(2) : 'N/A'} (Full), got ${price}`);
                         }
 
                         totalAmount += price;
@@ -357,8 +368,13 @@ app.http('createOrder', {
 
                         const orderItemId = itemRes.recordset[0].id;
                         await new sql.Request(transaction)
-                            .input('cid', sql.Int, campsiteId).input('oiid', sql.Int, orderItemId).input('in', sql.Date, checkIn).input('out', sql.Date, checkOut)
-                            .query(`INSERT INTO campsite_bookings (campsite_id, order_item_id, check_in_date, check_out_date) VALUES (@cid, @oiid, @in, @out)`);
+                            .input('cid', sql.Int, campsiteId)
+                            .input('oiid', sql.Int, orderItemId)
+                            .input('in', sql.Date, checkIn)
+                            .input('out', sql.Date, checkOut)
+                            .input('adults', sql.Int, adults)
+                            .input('children', sql.Int, children)
+                            .query(`INSERT INTO campsite_bookings (campsite_id, order_item_id, check_in_date, check_out_date, number_of_adults, number_of_children) VALUES (@cid, @oiid, @in, @out, @adults, @children)`);
                     }
                 }
 

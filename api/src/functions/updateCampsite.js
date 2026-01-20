@@ -51,6 +51,14 @@ app.http('updateCampsite', {
                 req.input('fprice', sql.Decimal(10, 2), full_event_price);
                 updates.push("full_event_price = @fprice");
             }
+            if (body.extra_adult_price_per_night !== undefined) {
+                req.input('eapn', sql.Decimal(10, 2), body.extra_adult_price_per_night);
+                updates.push("extra_adult_price_per_night = @eapn");
+            }
+            if (body.extra_adult_full_event_price !== undefined) {
+                req.input('eafep', sql.Decimal(10, 2), body.extra_adult_full_event_price);
+                updates.push("extra_adult_full_event_price = @eafep");
+            }
             if (map_coordinates === null) {
                 updates.push("map_coordinates = NULL");
             }

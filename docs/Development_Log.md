@@ -1,5 +1,20 @@
 # Development Log
 
+## [2026-01-20] - Camping Fees & Booking Logic (Completed)
+- **Time**: 13:50 - 15:50
+- **Completed Items**:
+    - **Database**: Validated schema updates for `extra_adult_price_per_night` and guest counts.
+    - **Backend (API)**:
+        - Updated `createCampsites.js` to persist new fee fields.
+        - Updated `getCampgroundAvailability.js` to return extra adult fees.
+        - Updated `createOrder.js` to calculate total price including extra adult fees (Daily or Full Event).
+    - **Frontend (Client)**:
+        - Updated `AdminMapTool.jsx` to manage extra fee fields.
+        - Updated `CampsiteModal.jsx` (Admin Booking) and `CampingPage.jsx` (User Store) to handle guest counts.
+        - Implemented dynamic price calculation and transparency breakdown in the Store UI.
+        - Fixed sidebar layout issues in Admin Tool.
+    - **Verification**: Verified end-to-end booking flow with extra adult fees.
+
 ## [2026-01-20] - Merchandise Ordering Implementation (Completed)
 - **Time**: 12:50 - 14:00
 - **Completed Items**:

@@ -322,7 +322,9 @@ function AdminMapTool() {
                     count: parseInt(qty),
                     prefix,
                     price: parseFloat(document.getElementById('addPrice').value) || 0,
-                    full_event_price: parseFloat(document.getElementById('addFullPrice').value) || 0
+                    full_event_price: parseFloat(document.getElementById('addFullPrice').value) || 0,
+                    extra_adult_price_per_night: parseFloat(document.getElementById('addExtraDaily').value) || 0,
+                    extra_adult_full_event_price: parseFloat(document.getElementById('addExtraFull').value) || 0
                 })
             });
             if (res.ok) {
@@ -347,6 +349,8 @@ function AdminMapTool() {
                     count: 1, // Dummy
                     price: parseFloat(price) || 0,
                     full_event_price: parseFloat(document.getElementById('singleFullPrice').value) || 0,
+                    extra_adult_price_per_night: parseFloat(document.getElementById('singleExtraDaily').value) || 0,
+                    extra_adult_full_event_price: parseFloat(document.getElementById('singleExtraFull').value) || 0,
                     specific_names: [name]
                 })
             });
@@ -407,6 +411,42 @@ function AdminMapTool() {
                     'X-Auth-Token': token
                 },
                 body: JSON.stringify({ full_event_price: parseFloat(newPrice) })
+            });
+        } catch (e) { console.error(e); }
+    };
+
+    const handleExtraAdultPriceChange = (id, newPrice) => {
+        setSites(prev => prev.map(s => s.campsite_id === id ? { ...s, extra_adult_price_per_night: newPrice } : s));
+    };
+
+    const handleExtraAdultPriceBlur = async (id, newPrice) => {
+        try {
+            await fetch(`/api/campsites/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    'X-Auth-Token': token
+                },
+                body: JSON.stringify({ extra_adult_price_per_night: parseFloat(newPrice) })
+            });
+        } catch (e) { console.error(e); }
+    };
+
+    const handleExtraAdultFullPriceChange = (id, newPrice) => {
+        setSites(prev => prev.map(s => s.campsite_id === id ? { ...s, extra_adult_full_event_price: newPrice } : s));
+    };
+
+    const handleExtraAdultFullPriceBlur = async (id, newPrice) => {
+        try {
+            await fetch(`/api/campsites/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    'X-Auth-Token': token
+                },
+                body: JSON.stringify({ extra_adult_full_event_price: parseFloat(newPrice) })
             });
         } catch (e) { console.error(e); }
     };
@@ -561,7 +601,7 @@ function AdminMapTool() {
                 <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
 
                     {/* Sidebar Editor */}
-                    <div style={{ width: '320px', minWidth: '320px', borderRight: '1px solid #eee', display: 'flex', flexDirection: 'column', background: '#fafafa', flexShrink: 0, zIndex: 20, position: 'relative', boxShadow: '2px 0 5px rgba(0,0,0,0.1)' }}>
+                    <div style={{ width: '320px', minWidth: '320px', borderRight: '1px solid #eee', display: 'flex', flexDirection: 'column', background: '#fafafa', flexShrink: 0, zIndex: 20, position: 'relative', boxShadow: '2px 0 5px rgba(0,0,0,0.1)', overflowY: 'auto' }}>
 
                         {/* Bulk Add (Styled with Labels) */}
                         <div style={{ padding: '15px', borderBottom: '1px solid #ddd', background: '#fff' }}>
@@ -575,6 +615,23 @@ function AdminMapTool() {
                                 <div>
                                     <label style={{ fontSize: '0.75rem', fontWeight: 'bold', display: 'block', marginBottom: '4px' }}>Prefix (Opt)</label>
                                     <input id="addPrefix" type="text" style={{ width: '100%', padding: '6px', border: '1px solid #ccc', borderRadius: '4px' }} />
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
+                                <div>
+                                    <label style={{ fontSize: '0.75rem', fontWeight: 'bold', display: 'block', marginBottom: '4px' }}>Ex. Adult Daily</label>
+                                    <div style={{ position: 'relative' }}>
+                                        <span style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', color: '#666' }}>$</span>
+                                        <input id="addExtraDaily" type="number" defaultValue="0" style={{ width: '100%', padding: '6px 6px 6px 20px', border: '1px solid #ccc', borderRadius: '4px' }} />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label style={{ fontSize: '0.75rem', fontWeight: 'bold', display: 'block', marginBottom: '4px' }}>Ex. Adult Full</label>
+                                    <div style={{ position: 'relative' }}>
+                                        <span style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', color: '#666' }}>$</span>
+                                        <input id="addExtraFull" type="number" defaultValue="0" style={{ width: '100%', padding: '6px 6px 6px 20px', border: '1px solid #ccc', borderRadius: '4px' }} />
+                                    </div>
                                 </div>
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
@@ -610,6 +667,22 @@ function AdminMapTool() {
                             <div style={{ marginBottom: '10px' }}>
                                 <label style={{ fontSize: '0.75rem', fontWeight: 'bold', display: 'block', marginBottom: '4px' }}>Site Name</label>
                                 <input id="singleName" type="text" placeholder="e.g. 5A" style={{ width: '100%', padding: '6px', border: '1px solid #ccc', borderRadius: '4px' }} />
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
+                                <div>
+                                    <label style={{ fontSize: '0.75rem', fontWeight: 'bold', display: 'block', marginBottom: '4px' }}>Ex. Adult Daily</label>
+                                    <div style={{ position: 'relative' }}>
+                                        <span style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', color: '#666' }}>$</span>
+                                        <input id="singleExtraDaily" type="number" defaultValue="0" style={{ width: '100%', padding: '6px 6px 6px 20px', border: '1px solid #ccc', borderRadius: '4px' }} />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label style={{ fontSize: '0.75rem', fontWeight: 'bold', display: 'block', marginBottom: '4px' }}>Ex. Adult Full</label>
+                                    <div style={{ position: 'relative' }}>
+                                        <span style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', color: '#666' }}>$</span>
+                                        <input id="singleExtraFull" type="number" defaultValue="0" style={{ width: '100%', padding: '6px 6px 6px 20px', border: '1px solid #ccc', borderRadius: '4px' }} />
+                                    </div>
+                                </div>
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
                                 <div>
@@ -677,6 +750,34 @@ function AdminMapTool() {
                                         />
                                     </div>
                                 </div>
+                                <div style={{ marginBottom: '10px' }}>
+                                    <label style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>Extra Adult (Daily)</label>
+                                    <div style={{ position: 'relative' }}>
+                                        <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#666' }}>$</span>
+                                        <input
+                                            type="number"
+                                            style={{ width: '100%', padding: '5px 5px 5px 25px', border: '1px solid #ced4da', borderRadius: '4px' }}
+                                            value={sites.find(s => s.campsite_id === selectedSiteId)?.extra_adult_price_per_night || ''}
+                                            onChange={e => handleExtraAdultPriceChange(selectedSiteId, e.target.value)}
+                                            onBlur={e => handleExtraAdultPriceBlur(selectedSiteId, e.target.value)}
+                                            placeholder="0.00"
+                                        />
+                                    </div>
+                                </div>
+                                <div style={{ marginBottom: '10px' }}>
+                                    <label style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>Extra Adult (Full)</label>
+                                    <div style={{ position: 'relative' }}>
+                                        <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#666' }}>$</span>
+                                        <input
+                                            type="number"
+                                            style={{ width: '100%', padding: '5px 5px 5px 25px', border: '1px solid #ced4da', borderRadius: '4px' }}
+                                            value={sites.find(s => s.campsite_id === selectedSiteId)?.extra_adult_full_event_price || ''}
+                                            onChange={e => handleExtraAdultFullPriceChange(selectedSiteId, e.target.value)}
+                                            onBlur={e => handleExtraAdultFullPriceBlur(selectedSiteId, e.target.value)}
+                                            placeholder="0.00"
+                                        />
+                                    </div>
+                                </div>
                                 <div style={{ display: 'flex', gap: '10px' }}>
                                     <button onClick={() => handleDelete(selectedSiteId)} style={{ cursor: 'pointer', padding: '5px 10px', color: 'red' }}>Delete</button>
                                 </div>
@@ -684,7 +785,7 @@ function AdminMapTool() {
                         )}
 
                         {/* Site List */}
-                        <div style={{ flex: 1, overflowY: 'auto', padding: '10px' }}>
+                        <div style={{ padding: '10px' }}>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '5px' }}>
                                 {sites.map(site => {
                                     const hasCoords = !!site.map_coordinates;
@@ -715,6 +816,7 @@ function AdminMapTool() {
                             </div>
                         </div>
                     </div>
+
 
                     {/* Map Area */}
                     <div style={{ flex: 1, position: 'relative', background: '#ccc', overflow: 'hidden' }}>
@@ -767,83 +869,84 @@ function AdminMapTool() {
                             </div>
                         )}
                     </div>
+
+
+                    {/* Create Campground Modal */}
+                    {
+                        showCreateModal && (
+                            <div style={{
+                                position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                                background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
+                            }}>
+                                <div style={{ background: 'white', padding: '20px', borderRadius: '8px', width: '400px' }}>
+                                    <h3>Add Campground</h3>
+                                    <div style={{ marginBottom: '10px' }}>
+                                        <label>Name:</label>
+                                        <input
+                                            style={{ width: '100%', padding: '5px' }}
+                                            value={newCampName}
+                                            onChange={e => setNewCampName(e.target.value)}
+                                            placeholder="e.g. North Field"
+                                        />
+                                    </div>
+                                    <div style={{ marginBottom: '10px' }}>
+                                        <label>Map Image:</label>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={e => setSelectedFile(e.target.files[0])}
+                                            style={{ width: '100%', padding: '5px' }}
+                                        />
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
+                                        <button onClick={() => setShowCreateModal(false)} disabled={uploading} style={{ padding: '8px 16px' }}>Cancel</button>
+                                        <button onClick={handleCreateCampground} disabled={uploading} style={{ padding: '8px 16px', background: 'var(--primary-color, black)', color: 'white', border: 'none' }}>
+                                            {uploading ? 'Uploading...' : 'Create'}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )
+                    }
+                    {/* Edit Campground Modal */}
+                    {
+                        showEditModal && (
+                            <div style={{
+                                position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                                background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
+                            }}>
+                                <div style={{ background: 'white', padding: '20px', borderRadius: '8px', width: '400px' }}>
+                                    <h3>Edit Campground</h3>
+                                    <div style={{ marginBottom: '10px' }}>
+                                        <label>Name:</label>
+                                        <input
+                                            style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
+                                            value={editData.name}
+                                            onChange={e => setEditData({ ...editData, name: e.target.value })}
+                                        />
+                                    </div>
+                                    <div style={{ marginBottom: '10px' }}>
+                                        <label>Update Map Image (Optional):</label>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={e => setEditFile(e.target.files[0])}
+                                            style={{ width: '100%', padding: '5px' }}
+                                        />
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
+                                        <button onClick={() => setShowEditModal(false)} disabled={uploading} style={{ padding: '8px 16px' }}>Cancel</button>
+                                        <button onClick={submitEdit} disabled={uploading} style={{ padding: '8px 16px', background: 'var(--primary-color, black)', color: 'white', border: 'none' }}>
+                                            {uploading ? 'Saving...' : 'Save'}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )
+                    }
                 </div>
-            )
-            }
-            {/* Create Campground Modal */}
-            {
-                showCreateModal && (
-                    <div style={{
-                        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                        background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
-                    }}>
-                        <div style={{ background: 'white', padding: '20px', borderRadius: '8px', width: '400px' }}>
-                            <h3>Add Campground</h3>
-                            <div style={{ marginBottom: '10px' }}>
-                                <label>Name:</label>
-                                <input
-                                    style={{ width: '100%', padding: '5px' }}
-                                    value={newCampName}
-                                    onChange={e => setNewCampName(e.target.value)}
-                                    placeholder="e.g. North Field"
-                                />
-                            </div>
-                            <div style={{ marginBottom: '10px' }}>
-                                <label>Map Image:</label>
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={e => setSelectedFile(e.target.files[0])}
-                                    style={{ width: '100%', padding: '5px' }}
-                                />
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
-                                <button onClick={() => setShowCreateModal(false)} disabled={uploading} style={{ padding: '8px 16px' }}>Cancel</button>
-                                <button onClick={handleCreateCampground} disabled={uploading} style={{ padding: '8px 16px', background: 'var(--primary-color, black)', color: 'white', border: 'none' }}>
-                                    {uploading ? 'Uploading...' : 'Create'}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )
-            }
-            {/* Edit Campground Modal */}
-            {
-                showEditModal && (
-                    <div style={{
-                        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                        background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
-                    }}>
-                        <div style={{ background: 'white', padding: '20px', borderRadius: '8px', width: '400px' }}>
-                            <h3>Edit Campground</h3>
-                            <div style={{ marginBottom: '10px' }}>
-                                <label>Name:</label>
-                                <input
-                                    style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
-                                    value={editData.name}
-                                    onChange={e => setEditData({ ...editData, name: e.target.value })}
-                                />
-                            </div>
-                            <div style={{ marginBottom: '10px' }}>
-                                <label>Update Map Image (Optional):</label>
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={e => setEditFile(e.target.files[0])}
-                                    style={{ width: '100%', padding: '5px' }}
-                                />
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
-                                <button onClick={() => setShowEditModal(false)} disabled={uploading} style={{ padding: '8px 16px' }}>Cancel</button>
-                                <button onClick={submitEdit} disabled={uploading} style={{ padding: '8px 16px', background: 'var(--primary-color, black)', color: 'white', border: 'none' }}>
-                                    {uploading ? 'Saving...' : 'Save'}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )
-            }
-        </div >
+            )}
+        </div>
     );
 }
 

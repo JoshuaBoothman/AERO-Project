@@ -48,6 +48,17 @@ Before writing or modifying any code, the following checks are mandatory:
     - If `mssql`, do NOT use `ALTER TABLE X ADD COLUMN Y` (invalid `COLUMN` keyword).
     - If `Azure Functions`, verify v3 vs v4 logging (`context.log` vs `context.error`).
 
+### D. Azure Authentication (CRITICAL)
+*   **Rule**: When making authenticated `fetch` requests from the Client to the API on Azure:
+*   **Action**: ALWAYS include `X-Auth-Token` in the headers, in addition to `Authorization`.
+    ```javascript
+    headers: {
+        'Authorization': `Bearer ${token}`,
+        'X-Auth-Token': token
+    }
+    ```
+*   **Reason**: Azure proxies often overwrite the standard `Authorization` header.
+
 ---
 
 ## 3. Implementation Plan Requirement

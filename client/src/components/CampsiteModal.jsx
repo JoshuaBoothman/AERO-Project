@@ -21,6 +21,8 @@ function CampsiteModal({ event, onClose, onAddToCart, orgSettings }) {
     const [startDate, setStartDate] = useState(formatDate(event?.start_date));
     const [endDate, setEndDate] = useState(formatDate(event?.end_date));
     const [useFullEventPrice, setUseFullEventPrice] = useState(false);
+    const [adults, setAdults] = useState(1);
+    const [children, setChildren] = useState(0);
 
     // Toggle Full Event Logic
     const handleFullEventToggle = (checked) => {
@@ -90,13 +92,27 @@ function CampsiteModal({ event, onClose, onAddToCart, orgSettings }) {
         // Pass selected sites back to parent
         // Attach the dates to the selection
         const nights = Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24));
-        const selection = selectedSites.map(s => ({
-            ...s,
-            checkIn: startDate,
-            checkOut: endDate,
-            campgroundName: campground?.name,
-            price: (useFullEventPrice && s.full_event_price) ? s.full_event_price : (s.price_per_night * nights)
-        }));
+        const extraAdults = Math.max(0, adults - 1);
+
+        const selection = selectedSites.map(s => {
+            // Calculate correct price for the item based on selection
+            let finalPrice = 0;
+            if (useFullEventPrice && s.full_event_price) {
+                finalPrice = s.full_event_price + (extraAdults * (s.extra_adult_full_event_price || 0));
+            } else {
+                finalPrice = (s.price_per_night * nights) + (extraAdults * (s.extra_adult_price_per_night || 0) * nights);
+            }
+
+            return {
+                ...s,
+                checkIn: startDate,
+                checkOut: endDate,
+                campgroundName: campground?.name,
+                price: finalPrice,
+                adults: adults,
+                children: children
+            };
+        });
         onAddToCart(selection);
         onClose();
     };
@@ -165,14 +181,43 @@ function CampsiteModal({ event, onClose, onAddToCart, orgSettings }) {
                         </div>
                     </div>
 
+                    {/* Guest Selection */}
+                    <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                        <div>
+                            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'bold' }}>Adults</label>
+                            <input
+                                type="number"
+                                min="1"
+                                value={adults}
+                                onChange={e => setAdults(parseInt(e.target.value) || 1)}
+                                style={{ padding: '4px', width: '60px' }}
+                            />
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'bold' }}>Children</label>
+                            <input
+                                type="number"
+                                min="0"
+                                value={children}
+                                onChange={e => setChildren(parseInt(e.target.value) || 0)}
+                                style={{ padding: '4px', width: '60px' }}
+                            />
+                        </div>
+                    </div>
+
                     {/* Summary */}
                     <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
                         <div style={{ fontWeight: 'bold' }}>{selectedSites.length} sites selected</div>
                         <div style={{ fontSize: '0.9rem', color: '#666' }}>
                             Total: ${selectedSites.reduce((sum, s) => {
-                                if (useFullEventPrice && s.full_event_price) return sum + s.full_event_price;
+                                const extraAdults = Math.max(0, adults - 1);
+                                if (useFullEventPrice && s.full_event_price) {
+                                    const extraFee = extraAdults * (s.extra_adult_full_event_price || 0);
+                                    return sum + s.full_event_price + extraFee;
+                                }
                                 const nights = Math.max(1, Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)));
-                                return sum + (s.price_per_night * nights);
+                                const extraFee = extraAdults * (s.extra_adult_price_per_night || 0) * nights;
+                                return sum + (s.price_per_night * nights) + extraFee;
                             }, 0).toFixed(2)}
                         </div>
                     </div>

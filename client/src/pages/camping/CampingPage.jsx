@@ -37,6 +37,10 @@ function CampingPage({ embedded = false }) {
     const [selectedSite, setSelectedSite] = useState(null); // { campsite_id, ... }
     const [cartMessage, setCartMessage] = useState('');
 
+    // Guest State
+    const [adults, setAdults] = useState(1);
+    const [children, setChildren] = useState(0);
+
     // --- EFFECT: Load Data ---
     // --- EFFECT: Load Data ---
     useEffect(() => {
@@ -128,10 +132,13 @@ function CampingPage({ embedded = false }) {
         const s = new Date(dates.start);
         const e = new Date(dates.end);
         const nights = Math.max(1, Math.ceil((e - s) / (1000 * 60 * 60 * 24)));
+        const extraAdults = Math.max(0, adults - 1);
 
-        let price = (selectedSite.price_per_night || 0) * nights;
+        let price = 0;
         if (useFullEventPrice && selectedSite.full_event_price) {
-            price = parseFloat(selectedSite.full_event_price);
+            price = parseFloat(selectedSite.full_event_price) + (extraAdults * (selectedSite.extra_adult_full_event_price || 0));
+        } else {
+            price = ((selectedSite.price_per_night || 0) * nights) + (extraAdults * (selectedSite.extra_adult_price_per_night || 0) * nights);
         }
 
         const item = {
@@ -142,7 +149,9 @@ function CampingPage({ embedded = false }) {
             checkIn: dates.start,
             checkOut: dates.end,
             details: selectedSite,
-            eventId: eventId // Crucial for checkout
+            eventId: eventId,
+            adults: adults,
+            children: children
         };
 
         addToCart(item);
@@ -400,6 +409,29 @@ function CampingPage({ embedded = false }) {
                                                 </div>
                                             </div>
                                         )}
+
+                                        <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                                            <div style={{ flex: 1 }}>
+                                                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'bold' }}>Adults</label>
+                                                <input
+                                                    type="number"
+                                                    min="1"
+                                                    value={adults}
+                                                    onChange={e => setAdults(parseInt(e.target.value) || 1)}
+                                                    style={{ width: '100%', padding: '5px', border: '1px solid #ccc', borderRadius: '4px' }}
+                                                />
+                                            </div>
+                                            <div style={{ flex: 1 }}>
+                                                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'bold' }}>Children</label>
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    value={children}
+                                                    onChange={e => setChildren(parseInt(e.target.value) || 0)}
+                                                    style={{ width: '100%', padding: '5px', border: '1px solid #ccc', borderRadius: '4px' }}
+                                                />
+                                            </div>
+                                        </div>
                                         <hr style={{ margin: '15px 0', border: 'none', borderTop: '1px solid #eee' }} />
 
                                         {/* Price Calc */}
@@ -407,21 +439,44 @@ function CampingPage({ embedded = false }) {
                                             const s = new Date(dates.start);
                                             const e = new Date(dates.end);
                                             const nights = Math.max(1, Math.ceil((e - s) / (1000 * 60 * 60 * 24)));
-                                            let total = (selectedSite.price_per_night || 0) * nights;
+                                            const extraAdults = Math.max(0, adults - 1);
+                                            let total = 0;
+                                            let feeConfig = null;
 
                                             // Override if Full Event
                                             if (useFullEventPrice && selectedSite.full_event_price) {
-                                                total = parseFloat(selectedSite.full_event_price);
+                                                const base = parseFloat(selectedSite.full_event_price);
+                                                const extra = parseFloat(selectedSite.extra_adult_full_event_price || 0);
+                                                const info = `(Includes $${extra} per extra adult)`;
+                                                total = base + (extraAdults * extra);
+                                                if (extraAdults > 0 && extra > 0) feeConfig = { count: extraAdults, rate: extra, total: extraAdults * extra, label: 'Full Event Extra Adult' };
+                                            } else {
+                                                const base = (selectedSite.price_per_night || 0);
+                                                const extra = parseFloat(selectedSite.extra_adult_price_per_night || 0);
+                                                const info = `(+$${extra}/night per extra adult)`;
+                                                total = (base * nights) + (extraAdults * extra * nights);
+                                                if (extraAdults > 0 && extra > 0) feeConfig = { count: extraAdults, rate: extra, total: extraAdults * extra * nights, label: 'Extra Adult Fees' };
                                             }
 
                                             return (
                                                 <div style={{ marginBottom: '20px' }}>
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
                                                         <span>{useFullEventPrice ? 'Full Event Package' : `${nights} Night${nights > 1 ? 's' : ''}`}</span>
                                                         <span>${total.toFixed(2)}</span>
                                                     </div>
+
+                                                    {feeConfig && (
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', color: '#666', fontSize: '0.9rem', marginBottom: '5px' }}>
+                                                            <span>+ {feeConfig.count} Extra Adult{feeConfig.count > 1 ? 's' : ''} ({useFullEventPrice ? `$${feeConfig.rate}` : `$${feeConfig.rate}/n`})</span>
+                                                            <span>+${feeConfig.total.toFixed(2)}</span>
+                                                        </div>
+                                                    )}
+
                                                     <div style={{ fontSize: '1.2rem', fontWeight: 'bold', marginTop: '10px', textAlign: 'right' }}>
                                                         Total: ${total.toFixed(2)}
+                                                    </div>
+                                                    <div style={{ fontSize: '0.8rem', color: '#999', textAlign: 'right', marginTop: '4px' }}>
+                                                        (1 Adult included in base price)
                                                     </div>
                                                 </div>
                                             );
