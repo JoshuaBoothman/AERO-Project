@@ -75,7 +75,7 @@ app.http('getStoreItems', {
             const merchQuery = `
                 SELECT 
                     ps.product_sku_id as sku_id, ps.price, ps.sku_code, ps.current_stock, ps.image_url as sku_image,
-                    p.product_id, p.name as product_name, p.base_image_url, p.description,
+                    p.product_id, p.name as product_name, p.base_image_url, p.description, p.sort_order,
                     v.name as variant_category, vo.value as variant_value
                 FROM product_skus ps
                 JOIN products p ON ps.product_id = p.product_id
@@ -84,6 +84,7 @@ app.http('getStoreItems', {
                 LEFT JOIN variants var ON vo.variant_id = var.variant_id
                 LEFT JOIN variant_categories v ON var.variant_category_id = v.variant_category_id
                 WHERE ps.is_active = 1 AND p.is_active = 1
+                ORDER BY p.sort_order ASC, p.name ASC
             `;
             const merchRes = await pool.request().query(merchQuery);
 
@@ -99,6 +100,7 @@ app.http('getStoreItems', {
                         name: row.product_name,
                         description: row.description,
                         image: row.base_image_url,
+                        sortOrder: row.sort_order || 0,
                         options: [], // [{ name: "Color", values: Set() }]
                         skus: []
                     };
@@ -140,6 +142,14 @@ app.http('getStoreItems', {
                 prod.options.forEach(opt => {
                     opt.values = Array.from(opt.values).sort();
                 });
+            });
+
+            // Explicit JS Sort to be safe
+            merchandise.sort((a, b) => {
+                if (a.sortOrder !== b.sortOrder) {
+                    return a.sortOrder - b.sortOrder;
+                }
+                return a.name.localeCompare(b.name);
             });
 
 

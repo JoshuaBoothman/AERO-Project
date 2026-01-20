@@ -2,6 +2,23 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useNotification } from '../../context/NotificationContext';
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    DragOverlay
+} from '@dnd-kit/core';
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    verticalListSortingStrategy,
+    useSortable
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 function MerchandiseList() {
     const { token } = useAuth();
@@ -13,9 +30,60 @@ function MerchandiseList() {
     const [newProductName, setNewProductName] = useState('');
     const [showArchived, setShowArchived] = useState(false);
 
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
+
     useEffect(() => {
         fetchProducts();
     }, []);
+
+    const handleDragEnd = async (event) => {
+        const { active, over } = event;
+
+        if (active.id !== over.id) {
+            setProducts((items) => {
+                const oldIndex = items.findIndex((i) => i.product_id === active.id);
+                const newIndex = items.findIndex((i) => i.product_id === over.id);
+                const newItems = arrayMove(items, oldIndex, newIndex);
+
+                // Prepare API update
+                // We need to send ALL items with their new order index
+                const updates = newItems.map((item, index) => ({
+                    id: item.product_id,
+                    sort_order: index
+                }));
+
+                // Call API in background
+                fetch('/api/manage/products/reorder', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                        'X-Auth-Token': token
+                    },
+                    body: JSON.stringify({ items: updates })
+                })
+                    .then(async res => {
+                        if (!res.ok) {
+                            const errData = await res.json();
+                            throw new Error(errData.error || 'Failed to save');
+                        }
+                        notify("Order saved", "success");
+                    })
+                    .catch(err => {
+                        console.error("Failed to save order", err);
+                        notify("Failed to save new order: " + err.message, "error");
+                        // Revert? For now just notify.
+                    });
+
+                return newItems;
+            });
+        }
+    };
 
     const fetchProducts = async () => {
         try {
@@ -79,45 +147,34 @@ function MerchandiseList() {
             </div>
 
             <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-                    <thead style={{ background: '#f5f5f5' }}>
-                        <tr>
-                            <th style={{ padding: '15px', textAlign: 'left' }}>Image</th>
-                            <th style={{ padding: '15px', textAlign: 'left' }}>Name</th>
-                            <th style={{ padding: '15px', textAlign: 'center' }}>Variants</th>
-                            <th style={{ padding: '15px', textAlign: 'center' }}>SKUs</th>
-                            <th style={{ padding: '15px', textAlign: 'center' }}>Total Stock</th>
-                            <th style={{ padding: '15px', textAlign: 'right' }}>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {products
-                            .filter(p => showArchived ? true : p.is_active)
-                            .map(p => (
-                                <tr key={p.product_id} style={{ borderBottom: '1px solid #eee' }}>
-                                    <td style={{ padding: '10px' }}>
-                                        {p.base_image_url ? (
-                                            <img src={p.base_image_url} alt={p.name} style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '4px' }} />
-                                        ) : (
-                                            <div style={{ width: '50px', height: '50px', background: '#eee', borderRadius: '4px' }}></div>
-                                        )}
-                                    </td>
-                                    <td style={{ padding: '10px', fontWeight: 'bold' }}>
-                                        <Link to={`/admin/merchandise/${p.product_id}`} style={{ color: 'black', textDecoration: 'none' }}>
-                                            {p.name}
-                                        </Link>
-                                        {!p.is_active && <span style={{ marginLeft: '10px', fontSize: '0.8rem', background: '#ccc', padding: '2px 6px', borderRadius: '4px' }}>Archived</span>}
-                                    </td>
-                                    <td style={{ padding: '10px', textAlign: 'center' }}>{p.variant_count}</td>
-                                    <td style={{ padding: '10px', textAlign: 'center' }}>{p.sku_count}</td>
-                                    <td style={{ padding: '10px', textAlign: 'center' }}>{p.total_stock || 0}</td>
-                                    <td style={{ padding: '10px', textAlign: 'right' }}>
-                                        <Link to={`/admin/merchandise/${p.product_id}`} style={{ color: 'blue', textDecoration: 'none', marginRight: '10px' }}>Edit</Link>
-                                    </td>
-                                </tr>
-                            ))}
-                    </tbody>
-                </table>
+                <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleDragEnd}
+                >
+                    <table style={{ width: '100%', borderCollapse: 'collapse', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+                        <thead style={{ background: '#f5f5f5' }}>
+                            <tr>
+                                <th style={{ padding: '15px', width: '40px' }}></th>
+                                <th style={{ padding: '15px', textAlign: 'left' }}>Image</th>
+                                <th style={{ padding: '15px', textAlign: 'left' }}>Name</th>
+                                <th style={{ padding: '15px', textAlign: 'center' }}>Variants</th>
+                                <th style={{ padding: '15px', textAlign: 'center' }}>SKUs</th>
+                                <th style={{ padding: '15px', textAlign: 'center' }}>Total Stock</th>
+                                <th style={{ padding: '15px', textAlign: 'right' }}>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <SortableContext items={products.map(p => p.product_id)} strategy={verticalListSortingStrategy}>
+                                {products
+                                    .filter(p => showArchived ? true : p.is_active)
+                                    .map(p => (
+                                        <SortableRow key={p.product_id} p={p} />
+                                    ))}
+                            </SortableContext>
+                        </tbody>
+                    </table>
+                </DndContext>
                 {products.length === 0 && <p style={{ textAlign: 'center', marginTop: '20px' }}>No products found.</p>}
             </div>
 
@@ -147,6 +204,56 @@ function MerchandiseList() {
                 </div>
             )}
         </div>
+    );
+}
+
+// Separate Component for Sortable Row to avoid Hooks errors in loop
+function SortableRow({ p }) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging
+    } = useSortable({ id: p.product_id });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        background: isDragging ? '#f0f0f0' : 'white',
+        zIndex: isDragging ? 2 : 1,
+        position: 'relative'
+    };
+
+    return (
+        <tr ref={setNodeRef} style={{ borderBottom: '1px solid #eee', ...style }}>
+            <td style={{ padding: '10px', width: '40px', cursor: 'grab' }} {...attributes} {...listeners}>
+                {/* Drag Handle Icon */}
+                <div style={{ color: '#aaa', display: 'flex', justifyContent: 'center' }}>
+                    ☰
+                </div>
+            </td>
+            <td style={{ padding: '10px' }}>
+                {p.base_image_url ? (
+                    <img src={p.base_image_url} alt={p.name} style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '4px' }} />
+                ) : (
+                    <div style={{ width: '50px', height: '50px', background: '#eee', borderRadius: '4px' }}></div>
+                )}
+            </td>
+            <td style={{ padding: '10px', fontWeight: 'bold' }}>
+                <Link to={`/admin/merchandise/${p.product_id}`} style={{ color: 'black', textDecoration: 'none' }}>
+                    {p.name}
+                </Link>
+                {!p.is_active && <span style={{ marginLeft: '10px', fontSize: '0.8rem', background: '#ccc', padding: '2px 6px', borderRadius: '4px' }}>Archived</span>}
+            </td>
+            <td style={{ padding: '10px', textAlign: 'center' }}>{p.variant_count}</td>
+            <td style={{ padding: '10px', textAlign: 'center' }}>{p.sku_count}</td>
+            <td style={{ padding: '10px', textAlign: 'center' }}>{p.total_stock || 0}</td>
+            <td style={{ padding: '10px', textAlign: 'right' }}>
+                <Link to={`/admin/merchandise/${p.product_id}`} style={{ color: 'blue', textDecoration: 'none', marginRight: '10px' }}>Edit</Link>
+            </td>
+        </tr>
     );
 }
 

@@ -1,5 +1,18 @@
 # Development Log
 
+## [2026-01-20] - Merchandise Ordering Implementation (Completed)
+- **Time**: 12:50 - 14:00
+- **Completed Items**:
+    - **Database**: Added `sort_order` column to `products` table.
+    - **Back-End (API)**:
+        - Updated `getStoreItems.js` (Storefront) and `getProducts.js` (Admin) to order by `sort_order`.
+        - Created `reorderProducts.js` endpoint (PUT /api/manage/products/reorder) for bulk updates.
+        - Fixed API bugs (missing `getPermissions` export, `users` table schema mismatch, missing `pool` reference).
+    - **Front-End (Client)**:
+        - Implemented Drag-and-Drop in `MerchandiseList.jsx` using `@dnd-kit`.
+        - Visualized reordering with a draggable handle (☰).
+    - **Verification**: Verified Admin persistence and Storefront sort order reflection.
+
 ## [2026-01-20] - Admin Dashboard Refinement (Completed)
 - **Time**: 12:00 - 12:10
 - **Completed Items**:

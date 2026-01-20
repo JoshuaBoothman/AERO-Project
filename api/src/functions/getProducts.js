@@ -22,7 +22,7 @@ app.http('getProducts', {
                 FROM products p
                 -- WHERE p.is_active = 1 (Removed to allow fetching archived products for admin)
 
-                ORDER BY p.created_at DESC
+                ORDER BY p.sort_order ASC, p.name ASC
             `);
 
             return {
