@@ -1,5 +1,12 @@
 # Development Log
 
+## [2026-01-20] - Admin Dashboard Refinement (Completed)
+- **Time**: 12:00 - 12:10
+- **Completed Items**:
+    - **Admin Dashboard**: Added "Air Show Attendees" card, fixed Camping card UI (scrollbar/tooltips), removed redundant header link.
+    - **Login**: Implemented Admin Redirect (Admins -> `/admin`).
+    - **API**: Updated `getAdminDashboardStats` to include public registration counts.
+
 ## [2026-01-20] - Administration Reports & Camping UI (Completed)
 - **Time**: 00:00 - 11:47
 - **Completed Items**:

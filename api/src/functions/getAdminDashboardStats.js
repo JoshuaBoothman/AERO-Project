@@ -252,6 +252,38 @@ app.http('getAdminDashboardStats', {
                 };
             }
 
+            // 7. Public Registrations (Air Show Attendees)
+            context.log('[Dashboard] Fetching public registrations...');
+            const publicRes = await pool.request()
+                .input('slug', sql.NVarChar, eventDetails.slug)
+                .query(`
+                    SELECT 
+                        COUNT(pr.id) as total_groups,
+                        SUM(pr.adults_count) as total_adults,
+                        SUM(pr.children_count) as total_children
+                    FROM public_registrations pr
+                    JOIN public_event_days pd ON pr.public_event_day_id = pd.id
+                    JOIN events e ON pd.event_id = e.event_id
+                    WHERE e.slug = @slug
+                `);
+
+            if (publicRes.recordset.length > 0) {
+                const r = publicRes.recordset[0];
+                stats.publicRegistrations = {
+                    total_groups: r.total_groups || 0,
+                    total_adults: r.total_adults || 0,
+                    total_children: r.total_children || 0,
+                    total_attendees: (r.total_adults || 0) + (r.total_children || 0)
+                };
+            } else {
+                stats.publicRegistrations = {
+                    total_groups: 0,
+                    total_adults: 0,
+                    total_children: 0,
+                    total_attendees: 0
+                };
+            }
+
             context.log('[Dashboard] Success, returning data.');
             return {
                 status: 200,

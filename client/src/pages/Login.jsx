@@ -27,7 +27,12 @@ function Login() {
 
       const data = await res.json();
       login(data.token, data.user);
-      navigate('/'); // Redirect to Home
+
+      if (data.user.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/'); // Redirect to Home
+      }
     } catch (err) {
       setError(err.message);
     }
