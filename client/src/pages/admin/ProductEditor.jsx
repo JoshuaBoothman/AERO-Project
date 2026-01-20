@@ -329,7 +329,12 @@ function ProductEditor() {
 
     const fetchTemplates = async () => {
         try {
-            const res = await fetch('/api/manage/variant-templates');
+            const res = await fetch('/api/manage/variant-templates', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'X-Auth-Token': token
+                }
+            });
             if (res.ok) {
                 const data = await res.json();
                 setTemplates(data);
@@ -342,7 +347,12 @@ function ProductEditor() {
 
         try {
             // Get full template details with options
-            const res = await fetch(`/api/manage/variant-templates/${selectedTemplate.template_id}`);
+            const res = await fetch(`/api/manage/variant-templates/${selectedTemplate.template_id}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'X-Auth-Token': token
+                }
+            });
             if (!res.ok) throw new Error('Failed to load template details');
             const data = await res.json();
 

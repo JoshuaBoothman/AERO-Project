@@ -1,5 +1,12 @@
 # Development Log
 
+## [2026-01-21] - Bug Fixes: Variant Templates & Auth
+- **Time**: 06:13 - 06:20
+- **Completed Items**:
+    - **Bug Fix**: Resolved "Unauthorized" error in `VariantTemplates.jsx` by adding `Authorization` and `X-Auth-Token` headers to API calls.
+    - **Bug Fix**: Resolved issue where "Apply Template" modal was empty in `ProductEditor.jsx` by adding the same missing headers to `fetchTemplates` and `handleApplyTemplate`.
+    - **Verification**: Verified creating, deleting, and applying variant templates.
+
 ## [2026-01-20] - Session Wrap-up & Client Update
 - **Time**: 15:51 - 16:05
 - **Completed Items**:

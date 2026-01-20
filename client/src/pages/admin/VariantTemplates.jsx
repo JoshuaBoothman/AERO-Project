@@ -4,7 +4,7 @@ import { useNotification } from '../../context/NotificationContext';
 import { Loader2, Plus, Trash2, X, Save } from 'lucide-react';
 
 export default function VariantTemplates() {
-    const { user } = useAuth();
+    const { user, token } = useAuth();
     const { notify } = useNotification();
     const [templates, setTemplates] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -22,7 +22,12 @@ export default function VariantTemplates() {
     const fetchTemplates = async () => {
         try {
             setLoading(true);
-            const res = await fetch('/api/manage/variant-templates');
+            const res = await fetch('/api/manage/variant-templates', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'X-Auth-Token': token
+                }
+            });
             if (!res.ok) throw new Error('Failed to fetch templates');
             const data = await res.json();
             setTemplates(data);
@@ -39,6 +44,10 @@ export default function VariantTemplates() {
         try {
             const res = await fetch(`/api/manage/variant-templates/${id}`, {
                 method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'X-Auth-Token': token
+                }
             });
             if (!res.ok) throw new Error('Failed to delete template');
 
@@ -84,7 +93,11 @@ export default function VariantTemplates() {
         try {
             const res = await fetch('/api/manage/variant-templates', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    'X-Auth-Token': token
+                },
                 body: JSON.stringify(newTemplate),
             });
             if (!res.ok) throw new Error('Failed to create template');
