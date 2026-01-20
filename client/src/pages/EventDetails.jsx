@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
 import CampsiteModal from '../components/CampsiteModal';
+import PublicRegistrationModal from '../components/Public/PublicRegistrationModal';
 
 function EventDetails({ propSlug }) {
     const { slug: paramSlug } = useParams();
@@ -21,6 +22,8 @@ function EventDetails({ propSlug }) {
     const [showTicketModal, setShowTicketModal] = useState(false);
     const [showAttendeeModal, setShowAttendeeModal] = useState(false);
     const [showCampsiteModal, setShowCampsiteModal] = useState(false);
+    const [showPublicModal, setShowPublicModal] = useState(false);
+    const [selectedPublicDay, setSelectedPublicDay] = useState(null);
 
     const [cart, setCart] = useState({}); // { ticket_type_id: quantity }
     const [campsiteCart, setCampsiteCart] = useState([]); // [{ campsite_id, site_number, checkIn, checkOut, price_per_night, campgroundName }]
@@ -333,6 +336,52 @@ function EventDetails({ propSlug }) {
                     {/* Campsite Booking Button Removed as per request */}
                 </div>
 
+                {/* Public Event Days Section */}
+                {event.public_days && event.public_days.length > 0 && (
+                    <div className="mt-12 bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-left">
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                            <div>
+                                <h2 className="text-2xl font-bold text-gray-900 mb-2">Air Show Registration</h2>
+                                <p className="text-gray-600">Register your attendance for the public air show days. It's free!</p>
+                            </div>
+                        </div>
+
+                        <div className="grid gap-4 mt-6">
+                            {event.public_days.map(day => (
+                                <div key={day.id} className="border border-gray-200 rounded-lg p-5 hover:border-blue-300 transition-colors bg-blue-50/30">
+                                    <div className="flex flex-col gap-4">
+                                        <div>
+                                            <h3 className="text-lg font-bold text-[#0f172a]">{day.title}</h3>
+                                            <div className="text-sm text-gray-600 mt-1 flex flex-wrap gap-x-4 gap-y-1">
+                                                <span>
+                                                    📅 {new Date(day.date).toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                                                </span>
+                                                {day.start_time && (
+                                                    <span>
+                                                        ⏰ {day.start_time.substring(0, 5)} - {day.end_time?.substring(0, 5)}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            {day.description && <p className="text-sm text-gray-500 mt-2 whitespace-pre-wrap">{day.description}</p>}
+                                        </div>
+                                        <div className="self-start">
+                                            <button
+                                                onClick={() => {
+                                                    setSelectedPublicDay(day);
+                                                    setShowPublicModal(true);
+                                                }}
+                                                className="bg-[#0f172a] text-white hover:bg-[#1e293b] font-medium py-2 px-6 rounded-lg transition-colors whitespace-nowrap shadow-md hover:shadow-lg"
+                                            >
+                                                Register for Air Show
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 {purchaseSuccess && (
                     <div style={{ backgroundColor: '#d4edda', color: '#155724', padding: '1rem', borderRadius: '4px', marginTop: '1rem' }}>
                         <h3>Success!</h3>
@@ -435,6 +484,13 @@ function EventDetails({ propSlug }) {
                     // orgSettings={...}
                     />
                 )}
+
+                {/* Public Registration Modal */}
+                <PublicRegistrationModal
+                    isOpen={showPublicModal}
+                    onClose={() => setShowPublicModal(false)}
+                    publicDay={selectedPublicDay}
+                />
 
                 {/* Attendee Details Modal */}
                 {showAttendeeModal && (

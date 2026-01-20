@@ -18,9 +18,18 @@ Client (Dave) asked about hosting. IT contact (Dennis) suggested moving to a Win
 > 
 > Dennis
 
-### Drafted Reply (Pending)
-Topics to cover:
-- Confirming Azure decision.
-- Acknowledging CNAME update when ready.
-- Acknowledging "autofocus" suggestion.
-- Discussing Resend/Email DNS records for `@alsm.com.au`.
+### Reply Sent
+> Hi Dennis
+>
+> Thanks for the update, that sounds like a plan.
+>
+> Hosting: We'll stick with the existing Azure setup.I'll let you know the specific CNAME records when we are ready to point to the domain.
+>
+> UI: Good call on the autofocus. I've just updated the Login and Register pages to include that.
+>
+> Emails: Regarding your question about @alsm.au (or .com.au): Currently, the system sends registration confirmations (and soon order confirmations) via Resend. These emails are currently coming from my own domain. To have them come from noreply@alsm.com.au (or .au), we will need to add a few DNS records (DKIM/SPF) to verify ownership. Once you have the domain management accessible, let me know, and I can generate those records for you to add.
+>
+> Regards
+> Joshua Boothman
+>
+> (03) 6363 2095

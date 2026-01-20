@@ -53,7 +53,7 @@ app.http('getAdminDashboardStats', {
 
             // Fetch list of all events for dropdown
             context.log('[Dashboard] Fetching events list...');
-            const eventsListRes = await pool.request().query("SELECT event_id, name, start_date, end_date FROM events ORDER BY start_date DESC");
+            const eventsListRes = await pool.request().query("SELECT event_id, name, slug, start_date, end_date FROM events ORDER BY start_date DESC");
             const allEvents = eventsListRes.recordset;
             context.log(`[Dashboard] Found ${allEvents.length} events`);
 

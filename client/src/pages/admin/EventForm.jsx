@@ -52,6 +52,19 @@ function EventForm() {
         description: ''
     });
 
+    // Public Days State
+    const [publicDays, setPublicDays] = useState([]);
+    const [showPublicDayModal, setShowPublicDayModal] = useState(false);
+    const [editingPublicDay, setEditingPublicDay] = useState(null);
+    const [publicDayForm, setPublicDayForm] = useState({
+        title: '',
+        description: '',
+        date: '',
+        start_time: '',
+        end_time: '',
+        is_active: true
+    });
+
     useEffect(() => {
         if (user && user.role !== 'admin') {
             navigate('/events');
@@ -100,6 +113,13 @@ function EventForm() {
                     if (ticketRes.ok) {
                         const tickets = await ticketRes.json();
                         setTicketTypes(tickets);
+                    }
+
+                    // Fetch Public Days
+                    const publicDaysRes = await fetch(`/api/public-days?eventId=${eventData.event_id}`, { headers });
+                    if (publicDaysRes.ok) {
+                        const days = await publicDaysRes.json();
+                        setPublicDays(days);
                     }
                 }
             } catch (err) {
@@ -312,6 +332,105 @@ function EventForm() {
         });
         setShowTicketModal(true);
     };
+
+    // Public Day Handlers
+    const handlePublicDayChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setPublicDayForm(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value
+        }));
+    };
+
+    const handleSavePublicDay = async () => {
+        if (!publicDayForm.title || !publicDayForm.date) {
+            notify("Title and Date are required", "error");
+            return;
+        }
+
+        try {
+            const url = editingPublicDay
+                ? `/api/public-days/${editingPublicDay.id}`
+                : `/api/public-days`;
+
+            const method = editingPublicDay ? 'PUT' : 'POST';
+            const body = { ...publicDayForm, event_id: formData.event_id };
+
+            const res = await fetch(url, {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    'X-Auth-Token': token
+                },
+                body: JSON.stringify(body)
+            });
+
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || 'Failed to save day');
+            }
+
+            const savedDay = await res.json();
+
+            if (editingPublicDay) {
+                setPublicDays(prev => prev.map(d => d.id === savedDay.id ? savedDay : d));
+            } else {
+                setPublicDays(prev => [...prev, savedDay]);
+            }
+
+            setShowPublicDayModal(false);
+            setEditingPublicDay(null);
+            setPublicDayForm({ title: '', description: '', date: '', start_time: '', end_time: '', is_active: true });
+            notify('Public Day saved', 'success');
+
+        } catch (err) {
+            notify(err.message, "error");
+        }
+    };
+
+    const handleDeletePublicDay = (id) => {
+        confirm("Delete this public day? This will remove all registrations associated with it.", async () => {
+            try {
+                const res = await fetch(`/api/public-days/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}`, 'X-Auth-Token': token }
+                });
+
+                if (res.status === 409) {
+                    notify("Cannot delete day with existing registrations.", "error");
+                    return;
+                }
+
+                if (!res.ok) throw new Error('Delete failed');
+
+                setPublicDays(prev => prev.filter(d => d.id !== id));
+                notify('Public Day deleted', 'success');
+            } catch (err) {
+                notify(err.message, 'error');
+            }
+        });
+    };
+
+    const openCreatePublicDay = () => {
+        setEditingPublicDay(null);
+        setPublicDayForm({ title: '', description: '', date: '', start_time: '', end_time: '', is_active: true });
+        setShowPublicDayModal(true);
+    };
+
+    const openEditPublicDay = (day) => {
+        setEditingPublicDay(day);
+        setPublicDayForm({
+            title: day.title,
+            description: day.description || '',
+            date: day.date.split('T')[0], // Extract YYYY-MM-DD
+            start_time: day.start_time ? day.start_time.substring(0, 5) : '',
+            end_time: day.end_time ? day.end_time.substring(0, 5) : '',
+            is_active: day.is_active
+        });
+        setShowPublicDayModal(true);
+    };
+
 
     if (loading) return <div className="container">Loading...</div>;
 
@@ -550,6 +669,50 @@ function EventForm() {
                     </div>
                 )}
 
+                {/* 7. Public Event Days (Only in Edit Mode) */}
+                {isEditMode && (
+                    <div style={{ backgroundColor: '#fff', padding: '1.5rem', borderRadius: '8px', marginBottom: '2rem', border: '1px solid #e5e7eb' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                            <div>
+                                <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Public Air Show Days</h3>
+                                <p style={{ margin: '5px 0 0', fontSize: '0.8rem', color: '#666' }}>Manage days available for public registration.</p>
+                            </div>
+                            <button type="button" className="primary-button" style={{ fontSize: '0.85rem' }} onClick={openCreatePublicDay}>+ Add Day</button>
+                        </div>
+
+                        {publicDays.length === 0 ? (
+                            <p style={{ color: '#666', fontStyle: 'italic' }}>No public days configured.</p>
+                        ) : (
+                            <table className="table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                <thead>
+                                    <tr style={{ background: '#f9fafb', fontSize: '0.85rem', textAlign: 'left' }}>
+                                        <th style={{ padding: '0.5rem' }}>Title</th>
+                                        <th style={{ padding: '0.5rem' }}>Date</th>
+                                        <th style={{ padding: '0.5rem' }}>Time</th>
+                                        <th style={{ padding: '0.5rem', textAlign: 'right' }}>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {publicDays.map(d => (
+                                        <tr key={d.id} style={{ borderBottom: '1px solid #eee' }}>
+                                            <td style={{ padding: '0.5rem' }}>{d.title}</td>
+                                            <td style={{ padding: '0.5rem' }}>{new Date(d.date).toLocaleDateString()}</td>
+                                            <td style={{ padding: '0.5rem' }}>
+                                                {d.start_time ? d.start_time.substring(0, 5) : '-'}
+                                                {d.end_time ? ` - ${d.end_time.substring(0, 5)}` : ''}
+                                            </td>
+                                            <td style={{ padding: '0.5rem', textAlign: 'right' }}>
+                                                <button type="button" onClick={() => openEditPublicDay(d)} style={{ marginRight: '0.5rem', background: 'none', border: 'none', color: '#2563eb', cursor: 'pointer' }}>Edit</button>
+                                                <button type="button" onClick={() => handleDeletePublicDay(d.id)} style={{ background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer' }}>Delete</button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
+                    </div>
+                )}
+
                 <div className="form-actions" style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', alignItems: 'center' }}>
                     {isEditMode && (
                         <button
@@ -715,6 +878,71 @@ function EventForm() {
                                 <button className="secondary-button" onClick={() => setShowTicketModal(false)}>Cancel</button>
                                 <button className="primary-button" onClick={handleSaveTicket}>
                                     {editingTicket ? 'Update Ticket' : 'Create Ticket'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* PUBLIC DAY MODAL */}
+            {showPublicDayModal && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                            <h3 style={{ margin: 0 }}>{editingPublicDay ? 'Edit Public Day' : 'New Public Day'}</h3>
+                            <button onClick={() => setShowPublicDayModal(false)} style={{ background: 'none', border: 'none', fontSize: '1.5rem', padding: 0, color: '#666' }}>×</button>
+                        </div>
+
+                        <div style={{ display: 'grid', gap: '1rem' }}>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.3rem' }}>Title *</label>
+                                <input
+                                    className="form-control" placeholder="e.g. Saturday Air Show"
+                                    name="title" value={publicDayForm.title} onChange={handlePublicDayChange}
+                                />
+                            </div>
+
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.3rem' }}>Date *</label>
+                                <input
+                                    type="date"
+                                    className="form-control"
+                                    name="date" value={publicDayForm.date} onChange={handlePublicDayChange}
+                                />
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '0.3rem' }}>Start Time</label>
+                                    <input
+                                        type="time"
+                                        className="form-control"
+                                        name="start_time" value={publicDayForm.start_time} onChange={handlePublicDayChange}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '0.3rem' }}>End Time</label>
+                                    <input
+                                        type="time"
+                                        className="form-control"
+                                        name="end_time" value={publicDayForm.end_time} onChange={handlePublicDayChange}
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.3rem' }}>Description</label>
+                                <textarea
+                                    className="form-control" rows="2" placeholder="Details visible to public..."
+                                    name="description" value={publicDayForm.description} onChange={handlePublicDayChange}
+                                />
+                            </div>
+
+                            <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                                <button className="secondary-button" onClick={() => setShowPublicDayModal(false)}>Cancel</button>
+                                <button className="primary-button" onClick={handleSavePublicDay}>
+                                    {editingPublicDay ? 'Update Day' : 'Create Day'}
                                 </button>
                             </div>
                         </div>

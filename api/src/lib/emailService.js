@@ -56,6 +56,62 @@ async function sendVerificationEmail(email, token, firstName, organizationName, 
     }
 }
 
+
+/**
+ * Sends a public registration confirmation email.
+ * @param {string} email - Recipient email.
+ * @param {string} firstName - First Name.
+ * @param {string} ticketCode - Unique Ticket Code.
+ * @param {string} eventDate - Date of event (formatted).
+ * @param {number} adults - Count.
+ * @param {number} children - Count.
+ * @param {string} eventName - Event Name.
+ */
+async function sendPublicRegistrationEmail(email, firstName, ticketCode, eventDate, adults, children, eventName) {
+    if (!process.env.RESEND_API_KEY) {
+        console.error('RESEND_API_KEY is missing.');
+        return { success: false, error: 'Misconfigured: Missing RESEND_API_KEY' };
+    }
+
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    const orgName = 'Aeromodelling'; // Could pass this in if needed
+
+    try {
+        const data = await resend.emails.send({
+            from: `${orgName} <registrations@meandervalleywebdesign.com.au>`,
+            to: [email],
+            subject: `Air Show Registration Confirmed - ${ticketCode}`,
+            html: `
+                <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 8px;">
+                    <h2 style="color: #007bff;">You're going to the Air Show!</h2>
+                    <p>Hi ${firstName},</p>
+                    <p>This email confirms your registration for the <strong>${eventName} (Air Show)</strong> on <strong>${eventDate}</strong>.</p>
+                    
+                    <div style="background-color: #f8f9fa; padding: 15px; margin: 20px 0; border-radius: 5px;">
+                        <h3 style="margin-top: 0; color: #333;">Your Ticket Code: <span style="font-family: monospace; font-size: 1.2em; color: #000;">${ticketCode}</span></h3>
+                        <p style="margin-bottom: 5px;"><strong>Adults:</strong> ${adults}</p>
+                        <p style="margin-bottom: 0;"><strong>Children:</strong> ${children}</p>
+                    </div>
+
+                    <p>Please show this code at the gate for entry.</p>
+                    <p>We look forward to seeing you there!</p>
+                </div>
+            `
+        });
+
+        if (data.error) {
+            console.error('Resend API returned error:', data.error);
+            return { success: false, error: data.error };
+        }
+
+        return { success: true, data };
+    } catch (error) {
+        console.error('Error sending public registration email:', error);
+        return { success: false, error };
+    }
+}
+
 module.exports = {
-    sendVerificationEmail
+    sendVerificationEmail,
+    sendPublicRegistrationEmail
 };

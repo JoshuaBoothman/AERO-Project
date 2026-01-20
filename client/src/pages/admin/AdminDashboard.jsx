@@ -90,9 +90,18 @@ function AdminDashboard() {
                     <h1 className="text-3xl font-bold text-[var(--accent-color)]">
                         Admin Dashboard
                     </h1>
-                    <p className="text-gray-500 mt-1">
-                        Overview for <span className="font-semibold text-gray-900">{event.name}</span>
-                    </p>
+                    <div className="flex items-center gap-4 mt-1">
+                        <p className="text-gray-500">
+                            Overview for <span className="font-semibold text-gray-900">{event.name}</span>
+                        </p>
+                        {/* Public Reports Link */}
+                        <Link
+                            to={`/admin/reports/public-registrations/${event.slug}`}
+                            className="text-xs bg-blue-50 text-blue-700 px-3 py-1 rounded-full font-bold hover:bg-blue-100 transition-colors"
+                        >
+                            View Air Show Attendees
+                        </Link>
+                    </div>
                 </div>
 
                 <div className="flex items-center gap-3">

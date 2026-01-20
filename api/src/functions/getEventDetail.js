@@ -68,12 +68,27 @@ app.http('getEventDetail', {
                 { name: 'eventId', type: sql.Int, value: eventData.event_id }
             ]);
 
-            // 3. Return Combined Data
+            // 3. Fetch Public Event Days
+            const publicDaysQuery = `
+                SELECT id, title, description, date, 
+                       CONVERT(varchar(5), start_time, 108) as start_time, 
+                       CONVERT(varchar(5), end_time, 108) as end_time 
+                FROM public_event_days 
+                WHERE event_id = @eventId AND is_active = 1
+                ORDER BY date ASC
+            `;
+
+            const publicDaysResult = await db.query(publicDaysQuery, [
+                { name: 'eventId', type: sql.Int, value: eventData.event_id }
+            ]);
+
+            // 4. Return Combined Data
             return {
                 status: 200,
                 jsonBody: {
                     ...eventData,
-                    tickets: ticketResult
+                    tickets: ticketResult,
+                    public_days: publicDaysResult
                 }
             };
 

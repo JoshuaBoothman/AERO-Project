@@ -1,5 +1,16 @@
 # Development Log
 
+## [2026-01-20] - Public Air Show Registration (Completed)
+- **Time**: 19:44 - 23:55
+- **Completed Items**:
+    - Implemented `public_event_days` and `public_registrations` database tables.
+    - Created `POST /api/public/register` and `managePublicEventDays` APIs.
+    - Updated `EventDetails.jsx` to display public days and allow registration via `PublicRegistrationModal`.
+    - Updated Admin `EventForm.jsx` to manage public days (Create/Edit/Delete).
+    - Created "Air Show Attendees" report (`PublicRegistrationsReport.jsx`) and linked from Admin Dashboard.
+    - Resolved issues with Time column formatting ("1970-" display bug) by enforcing "HH:MM" string format in API.
+    - Fixed API filtering bug where "Air Show Attendees" report was empty.
+
 ## [2025-12-22] - Initial Full-Stack Connection
 **Milestone:** End-to-End Connectivity Established (DB -> API -> Frontend)
 
