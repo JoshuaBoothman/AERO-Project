@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
+import CampingListView from '../../components/CampingListView';
 
 import AdminMapTool from './AdminMapTool';
 
@@ -30,6 +31,7 @@ function CampingPage({ embedded = false }) {
     const [useFullEventPrice, setUseFullEventPrice] = useState(false);
     const [campgrounds, setCampgrounds] = useState([]); // [{ id, name, sites: [] }]
     const [activeCampgroundId, setActiveCampgroundId] = useState(null);
+    const [viewMode, setViewMode] = useState('map'); // 'map' | 'list'
 
     const [loading, setLoading] = useState(true);
     const [selectedSite, setSelectedSite] = useState(null); // { campsite_id, ... }
@@ -257,64 +259,113 @@ function CampingPage({ embedded = false }) {
 
                     <div style={{ display: 'flex', gap: '20px' }}>
                         {/* Map / Grid View */}
+                        {/* Map / List View Container */}
                         <div style={{ flex: 2 }}>
-                            {/* Legend */}
-                            <div style={{ display: 'flex', gap: '15px', marginBottom: '10px', fontSize: '0.9rem', padding: '10px', background: '#fff', border: '1px solid #eee', borderRadius: '4px' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                    <div style={{ width: '15px', height: '15px', borderRadius: '50%', background: 'var(--accent-color, gold)', border: '1px solid #ccc' }}></div>
-                                    <span>Available</span>
-                                </div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                    <div style={{ width: '15px', height: '15px', borderRadius: '50%', background: 'var(--primary-color, blue)', border: '2px solid white', outline: '1px solid #ccc' }}></div>
-                                    <span>Selected</span>
-                                </div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                    <div style={{ width: '15px', height: '15px', borderRadius: '50%', background: 'red', opacity: 0.6 }}></div>
-                                    <span>Booked / Unavailable</span>
+                            {/* View Toggle & Legend Header */}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                                {/* Legend (Map Mode Only, or simplified for List) */}
+                                {viewMode === 'map' ? (
+                                    <div style={{ display: 'flex', gap: '15px', fontSize: '0.9rem', padding: '10px', background: '#fff', border: '1px solid #eee', borderRadius: '4px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                            <div style={{ width: '15px', height: '15px', borderRadius: '50%', background: 'var(--accent-color, gold)', border: '1px solid #ccc' }}></div>
+                                            <span>Available</span>
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                            <div style={{ width: '15px', height: '15px', borderRadius: '50%', background: 'var(--primary-color, blue)', border: '2px solid white', outline: '1px solid #ccc' }}></div>
+                                            <span>Selected</span>
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                            <div style={{ width: '15px', height: '15px', borderRadius: '50%', background: 'red', opacity: 0.6 }}></div>
+                                            <span>Unavailable</span>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div></div> // Spacer
+                                )}
+
+                                {/* Toggle Buttons */}
+                                <div style={{ display: 'flex', background: '#eee', borderRadius: '4px', padding: '4px' }}>
+                                    <button
+                                        onClick={() => setViewMode('map')}
+                                        style={{
+                                            padding: '6px 15px',
+                                            border: 'none',
+                                            borderRadius: '4px',
+                                            background: viewMode === 'map' ? 'white' : 'transparent',
+                                            fontWeight: viewMode === 'map' ? 'bold' : 'normal',
+                                            boxShadow: viewMode === 'map' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        Map
+                                    </button>
+                                    <button
+                                        onClick={() => setViewMode('list')}
+                                        style={{
+                                            padding: '6px 15px',
+                                            border: 'none',
+                                            borderRadius: '4px',
+                                            background: viewMode === 'list' ? 'white' : 'transparent',
+                                            fontWeight: viewMode === 'list' ? 'bold' : 'normal',
+                                            boxShadow: viewMode === 'list' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        List
+                                    </button>
                                 </div>
                             </div>
 
-                            {/* Active Map */}
+                            {/* Content */}
                             {activeCampground ? (
                                 <div>
-                                    {campgrounds.length <= 1 && <h3>{activeCampground.name}</h3>} {/* Show title if no tabs */}
-                                    <div style={{ position: 'relative', border: '1px solid #ddd', background: '#ccc' }}>
-                                        <img src={activeCampground.map_image_url} alt={activeCampground.name} style={{ width: '100%', display: 'block' }} />
+                                    {campgrounds.length <= 1 && <h3>{activeCampground.name}</h3>}
 
-                                        {/* Render Pins */}
-                                        {activeCampground.sites.map(site => {
-                                            if (!site.map_coordinates) return null;
-                                            let c;
-                                            try { c = JSON.parse(site.map_coordinates); } catch (e) { return null; }
+                                    {viewMode === 'map' ? (
+                                        <div style={{ position: 'relative', border: '1px solid #ddd', background: '#ccc' }}>
+                                            <img src={activeCampground.map_image_url} alt={activeCampground.name} style={{ width: '100%', display: 'block' }} />
 
-                                            const isSelected = selectedSite?.campsite_id === site.campsite_id;
-                                            // Use Theme Variables
-                                            const color = !site.is_available ? 'red' : (isSelected ? 'var(--primary-color, blue)' : 'var(--accent-color, gold)');
-                                            const zIndex = isSelected ? 10 : 1;
+                                            {/* Render Pins */}
+                                            {activeCampground.sites.map(site => {
+                                                if (!site.map_coordinates) return null;
+                                                let c;
+                                                try { c = JSON.parse(site.map_coordinates); } catch (e) { return null; }
 
-                                            return (
-                                                <div
-                                                    key={site.campsite_id}
-                                                    onClick={() => handleSiteClick(site)}
-                                                    style={{
-                                                        position: 'absolute',
-                                                        left: `${c.x}%`,
-                                                        top: `${c.y}%`,
-                                                        width: '20px',
-                                                        height: '20px',
-                                                        background: color,
-                                                        borderRadius: '50%',
-                                                        transform: 'translate(-50%, -50%)',
-                                                        border: '2px solid white',
-                                                        cursor: site.is_available ? 'pointer' : 'not-allowed',
-                                                        zIndex: zIndex,
-                                                        opacity: site.is_available ? 1 : 0.6
-                                                    }}
-                                                    title={`Site ${site.site_number} - ${site.is_available ? 'Available' : 'Booked'}`}
-                                                />
-                                            );
-                                        })}
-                                    </div>
+                                                const isSelected = selectedSite?.campsite_id === site.campsite_id;
+                                                // Use Theme Variables
+                                                const color = !site.is_available ? 'red' : (isSelected ? 'var(--primary-color, blue)' : 'var(--accent-color, gold)');
+                                                const zIndex = isSelected ? 10 : 1;
+
+                                                return (
+                                                    <div
+                                                        key={site.campsite_id}
+                                                        onClick={() => handleSiteClick(site)}
+                                                        style={{
+                                                            position: 'absolute',
+                                                            left: `${c.x}%`,
+                                                            top: `${c.y}%`,
+                                                            width: '20px',
+                                                            height: '20px',
+                                                            background: color,
+                                                            borderRadius: '50%',
+                                                            transform: 'translate(-50%, -50%)',
+                                                            border: '2px solid white',
+                                                            cursor: site.is_available ? 'pointer' : 'not-allowed',
+                                                            zIndex: zIndex,
+                                                            opacity: site.is_available ? 1 : 0.6
+                                                        }}
+                                                        title={`Site ${site.site_number} - ${site.is_available ? 'Available' : 'Booked'}`}
+                                                    />
+                                                );
+                                            })}
+                                        </div>
+                                    ) : (
+                                        <CampingListView
+                                            activeCampground={activeCampground}
+                                            selectedSite={selectedSite}
+                                            onSiteSelect={handleSiteClick}
+                                        />
+                                    )}
                                 </div>
                             ) : (
                                 <p>No campgrounds found for this event.</p>

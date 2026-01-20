@@ -101,6 +101,7 @@ function AdminDashboard() {
                         >
                             View Air Show Attendees
                         </Link>
+
                     </div>
                 </div>
 
@@ -148,10 +149,18 @@ function AdminDashboard() {
                 {/* 2. CAMPING (Chart) */}
                 <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm flex flex-col">
                     <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                            <svg className="w-5 h-5 text-[var(--accent-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
-                            Camping
-                        </h3>
+                        <div className="flex items-center gap-3">
+                            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                                <svg className="w-5 h-5 text-[var(--accent-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+                                Camping
+                            </h3>
+                            <Link
+                                to="/admin/reports/camping"
+                                className="text-[10px] bg-green-50 text-green-700 px-2 py-1 rounded border border-green-200 font-bold hover:bg-green-100 transition-colors uppercase tracking-wide"
+                            >
+                                Availability Report
+                            </Link>
+                        </div>
                         <select
                             value={selectedCampgroundId}
                             onChange={(e) => setSelectedCampgroundId(e.target.value)}

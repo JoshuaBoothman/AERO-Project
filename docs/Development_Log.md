@@ -1,5 +1,15 @@
 # Development Log
 
+## [2026-01-20] - Administration Reports & Camping UI (Completed)
+- **Time**: 00:00 - 11:47
+- **Completed Items**:
+    - **Camping List View**: Implemented a user-facing list view for campsites (`CampingListView.jsx`) with a toggle to switch between Map and List modes in `CampingPage.jsx`.
+    - **Admin Camping Report**: Created `CampingAvailabilityReport.jsx` and `getAdminCampingReport.js` to provide a filtered view of campsite availability and booking details.
+    - **UI Refinement**: Moved the "Availability Report" link to the Camping Card header on the Admin Dashboard.
+    - **Bug Fix**: Resolved `404` error for the new report API by renaming the route to avoid the reserved `/admin` prefix (`reports/camping-availability`).
+    - **Layout Fix**: Unified the report table for better column alignment across campgrounds.
+    - **UX Improvement**: Report now links directly to the specific `OrderDetail` page instead of just searching for the order.
+
 ## [2026-01-20] - Public Air Show Registration (Completed)
 - **Time**: 19:44 - 23:55
 - **Completed Items**:
