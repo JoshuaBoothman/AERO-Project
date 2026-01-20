@@ -269,7 +269,7 @@ function CampingPage({ embedded = false }) {
                     <div style={{ display: 'flex', gap: '20px' }}>
                         {/* Map / Grid View */}
                         {/* Map / List View Container */}
-                        <div style={{ flex: 2 }}>
+                        <div style={{ flex: '2 1 0', minWidth: 0 }}>
                             {/* View Toggle & Legend Header */}
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                                 {/* Legend (Map Mode Only, or simplified for List) */}
@@ -331,42 +331,44 @@ function CampingPage({ embedded = false }) {
                                     {campgrounds.length <= 1 && <h3>{activeCampground.name}</h3>}
 
                                     {viewMode === 'map' ? (
-                                        <div style={{ position: 'relative', border: '1px solid #ddd', background: '#ccc' }}>
-                                            <img src={activeCampground.map_image_url} alt={activeCampground.name} style={{ width: '100%', display: 'block' }} />
+                                        <div style={{ position: 'relative', border: '1px solid #ddd', background: '#ccc', overflow: 'auto', maxHeight: '75vh' }}>
+                                            <div style={{ position: 'relative', minWidth: '1000px', width: '100%' }}>
+                                                <img src={activeCampground.map_image_url} alt={activeCampground.name} style={{ width: '100%', display: 'block' }} />
 
-                                            {/* Render Pins */}
-                                            {activeCampground.sites.map(site => {
-                                                if (!site.map_coordinates) return null;
-                                                let c;
-                                                try { c = JSON.parse(site.map_coordinates); } catch (e) { return null; }
+                                                {/* Render Pins */}
+                                                {activeCampground.sites.map(site => {
+                                                    if (!site.map_coordinates) return null;
+                                                    let c;
+                                                    try { c = JSON.parse(site.map_coordinates); } catch (e) { return null; }
 
-                                                const isSelected = selectedSite?.campsite_id === site.campsite_id;
-                                                // Use Theme Variables
-                                                const color = !site.is_available ? 'red' : (isSelected ? 'var(--primary-color, blue)' : 'var(--accent-color, gold)');
-                                                const zIndex = isSelected ? 10 : 1;
+                                                    const isSelected = selectedSite?.campsite_id === site.campsite_id;
+                                                    // Use Theme Variables
+                                                    const color = !site.is_available ? 'red' : (isSelected ? 'var(--primary-color, blue)' : 'var(--accent-color, gold)');
+                                                    const zIndex = isSelected ? 10 : 1;
 
-                                                return (
-                                                    <div
-                                                        key={site.campsite_id}
-                                                        onClick={() => handleSiteClick(site)}
-                                                        style={{
-                                                            position: 'absolute',
-                                                            left: `${c.x}%`,
-                                                            top: `${c.y}%`,
-                                                            width: '20px',
-                                                            height: '20px',
-                                                            background: color,
-                                                            borderRadius: '50%',
-                                                            transform: 'translate(-50%, -50%)',
-                                                            border: '2px solid white',
-                                                            cursor: site.is_available ? 'pointer' : 'not-allowed',
-                                                            zIndex: zIndex,
-                                                            opacity: site.is_available ? 1 : 0.6
-                                                        }}
-                                                        title={`Site ${site.site_number} - ${site.is_available ? 'Available' : 'Booked'}`}
-                                                    />
-                                                );
-                                            })}
+                                                    return (
+                                                        <div
+                                                            key={site.campsite_id}
+                                                            onClick={() => handleSiteClick(site)}
+                                                            style={{
+                                                                position: 'absolute',
+                                                                left: `${c.x}%`,
+                                                                top: `${c.y}%`,
+                                                                width: '20px',
+                                                                height: '20px',
+                                                                background: color,
+                                                                borderRadius: '50%',
+                                                                transform: 'translate(-50%, -50%)',
+                                                                border: '2px solid white',
+                                                                cursor: site.is_available ? 'pointer' : 'not-allowed',
+                                                                zIndex: zIndex,
+                                                                opacity: site.is_available ? 1 : 0.6
+                                                            }}
+                                                            title={`Site ${site.site_number} - ${site.is_available ? 'Available' : 'Booked'}`}
+                                                        />
+                                                    );
+                                                })}
+                                            </div>
                                         </div>
                                     ) : (
                                         <CampingListView
@@ -382,7 +384,7 @@ function CampingPage({ embedded = false }) {
                         </div>
 
                         {/* Sidebar / Info Panel */}
-                        <div style={{ flex: 1 }}>
+                        <div style={{ flex: '0 0 350px', minWidth: '300px' }}>
                             <div style={{ position: 'sticky', top: '20px', padding: '20px', border: '1px solid #eee', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
                                 <h2>Booking Details</h2>
                                 {selectedSite ? (

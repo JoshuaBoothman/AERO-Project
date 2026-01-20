@@ -1,5 +1,19 @@
 # Development Log
 
+## [2026-01-21] - Map Display Fixes (Admin & User)
+- **Time**: 06:07 - 07:44
+- **Completed Items**:
+    - **Map UI (Admin)**:
+        - Fixed issue where wide map images were shrinking to fit container width, becoming illegible.
+        - Implemented horizontal scrolling with `min-width: 1500px`.
+        - Applied `min-height: 0` flex constraints and `calc(100vh - 140px)` height to respect viewport and keep scrollbars accessible.
+    - **Map UI (User)**:
+        - Implemented horizontal scrolling for the user-facing map (`min-width: 1000px`).
+        - Constrained map container validation to `max-height: 75vh` to prevent vertical page scrolling.
+        - Fixed Flexbox layout issue where the "Booking Details" sidebar was being squished by wide maps.
+    - **Documentation**:
+        - Created `walkthrough.md` detailing the CSS and layout changes.
+
 ## [2026-01-21] - Bug Fixes: Variant Templates & Auth
 - **Time**: 06:13 - 06:20
 - **Completed Items**:

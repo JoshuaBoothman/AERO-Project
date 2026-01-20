@@ -505,7 +505,7 @@ function AdminMapTool() {
     };
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 140px)' }}>
             {/* Top Toolbar */}
             <div style={{ padding: '15px', borderBottom: '1px solid #ddd', background: '#fff', display: 'flex', gap: '20px', alignItems: 'center' }}>
                 <h2 style={{ margin: 0 }}>Admin Map Tool</h2>
@@ -598,7 +598,7 @@ function AdminMapTool() {
             ) : !campground ? (
                 <div style={{ padding: '50px' }}>Campground not found.</div>
             ) : (
-                <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+                <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minHeight: 0 }}>
 
                     {/* Sidebar Editor */}
                     <div style={{ width: '320px', minWidth: '320px', borderRight: '1px solid #eee', display: 'flex', flexDirection: 'column', background: '#fafafa', flexShrink: 0, zIndex: 20, position: 'relative', boxShadow: '2px 0 5px rgba(0,0,0,0.1)', overflowY: 'auto' }}>
@@ -819,9 +819,9 @@ function AdminMapTool() {
 
 
                     {/* Map Area */}
-                    <div style={{ flex: 1, position: 'relative', background: '#ccc', overflow: 'hidden' }}>
+                    <div style={{ flex: 1, position: 'relative', background: '#ccc', overflow: 'hidden', minHeight: 0 }}>
                         <div style={{ width: '100%', height: '100%', overflow: 'auto', position: 'relative' }}>
-                            <div style={{ position: 'relative', display: 'block', width: '100%' }}>
+                            <div style={{ position: 'relative', display: 'block', minWidth: '1500px', width: '100%' }}>
                                 <img
                                     src={campground.map_image_url}
                                     onClick={handleMapClick}
