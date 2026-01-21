@@ -638,7 +638,6 @@ function EventForm() {
                                     <tr style={{ background: '#f9fafb', fontSize: '0.85rem', textAlign: 'left' }}>
                                         <th style={{ padding: '0.5rem' }}>Name</th>
                                         <th style={{ padding: '0.5rem' }}>Price</th>
-                                        <th style={{ padding: '0.5rem' }}>Role</th>
                                         <th style={{ padding: '0.5rem' }}>Flags</th>
                                         <th style={{ padding: '0.5rem', textAlign: 'right' }}>Actions</th>
                                     </tr>
@@ -648,10 +647,9 @@ function EventForm() {
                                         <tr key={t.ticket_type_id} style={{ borderBottom: '1px solid #eee' }}>
                                             <td style={{ padding: '0.5rem' }}>{t.name}</td>
                                             <td style={{ padding: '0.5rem' }}>${Number(t.price).toFixed(2)}</td>
-                                            <td style={{ padding: '0.5rem' }}>{t.system_role}</td>
                                             <td style={{ padding: '0.5rem' }}>
                                                 {t.system_role === 'pilot' && <span style={{ background: '#e0f2fe', color: '#0369a1', padding: '2px 6px', borderRadius: '4px', fontSize: '0.75rem', marginRight: '4px' }}>Pilot</span>}
-                                                {t.system_role === 'pit_crew' && <span style={{ background: '#f0fdf4', color: '#15803d', padding: '2px 6px', borderRadius: '4px', fontSize: '0.75rem' }}>Crew</span>}
+                                                {t.system_role === 'pit_crew' && <span style={{ background: '#f0fdf4', color: '#15803d', padding: '2px 6px', borderRadius: '4px', fontSize: '0.75rem' }}>Pit Crew</span>}
                                             </td>
                                             <td style={{ padding: '0.5rem', textAlign: 'right' }}>
                                                 <button type="button" onClick={() => openEditTicket(t)} style={{ marginRight: '0.5rem', background: 'none', border: 'none', color: '#2563eb', cursor: 'pointer' }}>Edit</button>
