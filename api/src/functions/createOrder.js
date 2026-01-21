@@ -85,7 +85,7 @@ app.http('createOrder', {
                     for (const item of items) {
                         const ticketReq = new sql.Request(transaction);
                         const ticketRes = await ticketReq.input('tt_id', sql.Int, item.ticketTypeId)
-                            .query("SELECT price, system_role, is_pilot FROM event_ticket_types WHERE ticket_type_id = @tt_id");
+                            .query("SELECT price, system_role FROM event_ticket_types WHERE ticket_type_id = @tt_id");
 
                         if (ticketRes.recordset.length === 0) throw new Error(`Invalid ticket type: ${item.ticketTypeId}`);
                         const ticketType = ticketRes.recordset[0];

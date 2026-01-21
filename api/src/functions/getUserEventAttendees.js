@@ -41,7 +41,7 @@ app.http('getUserEventAttendees', {
                 JOIN event_ticket_types t ON a.ticket_type_id = t.ticket_type_id
                 WHERE a.event_id = @eventId
                   AND p.user_id = @userId
-                  AND t.is_pilot = 1
+                  AND t.system_role = 'pilot'
                   AND a.status = 'Registered'
             `;
 

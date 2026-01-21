@@ -194,8 +194,8 @@ function OrderDetail() {
                                         marginBottom: '0.25rem'
                                     }}>
                                         {item.ticket_name}
-                                        {item.is_pilot && <span style={{ marginLeft: '0.5rem', color: '#007bff' }}>✈️ Pilot</span>}
-                                        {item.is_pit_crew && <span style={{ marginLeft: '0.5rem', color: '#ff9800' }}>🛠️ Crew</span>}
+                                        {item.system_role === 'pilot' && <span style={{ marginLeft: '0.5rem', color: '#007bff' }}>✈️ Pilot</span>}
+                                        {item.system_role === 'pit_crew' && <span style={{ marginLeft: '0.5rem', color: '#ff9800' }}>🛠️ Crew</span>}
                                     </div>
 
                                     {isEditing ? (
@@ -307,7 +307,7 @@ function OrderDetail() {
                             </div>
 
                             {/* Pilot Details Section */}
-                            {item.is_pilot && (
+                            {item.system_role === 'pilot' && (
                                 <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #eee' }}>
                                     <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
                                         <div style={{ minWidth: '150px' }}>

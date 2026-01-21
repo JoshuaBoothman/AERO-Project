@@ -19,9 +19,9 @@ const { query } = require('./api/src/lib/db');
 
 async function run() {
     try {
-        console.log("Checking Persons...");
-        const cols = await query("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'persons'");
-        console.log("Persons Columns:", cols.map(c => c.COLUMN_NAME));
+        console.log("Checking event_ticket_types...");
+        const cols = await query("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'event_ticket_types'");
+        console.log("event_ticket_types Columns:", cols.map(c => c.COLUMN_NAME));
 
         console.log("Checking Tables...");
         const tables = await query("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'");

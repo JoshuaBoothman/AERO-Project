@@ -51,8 +51,8 @@ app.http('getOrderDetail', {
                     oi.price_at_purchase,
                     oi.item_type,
                     ett.name as ticket_name,
-                    ett.is_pilot,
-                    ett.is_pit_crew,
+                    ett.name as ticket_name,
+                    ett.system_role,
                     p.first_name,
                     p.last_name,
                     p.email,
@@ -78,7 +78,7 @@ app.http('getOrderDetail', {
 
             // 3.5 Fetch Planes for Pilot Attendees
             // Extract unique person IDs for pilots
-            const pilotPersonIds = [...new Set(itemsResult.filter(i => i.is_pilot).map(i => i.person_id))];
+            const pilotPersonIds = [...new Set(itemsResult.filter(i => i.system_role === 'pilot').map(i => i.person_id))];
             let planesMap = {};
 
             if (pilotPersonIds.length > 0) {

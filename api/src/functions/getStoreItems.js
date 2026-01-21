@@ -189,7 +189,7 @@ app.http('getStoreItems', {
 
             // 6. Fetch Ticket Types (NEW)
             const ticketRes = await pool.request().input('eid', sql.Int, eventId).query(`
-                SELECT ticket_type_id, name, description, price, is_pit_crew, is_pilot
+                SELECT ticket_type_id, name, description, price, system_role
                 FROM event_ticket_types
                 WHERE event_id = @eid
             `);
@@ -198,8 +198,10 @@ app.http('getStoreItems', {
                 name: t.name,
                 description: t.description,
                 price: t.price,
-                isPitCrew: t.is_pit_crew,
-                is_pilot: t.is_pilot
+                name: t.name,
+                description: t.description,
+                price: t.price,
+                system_role: t.system_role
             }));
 
             return {

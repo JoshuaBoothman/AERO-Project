@@ -111,11 +111,11 @@ app.http('getAdminDashboardStats', {
             const attendeeRes = await pool.request()
                 .input('eid', sql.Int, eventId)
                 .query(`
-                    SELECT t.name as ticket_name, t.is_pilot, COUNT(a.attendee_id) as count
+                    SELECT t.name as ticket_name, t.system_role, COUNT(a.attendee_id) as count
                     FROM attendees a
                     JOIN event_ticket_types t ON a.ticket_type_id = t.ticket_type_id
                     WHERE a.event_id = @eid AND a.status = 'Registered'
-                    GROUP BY t.name, t.is_pilot
+                    GROUP BY t.name, t.system_role
                 `);
             stats.attendees = attendeeRes.recordset;
 

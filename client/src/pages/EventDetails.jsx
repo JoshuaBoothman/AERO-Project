@@ -196,7 +196,7 @@ function EventDetails({ propSlug }) {
         // Validation
         for (const [ticketTypeId, quantity] of Object.entries(cart)) {
             const ticket = tickets.find(t => t.ticket_type_id === parseInt(ticketTypeId));
-            if (ticket?.is_pilot) {
+            if (ticket?.system_role === 'pilot') {
                 for (let i = 0; i < quantity; i++) {
                     const key = `${ticketTypeId}_${i}`;
                     const details = attendeeDetails[key] || {};
@@ -300,7 +300,7 @@ function EventDetails({ propSlug }) {
         const pilots = [];
         Object.entries(cart).forEach(([ticketId, qty]) => {
             const ticket = tickets.find(t => t.ticket_type_id === parseInt(ticketId));
-            if (ticket?.is_pilot) {
+            if (ticket?.system_role === 'pilot') {
                 for (let i = 0; i < qty; i++) {
                     const key = `${ticketId}_${i}`;
                     const details = attendeeDetails[key];
@@ -537,7 +537,7 @@ function EventDetails({ propSlug }) {
                                                 />
 
                                                 {/* Pilot Specific Fields */}
-                                                {tickets.find(t => t.ticket_type_id === parseInt(ticketId))?.is_pilot && (
+                                                {tickets.find(t => t.ticket_type_id === parseInt(ticketId))?.system_role === 'pilot' && (
                                                     <div style={{ marginTop: '0.5rem', padding: '0.5rem', border: '1px solid #e0e0e0', borderRadius: '4px' }}>
                                                         <h5 style={{ margin: '0 0 0.5rem' }}>✈️ Pilot & Aircraft Registration</h5>
 
@@ -690,7 +690,7 @@ function EventDetails({ propSlug }) {
                                                 )}
 
                                                 {/* Crew Specific Fields */}
-                                                {tickets.find(t => t.ticket_type_id === parseInt(ticketId))?.is_pit_crew && (
+                                                {tickets.find(t => t.ticket_type_id === parseInt(ticketId))?.system_role === 'pit_crew' && (
                                                     <div style={{ marginTop: '0.5rem', padding: '0.5rem', border: '1px solid #ffecb3', borderRadius: '4px' }}>
                                                         <h5 style={{ margin: '0 0 0.5rem' }}>🛠️ Pit Crew</h5>
 

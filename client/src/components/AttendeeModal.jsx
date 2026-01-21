@@ -110,7 +110,7 @@ function AttendeeModal({
         // Validate
         for (const [ticketTypeId, quantity] of Object.entries(cart)) {
             const ticket = tickets.find(t => (t.ticket_type_id || t.id) === parseInt(ticketTypeId));
-            if (ticket?.is_pilot) {
+            if (ticket?.system_role === 'pilot') {
                 for (let i = 0; i < quantity; i++) {
                     const key = `${ticketTypeId}_${i}`;
                     const d = details[key] || {};
@@ -253,7 +253,7 @@ function AttendeeModal({
                                 </div>
 
                                 {/* Pilot Fields */}
-                                {ticket?.is_pilot && (
+                                {ticket?.system_role === 'pilot' && (
                                     <div className="mt-4 p-4 bg-white border border-gray-200 rounded">
                                         <h5 className="font-bold mb-2">✈️ Pilot & Aircraft Registration</h5>
 

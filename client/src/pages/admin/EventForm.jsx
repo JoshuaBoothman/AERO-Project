@@ -47,8 +47,6 @@ function EventForm() {
         name: '',
         price: '',
         system_role: 'spectator', // spectator, pilot, staff, etc.
-        is_pilot: false,
-        is_pit_crew: false,
         description: ''
     });
 
@@ -316,7 +314,7 @@ function EventForm() {
 
     const openCreateTicket = () => {
         setEditingTicket(null);
-        setTicketForm({ name: '', price: '', system_role: 'spectator', is_pilot: false, is_pit_crew: false, description: '' });
+        setTicketForm({ name: '', price: '', system_role: 'spectator', description: '' });
         setShowTicketModal(true);
     };
 
@@ -326,8 +324,6 @@ function EventForm() {
             name: ticket.name,
             price: ticket.price,
             system_role: ticket.system_role,
-            is_pilot: ticket.is_pilot,
-            is_pit_crew: ticket.is_pit_crew,
             description: ticket.description || ''
         });
         setShowTicketModal(true);
@@ -654,8 +650,8 @@ function EventForm() {
                                             <td style={{ padding: '0.5rem' }}>${Number(t.price).toFixed(2)}</td>
                                             <td style={{ padding: '0.5rem' }}>{t.system_role}</td>
                                             <td style={{ padding: '0.5rem' }}>
-                                                {t.is_pilot && <span style={{ background: '#e0f2fe', color: '#0369a1', padding: '2px 6px', borderRadius: '4px', fontSize: '0.75rem', marginRight: '4px' }}>Pilot</span>}
-                                                {t.is_pit_crew && <span style={{ background: '#f0fdf4', color: '#15803d', padding: '2px 6px', borderRadius: '4px', fontSize: '0.75rem' }}>Crew</span>}
+                                                {t.system_role === 'pilot' && <span style={{ background: '#e0f2fe', color: '#0369a1', padding: '2px 6px', borderRadius: '4px', fontSize: '0.75rem', marginRight: '4px' }}>Pilot</span>}
+                                                {t.system_role === 'pit_crew' && <span style={{ background: '#f0fdf4', color: '#15803d', padding: '2px 6px', borderRadius: '4px', fontSize: '0.75rem' }}>Crew</span>}
                                             </td>
                                             <td style={{ padding: '0.5rem', textAlign: 'right' }}>
                                                 <button type="button" onClick={() => openEditTicket(t)} style={{ marginRight: '0.5rem', background: 'none', border: 'none', color: '#2563eb', cursor: 'pointer' }}>Edit</button>
@@ -852,27 +848,13 @@ function EventForm() {
                                 >
                                     <option value="spectator">Spectator</option>
                                     <option value="pilot">Pilot</option>
+                                    <option value="pit_crew">Pit Crew</option>
                                     <option value="staff">Staff</option>
                                     <option value="volunteer">Volunteer</option>
                                 </select>
                             </div>
 
-                            <div style={{ display: 'flex', gap: '1rem' }}>
-                                <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                    <input
-                                        type="checkbox"
-                                        name="is_pilot" checked={ticketForm.is_pilot} onChange={handleTicketChange}
-                                    />
-                                    Is Pilot Ticket
-                                </label>
-                                <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                    <input
-                                        type="checkbox"
-                                        name="is_pit_crew" checked={ticketForm.is_pit_crew} onChange={handleTicketChange}
-                                    />
-                                    Is Pit Crew Ticket
-                                </label>
-                            </div>
+                            {/* REMOVED CHECKBOXES */}
 
                             <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
                                 <button className="secondary-button" onClick={() => setShowTicketModal(false)}>Cancel</button>
