@@ -192,6 +192,7 @@ app.http('getStoreItems', {
                 SELECT ticket_type_id, name, description, price, system_role
                 FROM event_ticket_types
                 WHERE event_id = @eid
+                ORDER BY sort_order ASC, price ASC
             `);
             const tickets = ticketRes.recordset.map(t => ({
                 id: t.ticket_type_id,

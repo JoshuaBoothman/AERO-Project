@@ -2,6 +2,45 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useNotification } from '../../context/NotificationContext';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { GripVertical } from 'lucide-react';
+
+function SortableTicketRow({ ticket, onEdit, onDelete }) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+    } = useSortable({ id: ticket.ticket_type_id });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+    };
+
+    return (
+        <tr ref={setNodeRef} style={{ ...style, borderBottom: '1px solid #eee', background: 'white' }}>
+            <td style={{ padding: '0.5rem', width: '30px' }}>
+                <div {...attributes} {...listeners} style={{ cursor: 'grab', display: 'flex', alignItems: 'center', color: '#ccc' }}>
+                    <GripVertical size={16} />
+                </div>
+            </td>
+            <td style={{ padding: '0.5rem' }}>{ticket.name}</td>
+            <td style={{ padding: '0.5rem' }}>${Number(ticket.price).toFixed(2)}</td>
+            <td style={{ padding: '0.5rem' }}>
+                {ticket.system_role === 'pilot' && <span style={{ background: '#e0f2fe', color: '#0369a1', padding: '2px 6px', borderRadius: '4px', fontSize: '0.75rem', marginRight: '4px' }}>Pilot</span>}
+                {ticket.system_role === 'pit_crew' && <span style={{ background: '#f0fdf4', color: '#15803d', padding: '2px 6px', borderRadius: '4px', fontSize: '0.75rem' }}>Pit Crew</span>}
+            </td>
+            <td style={{ padding: '0.5rem', textAlign: 'right' }}>
+                <button type="button" onClick={() => onEdit(ticket)} style={{ marginRight: '0.5rem', background: 'none', border: 'none', color: '#2563eb', cursor: 'pointer' }}>Edit</button>
+                <button type="button" onClick={() => onDelete(ticket.ticket_type_id)} style={{ background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer' }}>Delete</button>
+            </td>
+        </tr>
+    );
+}
 
 function EventForm() {
     const { slug } = useParams();
@@ -62,6 +101,50 @@ function EventForm() {
         end_time: '',
         is_active: true
     });
+
+    // DnD Sensors
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
+
+    const handleDragEnd = async (event) => {
+        const { active, over } = event;
+
+        if (active.id !== over.id) {
+            setTicketTypes((items) => {
+                const oldIndex = items.findIndex((item) => item.ticket_type_id === active.id);
+                const newIndex = items.findIndex((item) => item.ticket_type_id === over.id);
+                const newItems = arrayMove(items, oldIndex, newIndex);
+
+                // Trigger API update
+                // We do this immediately or debounced? Immediate is fine for now but we should not await it to block UI
+                // However, we need to send the new order to the backend.
+
+                const sortedPayload = newItems.map((item, index) => ({
+                    ticket_type_id: item.ticket_type_id,
+                    sort_order: index
+                }));
+
+                fetch(`/api/events/${formData.event_id}/ticket-types/reorder`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                        'X-Auth-Token': token
+                    },
+                    body: JSON.stringify({ sortedTickets: sortedPayload })
+                }).catch(err => {
+                    console.error("Failed to reorder tickets", err);
+                    notify("Failed to save new order", "error");
+                });
+
+                return newItems;
+            });
+        }
+    };
 
     useEffect(() => {
         if (user && user.role !== 'admin') {
@@ -633,32 +716,38 @@ function EventForm() {
                         {ticketTypes.length === 0 ? (
                             <p style={{ color: '#666', fontStyle: 'italic' }}>No ticket types configured.</p>
                         ) : (
-                            <table className="table" style={{ width: '100%', borderCollapse: 'collapse' }}>
-                                <thead>
-                                    <tr style={{ background: '#f9fafb', fontSize: '0.85rem', textAlign: 'left' }}>
-                                        <th style={{ padding: '0.5rem' }}>Name</th>
-                                        <th style={{ padding: '0.5rem' }}>Price</th>
-                                        <th style={{ padding: '0.5rem' }}>Flags</th>
-                                        <th style={{ padding: '0.5rem', textAlign: 'right' }}>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {ticketTypes.map(t => (
-                                        <tr key={t.ticket_type_id} style={{ borderBottom: '1px solid #eee' }}>
-                                            <td style={{ padding: '0.5rem' }}>{t.name}</td>
-                                            <td style={{ padding: '0.5rem' }}>${Number(t.price).toFixed(2)}</td>
-                                            <td style={{ padding: '0.5rem' }}>
-                                                {t.system_role === 'pilot' && <span style={{ background: '#e0f2fe', color: '#0369a1', padding: '2px 6px', borderRadius: '4px', fontSize: '0.75rem', marginRight: '4px' }}>Pilot</span>}
-                                                {t.system_role === 'pit_crew' && <span style={{ background: '#f0fdf4', color: '#15803d', padding: '2px 6px', borderRadius: '4px', fontSize: '0.75rem' }}>Pit Crew</span>}
-                                            </td>
-                                            <td style={{ padding: '0.5rem', textAlign: 'right' }}>
-                                                <button type="button" onClick={() => openEditTicket(t)} style={{ marginRight: '0.5rem', background: 'none', border: 'none', color: '#2563eb', cursor: 'pointer' }}>Edit</button>
-                                                <button type="button" onClick={() => handleDeleteTicket(t.ticket_type_id)} style={{ background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer' }}>Delete</button>
-                                            </td>
+                            <DndContext
+                                sensors={sensors}
+                                collisionDetection={closestCenter}
+                                onDragEnd={handleDragEnd}
+                            >
+                                <table className="table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                    <thead>
+                                        <tr style={{ background: '#f9fafb', fontSize: '0.85rem', textAlign: 'left' }}>
+                                            <th style={{ padding: '0.5rem', width: '30px' }}></th>
+                                            <th style={{ padding: '0.5rem' }}>Name</th>
+                                            <th style={{ padding: '0.5rem' }}>Price</th>
+                                            <th style={{ padding: '0.5rem' }}>Flags</th>
+                                            <th style={{ padding: '0.5rem', textAlign: 'right' }}>Actions</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        <SortableContext
+                                            items={ticketTypes.map(t => t.ticket_type_id)}
+                                            strategy={verticalListSortingStrategy}
+                                        >
+                                            {ticketTypes.map(t => (
+                                                <SortableTicketRow
+                                                    key={t.ticket_type_id}
+                                                    ticket={t}
+                                                    onEdit={openEditTicket}
+                                                    onDelete={handleDeleteTicket}
+                                                />
+                                            ))}
+                                        </SortableContext>
+                                    </tbody>
+                                </table>
+                            </DndContext>
                         )}
                     </div>
                 )}

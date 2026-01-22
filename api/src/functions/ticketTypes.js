@@ -29,7 +29,7 @@ app.http('getTicketTypes', {
             const q = `
                 SELECT * FROM event_ticket_types 
                 WHERE event_id = @eventId
-                ORDER BY price ASC
+                ORDER BY sort_order ASC, price ASC
             `;
             const result = await query(q, [{ name: 'eventId', type: sql.Int, value: eventId }]);
 
@@ -60,10 +60,14 @@ app.http('createTicketType', {
                 return { status: 400, body: JSON.stringify({ error: "Missing required fields" }) };
             }
 
+            // Auto-assign next sort_order
             const insertQ = `
-                INSERT INTO event_ticket_types (event_id, name, price, system_role, description)
+                DECLARE @NextOrder INT;
+                SELECT @NextOrder = ISNULL(MAX(sort_order), 0) + 1 FROM event_ticket_types WHERE event_id = @eventId;
+
+                INSERT INTO event_ticket_types (event_id, name, price, system_role, description, sort_order)
                 OUTPUT INSERTED.*
-                VALUES (@eventId, @name, @price, @system_role, @description)
+                VALUES (@eventId, @name, @price, @system_role, @description, @NextOrder)
             `;
 
             const result = await query(insertQ, [

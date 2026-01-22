@@ -62,6 +62,7 @@ app.http('getEventDetail', {
                 SELECT ticket_type_id, name, price, system_role, description
                 FROM event_ticket_types 
                 WHERE event_id = @eventId
+                ORDER BY sort_order ASC, price ASC
             `;
 
             const ticketResult = await db.query(ticketQuery, [

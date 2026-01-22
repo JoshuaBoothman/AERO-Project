@@ -1,5 +1,20 @@
 # Development Log
 
+## [2026-01-22] - Ticket Management Implementation (Completed)
+- **Time**: 12:20 - 12:42
+- **Completed Items**:
+    - **Database**: Added `sort_order` column to `event_ticket_types` (Schema updated on Dev & Master).
+    - **Backend (API)**:
+        - Updated `getTicketTypes` (GET) to sort by `sort_order`.
+        - Updated `createTicketType` (POST) to auto-assign the next available `sort_order`.
+        - Created `reorderTicketTypes.js` (PUT) for drag-and-drop persistence.
+        - Updated `getEventDetail.js` and `getStoreItems.js` to ensure sorting is respected in Public and Store views.
+    - **Frontend (Client)**:
+        - Implemented Drag-and-Drop reordering in `EventForm.jsx` (Ticket Types section) using `@dnd-kit`.
+        - Verified admin-side persistence and user-side display.
+    - **Documentation**:
+        - Moved `20260222_ticket_management.md` to `completed/`.
+
 ## [2026-01-22] - Admin Orders Search
 **Time Log:** 11:55 - 12:15
 **Milestone:** Enhanced Admin Order Management
