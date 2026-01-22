@@ -12,6 +12,7 @@ import VerifyEmail from './pages/VerifyEmail';
 import EventPurchase from './pages/EventPurchase';
 
 import MyOrders from './pages/MyOrders';
+import MyPlanes from './pages/MyPlanes';
 import AdminOrders from './pages/admin/AdminOrders';
 import EventForm from './pages/admin/EventForm';
 import AdminMapTool from './pages/camping/AdminMapTool';
@@ -119,6 +120,7 @@ function App() {
                 <Route path="checkout" element={<Checkout />} /> {/* Added Checkout Route */}
 
                 <Route path="my-orders" element={<MyOrders />} />
+                <Route path="my-planes" element={<MyPlanes />} />
                 <Route path="orders/:orderId" element={<OrderDetail />} />
                 <Route path="admin" element={<AdminDashboard />} />
                 <Route path="admin/map" element={<AdminMapTool />} />
