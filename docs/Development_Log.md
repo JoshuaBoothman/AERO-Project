@@ -1,5 +1,29 @@
 # Development Log
 
+## [2026-01-22] - Admin Orders Search
+**Time Log:** 11:55 - 12:15
+**Milestone:** Enhanced Admin Order Management
+
+### Completed Items
+*   **Backend (API)**
+    *   **Filtering:** Updated `getAdminOrders.js` to support `search`, `status`, `date`, and `event` filters.
+    *   **Security:** Implemented parameterized queries for all filters.
+*   **Frontend (Admin)**
+    *   **UI:** Added a comprehensive Filter Bar to `AdminOrders.jsx`.
+    *   **Features:**
+        *   Text Search (Name, Email, ID).
+        *   Date Range (From/To).
+        *   Status Dropdown (Paid, Pending, etc).
+        *   Event Filter (Dynamic Dropdown).
+    *   **UX:** Implemented debounced search and auto-refresh on filter changes.
+*   **Verification**
+    *   Backend logic verified via test script.
+    *   Manual verification steps documented in Walkthrough.
+*   **Fixes (Post-Review)**
+    *   **Logic:** Fixed Date Filter to correctly handle single-day searches (inclusive end time).
+    *   **Frontend:** Corrected `getEvents` API endpoint to `/api/events` to fix silent dropdown failure.
+
+
 ## [2026-01-22] - Merchandise Updates & Variant Fixes
 - **Time**: 11:00 - 11:45
 - **Completed Items**:
@@ -1168,4 +1192,5 @@ The "Camping" page for "Festival of Aeromodelling 2026" was displaying "No campg
 
 ### Next Steps
 *   **Verification:** Confirm data flows correctly into Admin exports/reports.
+
 
