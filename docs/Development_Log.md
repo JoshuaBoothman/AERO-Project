@@ -1,5 +1,22 @@
 # Development Log
 
+## [2026-01-22] - Checkout & Order Details Fixes (Completed)
+- **Time**: 15:30 - 16:22
+- **Completed Items**:
+    - **Bug Fix (Merchandise)**: Resolved checkout error for merchandise items by ensuring the correct `sku_id` is passed from `StorePage.jsx`.
+    - **Bug Fix (Assets)**: 
+        - Resolved "1970 date" error by passing correct Event Dates in "Full Event Package" mode.
+        - Fixed Availability Logic in `createOrder.js` to validate the specific selected Asset Item ID, not a generic Asset Type.
+        - Fixed `getOrderDetail.js` API crash (500 Error) caused by invalid column reference (`name` vs `site_number`) for Campsites.
+    - **Refactor (Order Details)**:
+        - Overhauled `OrderDetail.jsx` to separate the "Order Summary" (transactional view) from "Ticket Management" (attendee details).
+        - Backend `getOrderDetail.js` updated to correctly identify item names for Assets, Campsites, and Subevents.
+    - **Documentation**:
+        - Created `fix_merch_checkout_error.md` (Completed).
+        - Created `fix_asset_hire_dates.md` (Completed).
+        - Created `fix_asset_hire_logic.md` (Completed).
+        - Created `overhaul_order_details.md` (Completed).
+
 ## [2026-01-22] - Ticket Merchandise Linking (Completed)
 - **Time**: 13:36 - 15:16
 - **Completed Items**:

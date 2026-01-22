@@ -480,24 +480,27 @@ app.http('createOrder', {
                         // Complex asset management: Allocating specific `asset_item_id`.
                         // MVP: Just book it conceptually. We need an `asset_item_id` for `asset_hires`.
                         // Find an available asset item of this type.
+                        // Specific Asset Booking Logic
+                        // Input 'assetId' is the specific asset_item_id from the frontend
+                        const assetItemId = asset.assetId;
+
                         const itemFindReq = new sql.Request(transaction);
-                        // Find item not hired during these dates
                         const itemFindRes = await itemFindReq
-                            .input('atid', sql.Int, asset.assetId)
+                            .input('aiid', sql.Int, assetItemId)
                             .input('start', sql.Date, asset.checkIn)
                             .input('end', sql.Date, asset.checkOut)
                             .query(`
-                                SELECT TOP 1 ai.asset_item_id 
+                                SELECT 1 
                                 FROM asset_items ai
-                                WHERE ai.asset_type_id = @atid
+                                WHERE ai.asset_item_id = @aiid
                                 AND ai.asset_item_id NOT IN (
                                     SELECT asset_item_id FROM asset_hires 
                                     WHERE hire_start_date < @end AND hire_end_date > @start
                                 )
                             `);
 
-                        if (itemFindRes.recordset.length === 0) throw new Error(`No assets available for specified dates.`);
-                        const assetItemId = itemFindRes.recordset[0].asset_item_id;
+                        if (itemFindRes.recordset.length === 0) throw new Error(`Asset ${assetItemId} is not available for the specified dates.`);
+                        // const assetItemId = asset.assetId; // Already have it
 
                         totalAmount += asset.price;
 

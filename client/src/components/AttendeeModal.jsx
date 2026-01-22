@@ -45,8 +45,6 @@ function AttendeeModal({
                         lastName: '',
                         email: user?.email || '',
                         phoneNumber: user?.phone || '',
-                        email: user?.email || '',
-                        phoneNumber: user?.phone || '',
                         country: 'Australia',
                         state: '',
                         tempId: tempId,

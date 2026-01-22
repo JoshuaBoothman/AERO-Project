@@ -52,8 +52,11 @@ app.http('getOrderDetail', {
                     oi.item_type,
                     CASE 
                         WHEN oi.item_type = 'Merchandise' THEN p_prod.name 
+                        WHEN oi.item_type = 'Campsite' THEN CONCAT('Campsite: ', c.site_number)
+                        WHEN oi.item_type = 'Subevent' THEN se.name
+                        WHEN oi.item_type = 'Asset' THEN at.name
                         ELSE ett.name 
-                    END as ticket_name,
+                    END as item_name,
                     CASE 
                         WHEN oi.item_type = 'Merchandise' THEN NULL 
                         ELSE ett.system_role 
@@ -66,12 +69,22 @@ app.http('getOrderDetail', {
                     a.status as attendee_status,
                     a.ticket_code,
                     a.attendee_id,
+                    a.ticket_type_id,
                     e.name as event_name,
                     e.slug as event_slug,
                     e.banner_url,
                     -- Extra Fields for Merch
                     sku.sku_code,
-                    p_prod.name as product_name
+                    -- Extra Fields for Campsites
+                    c.campsite_id,
+                    cb.check_in_date as camp_check_in,
+                    cb.check_out_date as camp_check_out,
+                    -- Extra Fields for Assets
+                    ai.identifier as asset_identifier,
+                    ah.hire_start_date as asset_start,
+                    ah.hire_end_date as asset_end,
+                    -- Extra Fields for Subevents
+                    se.start_time as subevent_start
                 FROM order_items oi
                 JOIN attendees a ON oi.attendee_id = a.attendee_id
                 JOIN event_ticket_types ett ON a.ticket_type_id = ett.ticket_type_id
@@ -79,6 +92,12 @@ app.http('getOrderDetail', {
                 JOIN events e ON a.event_id = e.event_id
                 LEFT JOIN product_skus sku ON oi.item_reference_id = sku.product_sku_id AND oi.item_type = 'Merchandise'
                 LEFT JOIN products p_prod ON sku.product_id = p_prod.product_id
+                LEFT JOIN campsites c ON oi.item_reference_id = c.campsite_id AND oi.item_type = 'Campsite'
+                LEFT JOIN campsite_bookings cb ON cb.order_item_id = oi.order_item_id
+                LEFT JOIN subevents se ON oi.item_reference_id = se.subevent_id AND oi.item_type = 'Subevent'
+                LEFT JOIN asset_items ai ON oi.item_reference_id = ai.asset_item_id AND oi.item_type = 'Asset'
+                LEFT JOIN asset_types at ON ai.asset_type_id = at.asset_type_id
+                LEFT JOIN asset_hires ah ON ah.order_item_id = oi.order_item_id
                 WHERE oi.order_id = @orderId
             `;
 
@@ -123,7 +142,6 @@ app.http('getOrderDetail', {
                 event_name: itemsResult.length > 0 ? itemsResult[0].event_name : "Unknown Event",
                 event_slug: itemsResult.length > 0 ? itemsResult[0].event_slug : "",
                 banner_url: itemsResult.length > 0 ? itemsResult[0].banner_url : "",
-                banner_url: itemsResult.length > 0 ? itemsResult[0].banner_url : "",
                 items: itemsWithPlanes
             };
 
@@ -134,7 +152,7 @@ app.http('getOrderDetail', {
 
         } catch (error) {
             context.log(`Error in getOrderDetail: ${error.message}`);
-            return { status: 500, body: "Internal Server Error" };
+            return { status: 500, body: JSON.stringify({ error: error.message }) };
         }
     }
 });

@@ -97,30 +97,45 @@ function StorePage({ orgSettings }) {
     const [selectedTicketForModal, setSelectedTicketForModal] = useState(null);
 
     // Handlers
-    const handleAddMerch = (variantId, quantity, variantDetails) => {
+    const handleAddMerch = (product, sku) => {
         // Construct cart item
         const item = {
-            ...selectedProduct,
-            id: selectedProduct.id, // Ensure ID is top level
-            variantId,
-            quantity,
-            ...variantDetails, // optionName, priceAdjustment
+            ...product,
+            id: sku.product_sku_id || sku.id, // Use SKU ID as the primary ID for the cart
+            productId: product.id,
+            skuCode: sku.sku_code || sku.code,
+            quantity: 1, // Default to 1
+            price: sku.price, // Use SKU price
             eventId: data.eventId,
-            type: 'MERCH'
+            type: 'MERCH',
+            // Store specific variant options for display if needed, though SKU code often suffices
+            variantValues: sku.variant_map || {}
         };
         addToCart(item);
         setSelectedProduct(null);
-        notify(`${selectedProduct.name} added to cart!`, 'success');
+        notify(`${product.name} added to cart!`, 'success');
     };
 
     const handleOpenAssetModal = (asset) => {
         setSelectedAssetType(asset);
     };
 
-    const handleAddAssetToCart = (assetItem) => {
-        addToCart({ ...assetItem, eventId: data.eventId, type: 'ASSET' });
+    const handleAddAssetToCart = (asset, specificItem, dates) => {
+        const item = {
+            ...specificItem,
+            id: specificItem.asset_item_id, // Use specific unit ID
+            assetTypeId: asset.id,
+            name: asset.name, // Ensure name is preserved
+            identifier: specificItem.identifier,
+            checkIn: dates.start,
+            checkOut: dates.end,
+            eventId: data.eventId,
+            type: 'ASSET',
+            price: asset.price // Ensure calculated price passed from modal is used (attached to asset in modal)
+        };
+        addToCart(item);
         setSelectedAssetType(null);
-        notify(`${assetItem.name} added to cart!`, 'success');
+        notify(`${asset.name} (${specificItem.identifier}) added to cart!`, 'success');
     };
 
     const handleAddSubevent = (subevent) => {

@@ -62,6 +62,9 @@ function AssetSelectionModal({ asset, hireDates, setHireDates, eventDates, onClo
         const costInfo = calculateCost(); // Re-calc to be safe
         const finalPrice = costInfo.rawTotal; // Float
 
+        // Determine correct dates based on mode
+        const selectedDates = pricingMode === 'full' ? eventDates : hireDates;
+
         // Make sure we pass the 'price' to onAddToCart so the cart knows what to charge
         // Modifying the asset object passed to cart? Or the item?
         // onAddToCart(asset, item, dates) -> usually creates a cart item.
@@ -69,7 +72,7 @@ function AssetSelectionModal({ asset, hireDates, setHireDates, eventDates, onClo
         // Assuming onAddToCart handles an override or we pass a constructed object.
         // Let's attach the price to the asset clone or item.
         const assetWithPrice = { ...asset, price: finalPrice };
-        onAddToCart(assetWithPrice, item, hireDates);
+        onAddToCart(assetWithPrice, item, selectedDates);
         onClose();
     };
 
