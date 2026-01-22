@@ -25,7 +25,7 @@ app.http('getProductDetails', {
             const variantsRes = await pool.request()
                 .input('pid', sql.Int, productId)
                 .query(`
-                    SELECT v.variant_id, vc.name as category_name, vo.variant_option_id, vo.value
+                    SELECT v.variant_id, v.variant_category_id, vc.name as category_name, vo.variant_option_id, vo.value
                     FROM variants v
                     JOIN variant_categories vc ON v.variant_category_id = vc.variant_category_id
                     LEFT JOIN variant_options vo ON v.variant_id = vo.variant_id
@@ -38,6 +38,7 @@ app.http('getProductDetails', {
                 if (!variantsMap.has(row.variant_id)) {
                     variantsMap.set(row.variant_id, {
                         variant_id: row.variant_id,
+                        category_id: row.variant_category_id,
                         name: row.category_name,
                         options: []
                     });
@@ -55,7 +56,7 @@ app.http('getProductDetails', {
             const skuRes = await pool.request()
                 .input('pid', sql.Int, productId)
                 .query(`
-                    SELECT s.product_sku_id, s.sku_code, s.barcode, s.current_stock, s.price, s.image_url, s.is_active,
+                    SELECT s.product_sku_id, s.sku_code, s.barcode, s.current_stock, s.price, s.cost_price, s.image_url, s.is_active,
                            vc.name as cat_name, vo.value as opt_value
                     FROM product_skus s
                     LEFT JOIN sku_option_links link ON s.product_sku_id = link.product_sku_id
@@ -72,6 +73,7 @@ app.http('getProductDetails', {
                         id: row.product_sku_id,
                         code: row.sku_code,
                         price: row.price,
+                        cost_price: row.cost_price, // Added cost_price
                         stock: row.current_stock,
                         image_url: row.image_url, // Changed from image to image_url
                         active: row.is_active,

@@ -29,6 +29,13 @@ function ProductEditor() {
     const [templates, setTemplates] = useState([]);
     const [selectedTemplate, setSelectedTemplate] = useState(null);
 
+    // Bulk Update State
+    const [bulkCost, setBulkCost] = useState('');
+    const [bulkPrice, setBulkPrice] = useState('');
+
+    // Rename State
+    const [renameState, setRenameState] = useState({ open: false, variantId: null, name: '', existingId: null });
+
     // Initial Fetch
     useEffect(() => {
         fetchDetails();
@@ -165,6 +172,43 @@ function ProductEditor() {
                 }
             } catch (e) { notify('Error deleting category', 'error'); }
         });
+    };
+
+    const handleRenameClick = (variant) => {
+        setRenameState({ open: true, variantId: variant.category_id, name: variant.name, existingId: null });
+    };
+
+    const submitRename = async (shouldMerge = false) => {
+        const { variantId, name, existingId } = renameState;
+        console.log('submitRename', { variantId, name, shouldMerge });
+        try {
+            const res = await fetch(`/api/variant-categories/${variantId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'X-Auth-Token': token },
+                body: JSON.stringify({ name, merge: shouldMerge })
+            });
+
+            const data = await res.json();
+
+            if (res.status === 409) {
+                // Conflict - Merge required
+                setRenameState(prev => ({ ...prev, existingId: data.target_id })); // Trigger merge UI in modal
+            } else if (res.ok) {
+                notify(data.message, 'success');
+                setRenameState({ open: false, variantId: null, name: '', existingId: null });
+                // Optimistic Update
+                if (shouldMerge) {
+                    // Start fresh as IDs changed
+                    fetchDetails();
+                } else {
+                    // Here 'variantId' is category_id. But variants state uses variant_id.
+                    // We need to loop and find the one with matching category_id
+                    setVariants(prev => prev.map(v => v.category_id === variantId ? { ...v, name } : v));
+                }
+            } else {
+                notify(data.error || 'Update failed', 'error');
+            }
+        } catch (e) { notify('Error updating category', 'error'); }
     };
 
     const handleGenerateSKUs = async () => {
@@ -327,6 +371,18 @@ function ProductEditor() {
         } catch (e) { console.error('Failed to save SKU change', e); }
     };
 
+    const handleBulkApply = (field, value) => {
+        confirm(`Apply this ${field === 'price' ? 'Sell Price' : 'Cost Price'} to ALL SKUs?`, async () => {
+            // Optimistic
+            setSkus(prev => prev.map(s => ({ ...s, [field]: value })));
+
+            // Bulk API Calls (Parallel)
+            const updates = skus.map(s => handleSkuUpdate(s.id, field, value));
+            await Promise.all(updates);
+            notify('Applied to all SKUs', 'success');
+        });
+    };
+
     const fetchTemplates = async () => {
         try {
             const res = await fetch('/api/manage/variant-templates', {
@@ -471,7 +527,13 @@ function ProductEditor() {
                         {variants.map(v => (
                             <div key={v.variant_id} style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '15px', minWidth: '250px', background: '#fff' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                                    <h3 style={{ margin: 0 }}>{v.name}</h3>
+                                    <h3
+                                        style={{ margin: 0, cursor: 'pointer', borderBottom: '1px dashed #ccc' }}
+                                        onClick={() => handleRenameClick(v)}
+                                        title="Click to Rename"
+                                    >
+                                        {v.name}
+                                    </h3>
                                     <button
                                         onClick={() => handleDeleteVariant(v.variant_id)}
                                         style={{ color: '#999', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', padding: '0 5px' }}
@@ -584,6 +646,54 @@ function ProductEditor() {
                             Regenerate SKUs
                         </button>
                     </div>
+
+                    {/* Rename Modal */}
+                    {renameState.open && (
+                        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1100 }}>
+                            <div style={{ background: 'white', padding: '20px', borderRadius: '8px', width: '400px' }}>
+                                <h3 style={{ marginTop: 0 }}>Rename Category</h3>
+                                {renameState.existingId ? (
+                                    <div style={{ marginBottom: '20px', color: '#B71C1C', background: '#FFEBEE', padding: '10px', borderRadius: '4px' }}>
+                                        <strong>Conflict Detected:</strong> A category named "{renameState.name}" already exists.
+                                        <br /><br />
+                                        Do you want to <strong>Merge</strong> this category into the existing one?
+                                    </div>
+                                ) : (
+                                    <div style={{ marginBottom: '15px' }}>
+                                        <input
+                                            value={renameState.name}
+                                            onChange={e => setRenameState(prev => ({ ...prev, name: e.target.value }))}
+                                            style={{ width: '100%', padding: '10px', fontSize: '1rem', border: '1px solid #ddd', borderRadius: '4px' }}
+                                        />
+                                    </div>
+                                )}
+
+                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                                    <button
+                                        onClick={() => setRenameState({ open: false, variantId: null, name: '', existingId: null })}
+                                        style={{ padding: '8px 16px', background: '#eee', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                                    >
+                                        Cancel
+                                    </button>
+                                    {renameState.existingId ? (
+                                        <button
+                                            onClick={() => submitRename(true)}
+                                            style={{ padding: '8px 16px', background: '#D32F2F', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                                        >
+                                            Confirm Merge
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={() => submitRename(false)}
+                                            style={{ padding: '8px 16px', background: 'blue', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                                        >
+                                            Save
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -596,14 +706,47 @@ function ProductEditor() {
                                 <th style={{ padding: '10px', textAlign: 'left', width: '60px' }}>Active</th>
                                 <th style={{ padding: '10px', textAlign: 'left' }}>SKU Info</th>
                                 <th style={{ padding: '10px', textAlign: 'left' }}>Image URL</th>
-                                <th style={{ padding: '10px', textAlign: 'left', width: '100px' }}>Price ($)</th>
+                                <th style={{ padding: '10px', textAlign: 'left', width: '150px' }}>
+                                    Cost ($)
+                                    <div style={{ display: 'flex', gap: '5px', marginTop: '5px' }}>
+                                        <input
+                                            placeholder="Bulk"
+                                            value={bulkCost}
+                                            onChange={e => setBulkCost(e.target.value)}
+                                            style={{ width: '60px', padding: '4px', fontSize: '0.8rem', border: '1px solid #ccc', borderRadius: '4px' }}
+                                        />
+                                        <button
+                                            onClick={() => handleBulkApply('cost_price', bulkCost)}
+                                            style={{ fontSize: '0.7rem', padding: '4px', background: '#ddd', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                                        >
+                                            Apply
+                                        </button>
+                                    </div>
+                                </th>
+                                <th style={{ padding: '10px', textAlign: 'left', width: '150px' }}>
+                                    Price ($)
+                                    <div style={{ display: 'flex', gap: '5px', marginTop: '5px' }}>
+                                        <input
+                                            placeholder="Bulk"
+                                            value={bulkPrice}
+                                            onChange={e => setBulkPrice(e.target.value)}
+                                            style={{ width: '60px', padding: '4px', fontSize: '0.8rem', border: '1px solid #ccc', borderRadius: '4px' }}
+                                        />
+                                        <button
+                                            onClick={() => handleBulkApply('price', bulkPrice)}
+                                            style={{ fontSize: '0.7rem', padding: '4px', background: '#ddd', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                                        >
+                                            Apply
+                                        </button>
+                                    </div>
+                                </th>
                                 <th style={{ padding: '10px', textAlign: 'left', width: '100px' }}>Stock</th>
 
                                 <th style={{ padding: '10px', width: '60px' }}></th>
                             </tr>
                         </thead>
                         <tbody>
-                            {skus.map(sku => (
+                            {skus.map((sku, idx) => (
                                 <tr key={sku.id} style={{ borderBottom: '1px solid #eee' }}>
                                     <td style={{ padding: '10px', textAlign: 'center' }}>
                                         <input
@@ -627,12 +770,24 @@ function ProductEditor() {
                                         </div>
                                     </td>
                                     <td style={{ padding: '10px' }}>
-                                        <input
-                                            type="number"
-                                            value={sku.price}
-                                            onChange={e => handleSkuUpdate(sku.id, 'price', e.target.value)}
-                                            style={{ width: '80px', padding: '5px', border: '1px solid #ddd', borderRadius: '4px' }}
-                                        />
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                            <input
+                                                type="number"
+                                                value={sku.cost_price ?? ''}
+                                                onChange={e => handleSkuUpdate(sku.id, 'cost_price', e.target.value)}
+                                                style={{ width: '70px', padding: '5px', border: '1px solid #ddd', borderRadius: '4px' }}
+                                            />
+                                        </div>
+                                    </td>
+                                    <td style={{ padding: '10px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                            <input
+                                                type="number"
+                                                value={sku.price ?? ''}
+                                                onChange={e => handleSkuUpdate(sku.id, 'price', e.target.value)}
+                                                style={{ width: '70px', padding: '5px', border: '1px solid #ddd', borderRadius: '4px' }}
+                                            />
+                                        </div>
                                     </td>
                                     <td style={{ padding: '10px' }}>
                                         <input
@@ -657,7 +812,7 @@ function ProductEditor() {
                     {skus.length === 0 && <p style={{ textAlign: 'center', marginTop: '20px' }}>No SKUs generated yet. Go to "Options" tab to generate.</p>}
                 </div>
             )}
-        </div>
+        </div >
     );
 }
 

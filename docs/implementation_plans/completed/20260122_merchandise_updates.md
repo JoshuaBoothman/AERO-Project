@@ -1,7 +1,7 @@
 # Merchandise Updates (Cost Price & Renaming)
 
 ## Goal Description
-Implement "Cost Price" tracking for merchandise SKUs, add a "Bulk Apply" feature for pricing, and rename the "Size" variant category to "Mens Size".
+Implement "Cost Price" tracking for merchandise SKUs, add a "Bulk Apply" feature for pricing, and allow for renaming of variant categories.
 
 ## User Review Required
 > [!IMPORTANT]

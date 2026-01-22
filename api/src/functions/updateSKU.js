@@ -16,7 +16,7 @@ app.http('updateSKU', {
         const body = await request.json();
 
         // Destructure possible fields
-        const { price, current_stock, image_url, barcode, is_active } = body;
+        const { price, cost_price, current_stock, image_url, barcode, is_active } = body;
 
         try {
             const pool = await getPool();
@@ -28,6 +28,10 @@ app.http('updateSKU', {
             if (price !== undefined) {
                 updates.push("price = @price");
                 req.input('price', sql.Decimal(10, 2), price);
+            }
+            if (cost_price !== undefined) {
+                updates.push("cost_price = @cost");
+                req.input('cost', sql.Decimal(10, 2), cost_price);
             }
             if (current_stock !== undefined) {
                 updates.push("current_stock = @stock");

@@ -1,5 +1,18 @@
 # Development Log
 
+## [2026-01-22] - Merchandise Updates & Variant Fixes
+- **Time**: 11:00 - 11:45
+- **Completed Items**:
+    - **Merchandise**:
+        - Implemented "Cost Price" tracking for SKUs.
+        - Added "Bulk Apply" for Cost and Sell prices in Product Editor table header.
+        - Implemented Variant Category Renaming (e.g., "Size" -> "Mens Size").
+    - **Bug Fixes**:
+        - Fixed `context.log.error` issue in `manageVariantCategory.js`.
+        - Resolved merge conflict logic for Variant Categories, implementing a recursive merge and deduplication strategy to fix "split" categories.
+        - Corrected frontend logic to use `category_id` instead of `variant_id` for merge operations.
+    - **Cleanup**: Removed temporary debug scripts (`inspect_db.js`, `fix_duplicates.js`) and logging.
+
 ## [2026-01-21] - Map Display Fixes (Admin & User)
 - **Time**: 06:07 - 07:44
 - **Completed Items**:
