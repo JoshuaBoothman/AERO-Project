@@ -105,6 +105,7 @@ function StorePage({ orgSettings }) {
             variantId,
             quantity,
             ...variantDetails, // optionName, priceAdjustment
+            eventId: data.eventId,
             type: 'MERCH'
         };
         addToCart(item);
@@ -117,13 +118,13 @@ function StorePage({ orgSettings }) {
     };
 
     const handleAddAssetToCart = (assetItem) => {
-        addToCart({ ...assetItem, type: 'ASSET' });
+        addToCart({ ...assetItem, eventId: data.eventId, type: 'ASSET' });
         setSelectedAssetType(null);
         notify(`${assetItem.name} added to cart!`, 'success');
     };
 
     const handleAddSubevent = (subevent) => {
-        addToCart({ ...subevent, type: 'SUBEVENT' });
+        addToCart({ ...subevent, eventId: data.eventId, type: 'SUBEVENT' });
         notify(`${subevent.name} added to cart!`, 'success');
     };
 
@@ -142,6 +143,7 @@ function StorePage({ orgSettings }) {
             ...selectedTicketForModal,
             type: 'TICKET',
             quantity: 1,
+            eventId: data.eventId, // Ensure eventId is passed
             attendees: attendees
         };
 
@@ -366,6 +368,7 @@ function StorePage({ orgSettings }) {
                 cart={selectedTicketForModal ? { [selectedTicketForModal.id]: 1 } : {}}
                 user={user}
                 myPilots={myPilots}
+                event={data}
                 confirmLabel="Add to Cart"
             />
         </div>

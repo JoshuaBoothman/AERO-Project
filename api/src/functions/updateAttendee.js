@@ -13,7 +13,7 @@ app.http('updateAttendee', {
         }
 
         const attendeeId = request.params.attendeeId;
-        const { firstName, lastName, email, phoneNumber } = await request.json();
+        const { firstName, lastName, email, phoneNumber, country } = await request.json();
 
         try {
             // 1. Security Check: Ensure the user owns the order associated with this attendee
@@ -43,7 +43,8 @@ app.http('updateAttendee', {
                     first_name = @firstName,
                     last_name = @lastName,
                     email = @email,
-                    phone_number = @phoneNumber
+                    phone_number = @phoneNumber,
+                    country = @country
                 WHERE person_id = @personId
             `;
 
@@ -52,6 +53,7 @@ app.http('updateAttendee', {
                 { name: 'lastName', type: sql.NVarChar, value: lastName },
                 { name: 'email', type: sql.NVarChar, value: email },
                 { name: 'phoneNumber', type: sql.VarChar, value: phoneNumber || null },
+                { name: 'country', type: sql.NVarChar, value: country || null },
                 { name: 'personId', type: sql.Int, value: personId }
             ]);
 

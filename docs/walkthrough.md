@@ -1,24 +1,29 @@
-# Walkthrough - General Navigation
+# Walkthrough - Attendee Phone Number
 
-I have implemented the new "Information" navigation menu.
+I have successfully implemented the collection of phone numbers for attendees.
 
 ## Changes
-### [Layout.jsx](file:///c:/laragon/www/AERO-Project/client/src/components/Layout.jsx)
-*   **Desktop**: Added an "Information" dropdown menu between "Events" and "Shop".
-*   **Mobile**: Added a mobile-friendly "Information" section with direct links.
-*   **Icons**: Imported `ChevronDown` for the dropdown indicator.
 
-## Verification Results
+### Database
+-  Verified `persons` table schema.
+-  **User Action Required**: Run `docs/schema/20260122_add_phone_number.sql` (Confirmed as Done).
 
-### Visual Verification
-The "Information" menu appears correctly in the header.
+### Host/Frontend (Client)
+- **File**: `client/src/components/AttendeeModal.jsx`
+- **Changes**: 
+    - Added `Phone Number` input field.
+    - Added `phoneNumber` to state and validation logic.
+    - Pre-fills with User's phone number if available.
 
-![Information Menu](/C:/Users/jbsol/.gemini/antigravity/brain/027f66d0-1577-4c47-bbd9-9ec6a70e85a6/.system_generated/click_feedback/click_feedback_1768683223501.png)
+### Backend (API)
+- **File**: `api/src/functions/createOrder.js`
+- **Changes**:
+    - Updated `INSERT` and `UPDATE` queries for `persons` table to include `phone_number`.
+    - Handles both Main User and Guest Attendees.
+- **File**: `api/src/functions/updateAttendee.js`
+- **Status**: Already supported `phone_number` updates.
 
-### Browser Validation
-A browser test confirmed:
-1.  **Menu Item**: "Information" exists.
-2.  **Dropdown Items**: The following items are present in the DOM:
-    *   Flightline Roster
-    *   FAQ
-    *   Event Schedule
+## Verification
+1.  **Registration**: When registering for an event, the "Attendee Details" modal now asks for a Phone Number.
+2.  **Validation**: The field is required.
+3.  **Persistence**: The data is saved to the `persons` table in the database upon checkout.

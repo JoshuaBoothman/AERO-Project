@@ -137,11 +137,14 @@ app.http('createOrder', {
                                     .input('post', sql.NVarChar, pPost)
                                     .input('emg_n', sql.NVarChar, pEmergName)
                                     .input('emg_p', sql.NVarChar, pEmergPhone)
+                                    .input('ph', sql.VarChar, attendeeData.phoneNumber || null)
+                                    .input('cnt', sql.NVarChar, attendeeData.country || 'Australia')
                                     .query(`
                                         UPDATE persons SET 
                                             first_name = @fn, last_name = @ln, 
                                             date_of_birth = @dob,
-                                            address_line_1 = @addr, city = @city, state = @state, postcode = @post,
+                                            phone_number = @ph,
+                                            address_line_1 = @addr, city = @city, state = @state, postcode = @post, country = @cnt,
                                             emergency_contact_name = @emg_n, emergency_contact_phone = @emg_p
                                         WHERE person_id = @pid
                                     `);
@@ -165,11 +168,14 @@ app.http('createOrder', {
                                         .input('post', sql.NVarChar, pPost)
                                         .input('emg_n', sql.NVarChar, pEmergName)
                                         .input('emg_p', sql.NVarChar, pEmergPhone)
+                                        .input('ph', sql.VarChar, attendeeData.phoneNumber || null)
+                                        .input('cnt', sql.NVarChar, attendeeData.country || 'Australia')
                                         .query(`
                                         UPDATE persons SET 
                                             first_name = @fn, last_name = @ln, 
                                             date_of_birth = @dob,
-                                            address_line_1 = @addr, city = @city, state = @state, postcode = @post,
+                                            phone_number = @ph,
+                                            address_line_1 = @addr, city = @city, state = @state, postcode = @post, country = @cnt,
                                             emergency_contact_name = @emg_n, emergency_contact_phone = @emg_p
                                         WHERE person_id = @pid
                                     `);
@@ -188,14 +194,18 @@ app.http('createOrder', {
                                         .input('post', sql.NVarChar, pPost)
                                         .input('emg_n', sql.NVarChar, pEmergName)
                                         .input('emg_p', sql.NVarChar, pEmergPhone)
+                                        .input('ph', sql.VarChar, attendeeData.phoneNumber || null)
+                                        .input('cnt', sql.NVarChar, attendeeData.country || 'Australia')
                                         .query(`
                                             INSERT INTO persons (
                                                 first_name, last_name, email, user_id, 
-                                                date_of_birth, address_line_1, city, state, postcode, 
+                                                phone_number,
+                                                date_of_birth, address_line_1, city, state, postcode, country,
                                                 emergency_contact_name, emergency_contact_phone
                                             ) VALUES (
                                                 @fn, @ln, @em, @uid,
-                                                @dob, @addr, @city, @state, @post,
+                                                @ph,
+                                                @dob, @addr, @city, @state, @post, @cnt,
                                                 @emg_n, @emg_p
                                             ); 
                                             SELECT SCOPE_IDENTITY() AS id

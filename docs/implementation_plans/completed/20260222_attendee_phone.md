@@ -3,9 +3,9 @@
 ## Goal Description
 Collect optional/required phone numbers for every attendee during registration to ensure organizers can contact them if needed.
 
-## User Review Required
+## SQL Script
 > [!NOTE]
-> `persons` table already has `phone_number`. We just need to expose it in the UI and ensure it saves.
+> Run `docs/schema/20260122_add_phone_number.sql` to ensure the column exists.
 
 ## Proposed Changes
 

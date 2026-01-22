@@ -43,7 +43,14 @@ function AttendeeModal({
                         firstName: '',
                         lastName: '',
                         email: user?.email || '',
-                        tempId: tempId
+                        phoneNumber: user?.phone || '',
+                        email: user?.email || '',
+                        phoneNumber: user?.phone || '',
+                        country: 'Australia',
+                        state: '',
+                        tempId: tempId,
+                        arrivalDate: event?.eventStartDate ? event.eventStartDate.split('T')[0] : '',
+                        departureDate: event?.eventEndDate ? event.eventEndDate.split('T')[0] : ''
                     };
                 }
             });
@@ -127,6 +134,7 @@ function AttendeeModal({
                         { field: 'postcode', name: 'Postcode' },
                         { field: 'emergencyName', name: 'Emergency Contact Name' },
                         { field: 'emergencyPhone', name: 'Emergency Contact Phone' },
+                        { field: 'phoneNumber', name: 'Phone Number' },
                         { field: 'arrivalDate', name: 'Arrival Date' },
                         { field: 'departureDate', name: 'Departure Date' }
                     ];
@@ -136,6 +144,25 @@ function AttendeeModal({
                             notify(`${label}: Please enter ${req.name}.`, "error");
                             return;
                         }
+                        if (!d[req.field] || !d[req.field].trim()) {
+                            notify(`${label}: Please enter ${req.name}.`, "error");
+                            return;
+                        }
+                    }
+
+                    // Email Validation
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(d.email)) {
+                        notify(`${label}: Please enter a valid Email Address.`, "error");
+                        return;
+                    }
+
+                    // DOB Validation (Future Date Check)
+                    const dobDate = new Date(d.dateOfBirth);
+                    const today = new Date();
+                    if (dobDate > today) {
+                        notify(`${label}: Date of Birth cannot be in the future.`, "error");
+                        return;
                     }
 
 
@@ -218,8 +245,15 @@ function AttendeeModal({
                                     type="email" placeholder="Email"
                                     value={data.email || ''}
                                     onChange={e => handleChange(key, 'email', e.target.value)}
-                                    style={{ ...inputStyle, marginBottom: '1rem' }}
+                                    style={inputStyle}
                                 />
+                                <input
+                                    type="tel" placeholder="Phone Number"
+                                    value={data.phoneNumber || ''}
+                                    onChange={e => handleChange(key, 'phoneNumber', e.target.value)}
+                                    style={inputStyle}
+                                />
+
 
                                 <h5 className="font-bold text-sm mb-2 mt-4 text-gray-700">Address & Contact</h5>
                                 <div className="mb-4 space-y-3">
@@ -231,8 +265,27 @@ function AttendeeModal({
                                     />
                                     <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                                         <input placeholder="City" value={data.city || ''} onChange={e => handleChange(key, 'city', e.target.value)} style={inputStyle} />
-                                        <input placeholder="State" value={data.state || ''} onChange={e => handleChange(key, 'state', e.target.value)} style={inputStyle} />
+
+                                        {/* State Dropdown with Custom Input */}
+                                        <div className="relative">
+                                            <input
+                                                list={`states-${key}`}
+                                                placeholder="State"
+                                                value={data.state || ''}
+                                                onChange={e => handleChange(key, 'state', e.target.value)}
+                                                style={inputStyle}
+                                            />
+                                            <datalist id={`states-${key}`}>
+                                                {['ACT', 'NSW', 'NT', 'QLD', 'SA', 'TAS', 'VIC', 'WA'].map(s => (
+                                                    <option key={s} value={s} />
+                                                ))}
+                                            </datalist>
+                                        </div>
+
                                         <input placeholder="Postcode" value={data.postcode || ''} onChange={e => handleChange(key, 'postcode', e.target.value)} style={inputStyle} />
+                                    </div>
+                                    <div className="mb-2">
+                                        <input placeholder="Country" value={data.country || 'Australia'} onChange={e => handleChange(key, 'country', e.target.value)} style={inputStyle} />
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                                         <input placeholder="Emergency Contact Name" value={data.emergencyName || ''} onChange={e => handleChange(key, 'emergencyName', e.target.value)} style={inputStyle} />
@@ -253,101 +306,103 @@ function AttendeeModal({
                                 </div>
 
                                 {/* Pilot Fields */}
-                                {ticket?.system_role === 'pilot' && (
-                                    <div className="mt-4 p-4 bg-white border border-gray-200 rounded">
-                                        <h5 className="font-bold mb-2">✈️ Pilot & Aircraft Registration</h5>
+                                {
+                                    ticket?.system_role === 'pilot' && (
+                                        <div className="mt-4 p-4 bg-white border border-gray-200 rounded">
+                                            <h5 className="font-bold mb-2">✈️ Pilot & Aircraft Registration</h5>
 
-                                        {/* MOP */}
-                                        <div className="mb-4 p-3 bg-blue-50 border border-blue-100 rounded text-sm">
-                                            <p className="mb-2 text-blue-800">
-                                                Please read the Agreement.
-                                                {/* <a href="#" className="underline"> View MOP</a> */}
-                                            </p>
-                                            <label className="flex items-center gap-2 cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={data.hasReadMop || false}
-                                                    onChange={e => handleChange(key, 'hasReadMop', e.target.checked)}
-                                                />
-                                                <span className="font-medium">I have read and agree to the MOP</span>
-                                            </label>
-                                        </div>
-
-                                        <input
-                                            placeholder="AUS Number"
-                                            value={data.licenseNumber || ''}
-                                            onChange={e => handleChange(key, 'licenseNumber', e.target.value)}
-                                            style={{ ...inputStyle, marginBottom: '1rem' }}
-                                        />
-
-                                        {/* Flight Line Duties (New) */}
-                                        <div className="mb-4">
-                                            <label className="flex items-center gap-2 cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={data.flightLineDuties || false}
-                                                    onChange={e => handleChange(key, 'flightLineDuties', e.target.checked)}
-                                                />
-                                                <span className="font-medium text-sm">I agree to perform flight line duties</span>
-                                            </label>
-                                        </div>
-
-                                        {/* Heavy Models Toggle */}
-                                        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-sm">
-                                            <label className="flex items-center gap-2 cursor-pointer font-bold">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={data.bringingHeavyModels || false}
-                                                    onChange={e => {
-                                                        const newVal = e.target.checked;
-                                                        handleChange(key, 'bringingHeavyModels', newVal);
-                                                        // Optional: Clear planes if unchecked? leaving for now in case of accidental toggle
-                                                    }}
-                                                />
-                                                Are you bringing any Heavy Models?
-                                            </label>
-                                        </div>
-
-                                        {/* Aircraft List - Only if Bringing Heavy Models */}
-                                        {data.bringingHeavyModels && (
-                                            <div>
-                                                <h6 className="font-bold text-sm mb-2">Heavy Aircraft List</h6>
-                                                {(data.planes || [{}]).map((plane, pIdx) => (
-                                                    <div key={pIdx} className="mb-4 pb-4 border-b border-gray-100 last:border-0">
-                                                        <div className="grid grid-cols-3 gap-2 mb-2">
-                                                            <input placeholder="Make" value={plane.make || ''} onChange={e => updatePlane(key, pIdx, 'make', e.target.value)} style={inputStyle} />
-                                                            <input placeholder="Model" value={plane.model || ''} onChange={e => updatePlane(key, pIdx, 'model', e.target.value)} style={inputStyle} />
-                                                            <input placeholder="Rego" value={plane.rego || ''} onChange={e => updatePlane(key, pIdx, 'rego', e.target.value)} style={inputStyle} />
-                                                        </div>
-
-                                                        {/* Forced Heavy Fields */}
-                                                        <div className="p-3 bg-gray-50 border border-gray-200 rounded text-sm">
-                                                            <div className="mb-2">
-                                                                <label className="block text-xs font-bold mb-1">Heavy Model Cert #</label>
-                                                                <input placeholder="Cert #" value={plane.heavyCertNumber || ''} onChange={e => updatePlane(key, pIdx, 'heavyCertNumber', e.target.value)} style={inputStyle} />
-                                                            </div>
-                                                            <div>
-                                                                <label className="block text-xs font-bold mb-1">Upload Certificate</label>
-                                                                {plane.heavyCertFile ? (
-                                                                    <div className="text-green-600">✓ Uploaded <span className="text-red-500 cursor-pointer ml-2 hover:underline" onClick={() => updatePlane(key, pIdx, 'heavyCertFile', null)}>Remove</span></div>
-                                                                ) : (
-                                                                    <input type="file" onChange={e => {
-                                                                        if (e.target.files?.[0]) handleUpload(e.target.files[0]).then(url => updatePlane(key, pIdx, 'heavyCertFile', url));
-                                                                    }} />
-                                                                )}
-                                                            </div>
-                                                        </div>
-
-                                                        {(data.planes || []).length > 1 && (
-                                                            <button onClick={() => removePlane(key, pIdx)} className="text-red-500 text-xs underline mt-1">Remove Plane</button>
-                                                        )}
-                                                    </div>
-                                                ))}
-                                                <button onClick={() => addPlane(key)} className="text-primary text-sm font-bold">+ Add Aircraft</button>
+                                            {/* MOP */}
+                                            <div className="mb-4 p-3 bg-blue-50 border border-blue-100 rounded text-sm">
+                                                <p className="mb-2 text-blue-800">
+                                                    Please read the Agreement.
+                                                    {/* <a href="#" className="underline"> View MOP</a> */}
+                                                </p>
+                                                <label className="flex items-center gap-2 cursor-pointer">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={data.hasReadMop || false}
+                                                        onChange={e => handleChange(key, 'hasReadMop', e.target.checked)}
+                                                    />
+                                                    <span className="font-medium">I have read and agree to the MOP</span>
+                                                </label>
                                             </div>
-                                        )}
-                                    </div>
-                                )}
+
+                                            <input
+                                                placeholder="AUS Number"
+                                                value={data.licenseNumber || ''}
+                                                onChange={e => handleChange(key, 'licenseNumber', e.target.value)}
+                                                style={{ ...inputStyle, marginBottom: '1rem' }}
+                                            />
+
+                                            {/* Flight Line Duties (New) */}
+                                            <div className="mb-4">
+                                                <label className="flex items-center gap-2 cursor-pointer">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={data.flightLineDuties || false}
+                                                        onChange={e => handleChange(key, 'flightLineDuties', e.target.checked)}
+                                                    />
+                                                    <span className="font-medium text-sm">I agree to perform flight line duties</span>
+                                                </label>
+                                            </div>
+
+                                            {/* Heavy Models Toggle */}
+                                            <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-sm">
+                                                <label className="flex items-center gap-2 cursor-pointer font-bold">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={data.bringingHeavyModels || false}
+                                                        onChange={e => {
+                                                            const newVal = e.target.checked;
+                                                            handleChange(key, 'bringingHeavyModels', newVal);
+                                                            // Optional: Clear planes if unchecked? leaving for now in case of accidental toggle
+                                                        }}
+                                                    />
+                                                    Are you bringing any Heavy Models?
+                                                </label>
+                                            </div>
+
+                                            {/* Aircraft List - Only if Bringing Heavy Models */}
+                                            {data.bringingHeavyModels && (
+                                                <div>
+                                                    <h6 className="font-bold text-sm mb-2">Heavy Aircraft List</h6>
+                                                    {(data.planes || [{}]).map((plane, pIdx) => (
+                                                        <div key={pIdx} className="mb-4 pb-4 border-b border-gray-100 last:border-0">
+                                                            <div className="grid grid-cols-3 gap-2 mb-2">
+                                                                <input placeholder="Make" value={plane.make || ''} onChange={e => updatePlane(key, pIdx, 'make', e.target.value)} style={inputStyle} />
+                                                                <input placeholder="Model" value={plane.model || ''} onChange={e => updatePlane(key, pIdx, 'model', e.target.value)} style={inputStyle} />
+                                                                <input placeholder="Rego" value={plane.rego || ''} onChange={e => updatePlane(key, pIdx, 'rego', e.target.value)} style={inputStyle} />
+                                                            </div>
+
+                                                            {/* Forced Heavy Fields */}
+                                                            <div className="p-3 bg-gray-50 border border-gray-200 rounded text-sm">
+                                                                <div className="mb-2">
+                                                                    <label className="block text-xs font-bold mb-1">Heavy Model Cert #</label>
+                                                                    <input placeholder="Cert #" value={plane.heavyCertNumber || ''} onChange={e => updatePlane(key, pIdx, 'heavyCertNumber', e.target.value)} style={inputStyle} />
+                                                                </div>
+                                                                <div>
+                                                                    <label className="block text-xs font-bold mb-1">Upload Certificate</label>
+                                                                    {plane.heavyCertFile ? (
+                                                                        <div className="text-green-600">✓ Uploaded <span className="text-red-500 cursor-pointer ml-2 hover:underline" onClick={() => updatePlane(key, pIdx, 'heavyCertFile', null)}>Remove</span></div>
+                                                                    ) : (
+                                                                        <input type="file" onChange={e => {
+                                                                            if (e.target.files?.[0]) handleUpload(e.target.files[0]).then(url => updatePlane(key, pIdx, 'heavyCertFile', url));
+                                                                        }} />
+                                                                    )}
+                                                                </div>
+                                                            </div>
+
+                                                            {(data.planes || []).length > 1 && (
+                                                                <button onClick={() => removePlane(key, pIdx)} className="text-red-500 text-xs underline mt-1">Remove Plane</button>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                    <button onClick={() => addPlane(key)} className="text-primary text-sm font-bold">+ Add Aircraft</button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )
+                                }
                             </div>
                         );
                     });
@@ -358,7 +413,7 @@ function AttendeeModal({
                     <button onClick={handleSubmit} className="px-6 py-2 bg-primary text-white rounded font-bold hover:brightness-110">{confirmLabel}</button>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
 

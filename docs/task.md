@@ -1,15 +1,27 @@
-# FAQ Section Implementation
+# Attendee Phone Number Implementation
 
-- [x] Backend API Implementation
-    - [x] Create `api/src/functions/faqs.js` for CRUD operations
-    - [x] Fix 500 Error (Missing `isAdmin` in `lib/auth.js`)
-- [x] Admin Frontend Implementation
-    - [x] Create `client/src/pages/admin/settings/FAQManager.jsx`
-    - [x] Update `client/src/pages/admin/AdminSettings.jsx` to include FAQ tab
-    - [x] Fix Image Delete Button
-- [x] Public Frontend Implementation
-    - [x] Create `client/src/pages/FAQ.jsx`
-    - [x] Update `client/src/App.jsx` with route
-    - [x] Update `client/src/components/Layout.jsx` with navigation link
-    - [ ] Refine Layout (Image/Text Alignment)
-- [ ] Verification
+- [x] **Database Schema**
+    - [x] Run schema update script (`docs/schema/20260122_add_phone_number.sql`) on Dev & Master
+- [x] **Frontend Implementation**
+    - [x] Update `AttendeeModal.jsx` to include Phone Number input
+    - [x] Add validation/pre-fill logic
+- [x] **Backend Implementation**
+    - [x] Update `api/src/functions/createOrder.js` to extract and save `phone_number`
+    - [x] Update `api/src/functions/updateAttendee.js` to allow editing `phone_number`
+- [ ] **Debugging**
+    - [x] Fix React validation error in `AttendeeModal.jsx` (Investigated, likely environment/data flow)
+    - [x] Fix "No event associated" cart error (Fixed missing eventId in StorePage)
+    - [x] Verify database record creation (Fixed blockers in checkout flow)
+
+- [x] **Refinements**
+    - [x] **Schema**: Add `country` column to `persons` table (`docs/schema/20260122_add_country.sql`)
+    - [x] **Frontend**:
+        - [x] Pre-populate Arrival/Departure dates with Event dates
+        - [x] Add `country` field (Default: Australia)
+        - [x] Add State dropdown (AU states) + Custom input
+        - [x] Validate Email format
+        - [x] Validate DOB (No future dates)
+    - [x] **Backend**:
+        - [x] Update `createOrder` to save `country`
+        - [x] Update `updateAttendee` to save `country`
+

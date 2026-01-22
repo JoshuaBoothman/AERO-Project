@@ -1209,3 +1209,27 @@ The "Camping" page for "Festival of Aeromodelling 2026" was displaying "No campg
 *   **Verification:** Confirm data flows correctly into Admin exports/reports.
 
 
+
+## [2026-01-22] - Registration Flow Debugging & Refinement
+**Milestone:** Robust User Registration & Data Capture
+
+### Time Log
+*   **Start:** 13:20
+*   **End:** 14:05
+
+### Completed Items
+*   **Attendee Phone Number**
+    *   **Schema:** Added `phone_number` to `persons` table.
+    *   **Frontend:** Added Phone Number input to `AttendeeModal` and `EventDetails` inline form.
+    *   **Backend:** Updated `createOrder` and `updateAttendee` to persist phone numbers.
+*   **Registration Refinements**
+    *   **Fields:** Added `country` (default: Australia) and `state` (Smart Toggle: Dropdown/Input).
+    *   **UX:** Pre-populated Arrival/Departure dates with Event Start/End dates.
+    *   **Validation:** Added strict validation for Email format and Date of Birth (must be past).
+*   **Critical Bug Fixes**
+    *   **Checkout:** Fixed "No event associated with cart items" error by ensuring `eventId` is attached to all cart items (Tickets, Merch, Assets) in `StorePage.jsx`.
+    *   **Data Integrity:** Resolved issue where `persons` and `attendees` records were not created due to the checkout failure.
+    *   **React Error:** Resolved "Internal React error: Expected static flag was missing" in `EventDetails`.
+
+### Next Steps
+*   **Testing:** Full end-to-end regression testing of the checkout flow with multiple ticket types.
