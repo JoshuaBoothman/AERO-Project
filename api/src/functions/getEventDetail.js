@@ -29,7 +29,7 @@ app.http('getEventDetail', {
                 eventQuery = `
                     SELECT TOP 1
                         e.event_id, e.name, e.slug, e.description, e.banner_url,
-                        e.start_date, e.end_date, e.status, e.is_purchasing_enabled, e.is_public_viewable, e.venue_id,
+                        e.start_date, e.end_date, e.status, e.is_purchasing_enabled, e.is_public_viewable, e.venue_id, e.mop_url,
                         v.name as venue_name, v.address_line_1, v.city, v.state, v.postcode, v.map_url
                     FROM events e
                     LEFT JOIN venues v ON e.venue_id = v.venue_id
@@ -39,7 +39,7 @@ app.http('getEventDetail', {
                 eventQuery = `
                     SELECT TOP 1
                         e.event_id, e.name, e.slug, e.description, e.banner_url,
-                        e.start_date, e.end_date, e.status, e.is_purchasing_enabled, e.is_public_viewable, e.venue_id,
+                        e.start_date, e.end_date, e.status, e.is_purchasing_enabled, e.is_public_viewable, e.venue_id, e.mop_url,
                         v.name as venue_name, v.address_line_1, v.city, v.state, v.postcode, v.map_url
                     FROM events e
                     JOIN venues v ON e.venue_id = v.venue_id

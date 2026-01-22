@@ -17,7 +17,7 @@ app.http('updateEvent', {
             }
 
             // 2. Parse Body
-            const { name, description, start_date, end_date, venue_id, banner_url, status, is_purchasing_enabled, is_public_viewable } = await request.json();
+            const { name, description, start_date, end_date, venue_id, banner_url, status, is_purchasing_enabled, is_public_viewable, mop_url } = await request.json();
 
             // 3. Update Query
             // Note: We are NOT updating the slug to preserve URLs.
@@ -32,7 +32,8 @@ app.http('updateEvent', {
                     banner_url = @banner_url,
                     status = @status,
                     is_purchasing_enabled = @is_purchasing_enabled,
-                    is_public_viewable = @is_public_viewable
+                    is_public_viewable = @is_public_viewable,
+                    mop_url = @mop_url
                 WHERE event_id = @eventId
             `;
 
@@ -46,7 +47,8 @@ app.http('updateEvent', {
                 { name: 'banner_url', type: sql.NVarChar, value: banner_url || null },
                 { name: 'status', type: sql.NVarChar, value: status },
                 { name: 'is_purchasing_enabled', type: sql.Bit, value: is_purchasing_enabled ? 1 : 0 },
-                { name: 'is_public_viewable', type: sql.Bit, value: is_public_viewable ? 1 : 0 }
+                { name: 'is_public_viewable', type: sql.Bit, value: is_public_viewable ? 1 : 0 },
+                { name: 'mop_url', type: sql.NVarChar, value: mop_url || null }
             ]);
 
             return {
@@ -55,7 +57,7 @@ app.http('updateEvent', {
             };
 
         } catch (error) {
-            context.log.error(`Error updating event: ${error.message}`);
+            context.error(`Error updating event: ${error.message}`);
             return { status: 500, body: JSON.stringify({ error: "Internal Server Error" }) };
         }
     }

@@ -433,7 +433,11 @@ function AttendeeModal({
                                             <div className="mb-4 p-3 bg-blue-50 border border-blue-100 rounded text-sm">
                                                 <p className="mb-2 text-blue-800">
                                                     Please read the Agreement.
-                                                    {/* <a href="#" className="underline"> View MOP</a> */}
+                                                    {event && event.mop_url ? (
+                                                        <a href={event.mop_url} target="_blank" rel="noopener noreferrer" className="underline ml-1 font-bold">
+                                                            Read MOP
+                                                        </a>
+                                                    ) : null}
                                                 </p>
                                                 <label className="flex items-center gap-2 cursor-pointer">
                                                     <input

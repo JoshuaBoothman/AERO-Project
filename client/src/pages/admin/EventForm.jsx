@@ -63,7 +63,8 @@ function EventForm() {
         banner_url: '',
         status: 'Draft',
         is_purchasing_enabled: false,
-        is_public_viewable: false
+        is_public_viewable: false,
+        mop_url: ''
     });
 
     const isEditMode = !!slug;
@@ -189,7 +190,8 @@ function EventForm() {
                         banner_url: eventData.banner_url || '',
                         status: eventData.status || 'Draft',
                         is_purchasing_enabled: eventData.is_purchasing_enabled,
-                        is_public_viewable: eventData.is_public_viewable
+                        is_public_viewable: eventData.is_public_viewable,
+                        mop_url: eventData.mop_url || ''
                     });
 
                     // Fetch Ticket Types
@@ -665,7 +667,51 @@ function EventForm() {
                     </div>
                 </div>
 
-                {/* 5. Status & Flags */}
+                {/* 5. MOP PDF */}
+                <div className="form-group mb-4" style={{ border: '1px solid #ced4da', padding: '1rem', borderRadius: '4px', background: '#fafafa' }}>
+                    <label style={{ marginBottom: '0.5rem', display: 'block' }}>MOP PDF (Manual of Procedures)</label>
+                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                        {formData.mop_url ? (
+                            <a href={formData.mop_url} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#2563eb', textDecoration: 'none', padding: '10px', background: 'white', border: '1px solid #ddd', borderRadius: '4px' }}>
+                                <span style={{ fontSize: '1.2rem' }}>📄</span> View MOP
+                            </a>
+                        ) : (
+                            <div style={{ padding: '10px 20px', background: '#eee', color: '#999', fontSize: '0.8rem', borderRadius: '4px', border: '1px solid #ddd' }}>No Document</div>
+                        )}
+                        <div style={{ flex: 1 }}>
+                            <input
+                                type="file"
+                                accept="application/pdf"
+                                onChange={async (e) => {
+                                    const file = e.target.files[0];
+                                    if (!file) return;
+                                    const uploadData = new FormData();
+                                    uploadData.append('file', file);
+                                    try {
+                                        setSaving(true);
+                                        const res = await fetch('/api/upload', {
+                                            method: 'POST',
+                                            body: uploadData,
+                                            headers: { 'Authorization': `Bearer ${token}`, 'X-Auth-Token': token }
+                                        });
+                                        if (!res.ok) throw new Error('Upload failed');
+                                        const data = await res.json();
+                                        setFormData(prev => ({ ...prev, mop_url: data.url }));
+                                        notify('MOP PDF uploaded', 'success');
+                                    } catch (err) {
+                                        notify('Upload failed: ' + err.message, 'error');
+                                    } finally {
+                                        setSaving(false);
+                                    }
+                                }}
+                                className="form-control-file"
+                            />
+                            <p style={{ fontSize: '0.8rem', color: '#666', marginTop: '5px' }}>Upload MOP PDF (Replaces current). Pilots must acknowledge this.</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* 6. Status & Flags */}
                 <div style={{ backgroundColor: '#f9fafb', padding: '1.5rem', borderRadius: '8px', marginBottom: '2rem', border: '1px solid #e5e7eb' }}>
                     <h3 style={{ marginTop: 0, fontSize: '1.1rem', marginBottom: '1rem' }}>Visibility & Settings</h3>
 

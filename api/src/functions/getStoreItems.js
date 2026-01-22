@@ -1,4 +1,4 @@
-const { app } = require('@azure/functions');
+const { app } = require('@azure/functions'); // Reload trigger
 const { getPool, sql } = require('../lib/db');
 const { validateToken } = require('../lib/auth');
 
@@ -27,24 +27,27 @@ app.http('getStoreItems', {
             let eventName = '';
             let eventStartDate = null;
             let eventEndDate = null;
+            let eventMopUrl = null;
 
             if (slug && !eventId) {
                 const eRes = await pool.request()
                     .input('slug', sql.NVarChar, slug)
-                    .query("SELECT event_id, name, start_date, end_date FROM events WHERE slug = @slug");
+                    .query("SELECT event_id, name, start_date, end_date, mop_url FROM events WHERE slug = @slug");
                 if (eRes.recordset.length === 0) return { status: 404, body: JSON.stringify({ error: "Event not found" }) };
                 eventId = eRes.recordset[0].event_id;
                 eventName = eRes.recordset[0].name;
                 eventStartDate = eRes.recordset[0].start_date;
                 eventEndDate = eRes.recordset[0].end_date;
+                eventMopUrl = eRes.recordset[0].mop_url;
             } else if (eventId) {
                 const eRes = await pool.request()
                     .input('eid', sql.Int, eventId)
-                    .query("SELECT name, start_date, end_date FROM events WHERE event_id = @eid");
+                    .query("SELECT name, start_date, end_date, mop_url FROM events WHERE event_id = @eid");
                 if (eRes.recordset.length > 0) {
                     eventName = eRes.recordset[0].name;
                     eventStartDate = eRes.recordset[0].start_date;
                     eventEndDate = eRes.recordset[0].end_date;
+                    eventMopUrl = eRes.recordset[0].mop_url;
                 }
             }
 
@@ -227,7 +230,8 @@ app.http('getStoreItems', {
                     merchandise,
                     assets,
                     subevents,
-                    tickets // <--- Added Tickets
+                    tickets, // <--- Added Tickets
+                    mop_url: eventMopUrl
                 })
             };
 

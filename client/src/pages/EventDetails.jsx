@@ -765,7 +765,13 @@ function EventDetails({ propSlug }) {
                                                             <div className="mb-4 p-3 bg-blue-50 border border-blue-100 rounded">
                                                                 <h6 className="font-bold text-sm mb-2 text-blue-800">Monitor of Procedures (MOP)</h6>
                                                                 <p className="text-xs text-blue-700 mb-2">
-                                                                    Plese read the <a href="#" className="underline text-blue-900" onClick={(e) => { e.preventDefault(); alert("MOP Content Placeholder"); }}>Event MOP</a>. All pilots must agree to these terms.
+                                                                    Please read the
+                                                                    {event.mop_url ? (
+                                                                        <a href={event.mop_url} target="_blank" rel="noopener noreferrer" className="underline text-blue-900 font-bold ml-1">Event MOP</a>
+                                                                    ) : (
+                                                                        <span className="text-gray-500 ml-1">(MOP not available)</span>
+                                                                    )}
+                                                                    . All pilots must agree to these terms.
                                                                 </p>
                                                                 <label className="flex items-center gap-2 cursor-pointer">
                                                                     <input
