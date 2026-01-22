@@ -80,13 +80,16 @@ function EventForm() {
 
     // Ticket Types State
     const [ticketTypes, setTicketTypes] = useState([]);
+    const [products, setProducts] = useState([]); // [NEW] Products for linkage
     const [showTicketModal, setShowTicketModal] = useState(false);
     const [editingTicket, setEditingTicket] = useState(null);
     const [ticketForm, setTicketForm] = useState({
         name: '',
         price: '',
         system_role: 'spectator', // spectator, pilot, staff, etc.
-        description: ''
+        description: '',
+        includes_merch: false,
+        linkedProductIds: [] // [NEW] Link Multiple Products
     });
 
     // Public Days State
@@ -202,6 +205,13 @@ function EventForm() {
                         const days = await publicDaysRes.json();
                         setPublicDays(days);
                     }
+                }
+
+                // Fetch Products for Ticket Linking
+                const prodRes = await fetch('/api/products', { headers });
+                if (prodRes.ok) {
+                    const prodData = await prodRes.json();
+                    setProducts(prodData);
                 }
             } catch (err) {
                 setError(err.message);
@@ -397,7 +407,7 @@ function EventForm() {
 
     const openCreateTicket = () => {
         setEditingTicket(null);
-        setTicketForm({ name: '', price: '', system_role: 'spectator', description: '' });
+        setTicketForm({ name: '', price: '', system_role: 'spectator', description: '', includes_merch: false, linkedProductIds: [] });
         setShowTicketModal(true);
     };
 
@@ -407,7 +417,9 @@ function EventForm() {
             name: ticket.name,
             price: ticket.price,
             system_role: ticket.system_role,
-            description: ticket.description || ''
+            description: ticket.description || '',
+            includes_merch: ticket.includes_merch || false,
+            linkedProductIds: ticket.linkedProductIds || [] // Ensure Array
         });
         setShowTicketModal(true);
     };
@@ -939,6 +951,58 @@ function EventForm() {
                                     <option value="staff">Staff</option>
                                     <option value="volunteer">Volunteer</option>
                                 </select>
+                            </div>
+
+                            <div>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginBottom: '0.5rem' }}>
+                                    <input
+                                        type="checkbox"
+                                        name="includes_merch"
+                                        checked={ticketForm.includes_merch}
+                                        onChange={handleTicketChange}
+                                    />
+                                    <strong>Includes Free Merchandise?</strong>
+                                </label>
+                                {ticketForm.includes_merch && (
+                                    <div style={{ marginLeft: '1.5rem', border: '1px solid #ddd', padding: '0.5rem', borderRadius: '4px', maxHeight: '150px', overflowY: 'auto' }}>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', fontWeight: 'bold' }}>Select Products to Link *</label>
+
+                                        {products.length === 0 ? (
+                                            <div style={{ color: '#999', fontSize: '0.85rem' }}>No products available.</div>
+                                        ) : (
+                                            <div style={{ display: 'grid', gap: '5px' }}>
+                                                {products.map(p => {
+                                                    const isChecked = ticketForm.linkedProductIds.includes(p.product_id);
+                                                    return (
+                                                        <label key={p.product_id} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.9rem' }}>
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={isChecked}
+                                                                onChange={(e) => {
+                                                                    const checked = e.target.checked;
+                                                                    setTicketForm(prev => {
+                                                                        let newIds = [...prev.linkedProductIds];
+                                                                        if (checked) {
+                                                                            newIds.push(p.product_id);
+                                                                        } else {
+                                                                            newIds = newIds.filter(id => id !== p.product_id);
+                                                                        }
+                                                                        return { ...prev, linkedProductIds: newIds };
+                                                                    });
+                                                                }}
+                                                            />
+                                                            {p.name}
+                                                        </label>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+
+                                        <p style={{ fontSize: '0.8rem', color: '#666', marginTop: '0.5rem', borderTop: '1px solid #eee', paddingTop: '0.5rem' }}>
+                                            Users will choose <strong>ONE</strong> of these items (and its variant) for free.
+                                        </p>
+                                    </div>
+                                )}
                             </div>
 
                             {/* REMOVED CHECKBOXES */}

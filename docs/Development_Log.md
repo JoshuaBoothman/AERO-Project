@@ -1,5 +1,22 @@
 # Development Log
 
+## [2026-01-22] - Ticket Merchandise Linking (Completed)
+- **Time**: 13:36 - 15:16
+- **Completed Items**:
+    - **Database**: Replaced simple `product_id` column with `ticket_linked_products` junction table to support Multi-Product Linking (1-to-many).
+    - **Backend (API)**:
+        - Updated `ticketTypes.js` (CRUD) to manage linked products.
+        - Updated `getEvents` and `getStoreItems` to return `linkedProductIds`.
+        - Updated `createOrder.js` validation to verify selected merchandise against the allowed linked list.
+    - **Frontend (Admin)**:
+        - Updated `EventForm.jsx` Ticket Modal to use a checkbox list for linking multiple products.
+    - **Frontend (Client)**:
+        - Updated `EventDetails.jsx` and `AttendeeModal.jsx` to support a two-step selection flow:
+            1. Select Item (Radio Button) - if multiple options exist.
+            2. Select Variant (Dropdown).
+    - **Documentation**:
+        - Updated `walkthrough.md`.
+
 ## [2026-01-22] - Ticket Management Implementation (Completed)
 - **Time**: 12:20 - 12:42
 - **Completed Items**:

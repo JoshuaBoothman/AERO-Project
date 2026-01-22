@@ -59,7 +59,7 @@ app.http('getEventDetail', {
 
             // 2. Fetch Ticket Types for this Event (Parameterized)
             const ticketQuery = `
-                SELECT ticket_type_id, name, price, system_role, description
+                SELECT ticket_type_id, name, price, system_role, description, includes_merch
                 FROM event_ticket_types 
                 WHERE event_id = @eventId
                 ORDER BY sort_order ASC, price ASC
@@ -68,6 +68,23 @@ app.http('getEventDetail', {
             const ticketResult = await db.query(ticketQuery, [
                 { name: 'eventId', type: sql.Int, value: eventData.event_id }
             ]);
+
+            // Fetch Linked Products
+            const linksQuery = `
+                SELECT tlp.ticket_type_id, tlp.product_id
+                FROM ticket_linked_products tlp
+                JOIN event_ticket_types ett ON tlp.ticket_type_id = ett.ticket_type_id
+                WHERE ett.event_id = @eventId
+            `;
+            const linksResult = await db.query(linksQuery, [
+                { name: 'eventId', type: sql.Int, value: eventData.event_id }
+            ]);
+
+            // Map links to tickets
+            const tickets = ticketResult.map(t => ({
+                ...t,
+                linkedProductIds: linksResult.filter(l => l.ticket_type_id === t.ticket_type_id).map(l => l.product_id)
+            }));
 
             // 3. Fetch Public Event Days
             const publicDaysQuery = `
@@ -88,7 +105,7 @@ app.http('getEventDetail', {
                 status: 200,
                 jsonBody: {
                     ...eventData,
-                    tickets: ticketResult,
+                    tickets: tickets,
                     public_days: publicDaysResult
                 }
             };

@@ -1,5 +1,5 @@
 const { app } = require('@azure/functions');
-const { query, sql } = require('../lib/db');
+const { query, sql, getPool } = require('../lib/db');
 const { validateToken } = require('../lib/auth');
 
 // GET Ticket Types for an Event
@@ -27,13 +27,28 @@ app.http('getTicketTypes', {
             }
 
             const q = `
-                SELECT * FROM event_ticket_types 
+                SELECT ticket_type_id, event_id, name, price, system_role, description, sort_order, includes_merch
+                FROM event_ticket_types 
                 WHERE event_id = @eventId
                 ORDER BY sort_order ASC, price ASC
             `;
             const result = await query(q, [{ name: 'eventId', type: sql.Int, value: eventId }]);
 
-            return { jsonBody: result };
+            // Fetch Linked Products
+            const linksQ = `
+                SELECT tlp.ticket_type_id, tlp.product_id
+                FROM ticket_linked_products tlp
+                JOIN event_ticket_types ett ON tlp.ticket_type_id = ett.ticket_type_id
+                WHERE ett.event_id = @eventId
+            `;
+            const linksResult = await query(linksQ, [{ name: 'eventId', type: sql.Int, value: eventId }]);
+
+            const types = result.map(t => ({
+                ...t,
+                linkedProductIds: linksResult.filter(l => l.ticket_type_id === t.ticket_type_id).map(l => l.product_id)
+            }));
+
+            return { jsonBody: types };
         } catch (error) {
             context.log.error(`Error getting ticket types: ${error.message}`);
             return { status: 500, body: JSON.stringify({ error: "Internal Server Error" }) };
@@ -54,31 +69,61 @@ app.http('createTicketType', {
                 return { status: 403, body: JSON.stringify({ error: "Unauthorized" }) };
             }
 
-            const { name, price, system_role, description } = await request.json();
+            const { name, price, system_role, description, includes_merch, linkedProductIds } = await request.json();
 
             if (!name || price === undefined || !system_role) {
                 return { status: 400, body: JSON.stringify({ error: "Missing required fields" }) };
             }
 
-            // Auto-assign next sort_order
-            const insertQ = `
-                DECLARE @NextOrder INT;
-                SELECT @NextOrder = ISNULL(MAX(sort_order), 0) + 1 FROM event_ticket_types WHERE event_id = @eventId;
+            const pool = await getPool();
+            const transaction = new sql.Transaction(pool);
+            await transaction.begin();
 
-                INSERT INTO event_ticket_types (event_id, name, price, system_role, description, sort_order)
-                OUTPUT INSERTED.*
-                VALUES (@eventId, @name, @price, @system_role, @description, @NextOrder)
-            `;
+            try {
+                // Auto-assign next sort_order
+                const insertQ = `
+                    DECLARE @NextOrder INT;
+                    SELECT @NextOrder = ISNULL(MAX(sort_order), 0) + 1 FROM event_ticket_types WHERE event_id = @eventId;
 
-            const result = await query(insertQ, [
-                { name: 'eventId', type: sql.Int, value: eventId },
-                { name: 'name', type: sql.NVarChar, value: name },
-                { name: 'price', type: sql.Decimal(10, 2), value: price },
-                { name: 'system_role', type: sql.VarChar, value: system_role },
-                { name: 'description', type: sql.NVarChar, value: description || null }
-            ]);
+                    INSERT INTO event_ticket_types (event_id, name, price, system_role, description, sort_order, includes_merch)
+                    OUTPUT INSERTED.*
+                    VALUES (@eventId, @name, @price, @system_role, @description, @NextOrder, @includesMerch)
+                `;
 
-            return { status: 201, jsonBody: result[0] };
+                const req = new sql.Request(transaction);
+                const result = await req
+                    .input('eventId', sql.Int, eventId)
+                    .input('name', sql.NVarChar, name)
+                    .input('price', sql.Decimal(10, 2), price)
+                    .input('system_role', sql.VarChar, system_role)
+                    .input('description', sql.NVarChar, description || null)
+                    .input('includesMerch', sql.Bit, includes_merch ? 1 : 0)
+                    .query(insertQ);
+
+                const newTicket = result.recordset[0];
+                const ticketTypeId = newTicket.ticket_type_id;
+
+                // Insert Linked Products
+                if (linkedProductIds && Array.isArray(linkedProductIds) && linkedProductIds.length > 0) {
+                    for (const pid of linkedProductIds) {
+                        const linkReq = new sql.Request(transaction);
+                        await linkReq
+                            .input('ttid', sql.Int, ticketTypeId)
+                            .input('pid', sql.Int, pid)
+                            .query(`INSERT INTO ticket_linked_products (ticket_type_id, product_id) VALUES (@ttid, @pid)`);
+                    }
+                }
+
+                await transaction.commit();
+
+                // Return with IDs
+                newTicket.linkedProductIds = linkedProductIds || [];
+                return { status: 201, jsonBody: newTicket };
+
+            } catch (err) {
+                await transaction.rollback();
+                throw err;
+            }
         } catch (error) {
             context.log.error(`Error creating ticket type: ${error.message}`);
             return { status: 500, body: JSON.stringify({ error: "Internal Server Error" }) };
@@ -99,29 +144,60 @@ app.http('updateTicketType', {
                 return { status: 403, body: JSON.stringify({ error: "Unauthorized" }) };
             }
 
-            const { name, price, system_role, description } = await request.json();
+            const { name, price, system_role, description, includes_merch, linkedProductIds } = await request.json();
 
-            const updateQ = `
-                UPDATE event_ticket_types
-                SET name = @name, price = @price, system_role = @system_role, 
-                    description = @description
-                OUTPUT INSERTED.*
-                WHERE ticket_type_id = @ticketTypeId
-            `;
+            const pool = await getPool();
+            const transaction = new sql.Transaction(pool);
+            await transaction.begin();
 
-            const result = await query(updateQ, [
-                { name: 'ticketTypeId', type: sql.Int, value: ticketTypeId },
-                { name: 'name', type: sql.NVarChar, value: name },
-                { name: 'price', type: sql.Decimal(10, 2), value: price },
-                { name: 'system_role', type: sql.VarChar, value: system_role },
-                { name: 'description', type: sql.NVarChar, value: description || null }
-            ]);
+            try {
+                const updateQ = `
+                    UPDATE event_ticket_types
+                    SET name = @name, price = @price, system_role = @system_role, 
+                        description = @description, includes_merch = @includesMerch
+                    OUTPUT INSERTED.*
+                    WHERE ticket_type_id = @ticketTypeId
+                `;
 
-            if (result.length === 0) {
-                return { status: 404, body: JSON.stringify({ error: "Ticket Type not found" }) };
+                const req = new sql.Request(transaction);
+                const result = await req
+                    .input('ticketTypeId', sql.Int, ticketTypeId)
+                    .input('name', sql.NVarChar, name)
+                    .input('price', sql.Decimal(10, 2), price)
+                    .input('system_role', sql.VarChar, system_role)
+                    .input('description', sql.NVarChar, description || null)
+                    .input('includesMerch', sql.Bit, includes_merch ? 1 : 0)
+                    .query(updateQ);
+
+                if (result.recordset.length === 0) {
+                    await transaction.rollback();
+                    return { status: 404, body: JSON.stringify({ error: "Ticket Type not found" }) };
+                }
+                const updatedTicket = result.recordset[0];
+
+                // Update Links: Delete all and re-insert
+                const delReq = new sql.Request(transaction);
+                await delReq.input('ttid', sql.Int, ticketTypeId).query(`DELETE FROM ticket_linked_products WHERE ticket_type_id = @ttid`);
+
+                if (includes_merch && linkedProductIds && Array.isArray(linkedProductIds) && linkedProductIds.length > 0) {
+                    for (const pid of linkedProductIds) {
+                        const linkReq = new sql.Request(transaction);
+                        await linkReq
+                            .input('ttid', sql.Int, ticketTypeId)
+                            .input('pid', sql.Int, pid)
+                            .query(`INSERT INTO ticket_linked_products (ticket_type_id, product_id) VALUES (@ttid, @pid)`);
+                    }
+                }
+
+                await transaction.commit();
+
+                updatedTicket.linkedProductIds = linkedProductIds || [];
+                return { jsonBody: updatedTicket };
+
+            } catch (err) {
+                await transaction.rollback();
+                throw err;
             }
-
-            return { jsonBody: result[0] };
         } catch (error) {
             context.log.error(`Error updating ticket type: ${error.message}`);
             return { status: 500, body: JSON.stringify({ error: "Internal Server Error" }) };

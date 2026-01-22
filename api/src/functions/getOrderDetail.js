@@ -50,9 +50,14 @@ app.http('getOrderDetail', {
                     oi.order_item_id,
                     oi.price_at_purchase,
                     oi.item_type,
-                    ett.name as ticket_name,
-                    ett.name as ticket_name,
-                    ett.system_role,
+                    CASE 
+                        WHEN oi.item_type = 'Merchandise' THEN p_prod.name 
+                        ELSE ett.name 
+                    END as ticket_name,
+                    CASE 
+                        WHEN oi.item_type = 'Merchandise' THEN NULL 
+                        ELSE ett.system_role 
+                    END as system_role,
                     p.first_name,
                     p.last_name,
                     p.email,
@@ -63,12 +68,17 @@ app.http('getOrderDetail', {
                     a.attendee_id,
                     e.name as event_name,
                     e.slug as event_slug,
-                    e.banner_url
+                    e.banner_url,
+                    -- Extra Fields for Merch
+                    sku.sku_code,
+                    p_prod.name as product_name
                 FROM order_items oi
                 JOIN attendees a ON oi.attendee_id = a.attendee_id
                 JOIN event_ticket_types ett ON a.ticket_type_id = ett.ticket_type_id
                 JOIN persons p ON a.person_id = p.person_id
                 JOIN events e ON a.event_id = e.event_id
+                LEFT JOIN product_skus sku ON oi.item_reference_id = sku.product_sku_id AND oi.item_type = 'Merchandise'
+                LEFT JOIN products p_prod ON sku.product_id = p_prod.product_id
                 WHERE oi.order_id = @orderId
             `;
 

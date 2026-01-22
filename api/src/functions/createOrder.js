@@ -85,7 +85,7 @@ app.http('createOrder', {
                     for (const item of items) {
                         const ticketReq = new sql.Request(transaction);
                         const ticketRes = await ticketReq.input('tt_id', sql.Int, item.ticketTypeId)
-                            .query("SELECT price, system_role FROM event_ticket_types WHERE ticket_type_id = @tt_id");
+                            .query("SELECT price, system_role, includes_merch FROM event_ticket_types WHERE ticket_type_id = @tt_id");
 
                         if (ticketRes.recordset.length === 0) throw new Error(`Invalid ticket type: ${item.ticketTypeId}`);
                         const ticketType = ticketRes.recordset[0];
@@ -280,6 +280,52 @@ app.http('createOrder', {
                                 .input('refid', sql.Int, item.ticketTypeId)
                                 .input('price', sql.Decimal(10, 2), price)
                                 .query(`INSERT INTO order_items (order_id, attendee_id, item_type, item_reference_id, price_at_purchase) VALUES (@oid, @aid, @itype, @refid, @price);`);
+
+                            // HANDLE INCLUDED MERCHANDISE
+                            if (ticketType.includes_merch && attendeeData.merchSkuId) {
+                                const mSkuId = attendeeData.merchSkuId;
+
+                                // 1. Get SKU Details (Product ID, Price, Stock)
+                                const skuReq = new sql.Request(transaction);
+                                const skuRes = await skuReq.input('sid', sql.Int, mSkuId)
+                                    .query("SELECT product_id, price, current_stock FROM product_skus WHERE product_sku_id = @sid AND is_active = 1");
+
+                                if (skuRes.recordset.length === 0) {
+                                    throw new Error(`Invalid merchandise SKU ID: ${mSkuId}`);
+                                }
+
+                                const { product_id: skuProductId, current_stock: mStock } = skuRes.recordset[0];
+
+                                // 2. Verify Link (Is this product allowed for this ticket?)
+                                const linkReq = new sql.Request(transaction);
+                                const linkRes = await linkReq
+                                    .input('ttid', sql.Int, item.ticketTypeId)
+                                    .input('pid', sql.Int, skuProductId)
+                                    .query("SELECT 1 FROM ticket_linked_products WHERE ticket_type_id = @ttid AND product_id = @pid");
+
+                                if (linkRes.recordset.length === 0) {
+                                    throw new Error(`Selected merchandise (Product ${skuProductId}) is not included with this ticket type.`);
+                                }
+
+                                if (mStock < 1) {
+                                    throw new Error(`Insufficient stock for included merchandise (SKU ${mSkuId}).`);
+                                }
+
+                                // Deduct Stock
+                                await new sql.Request(transaction)
+                                    .input('sid', sql.Int, mSkuId)
+                                    .input('qty', sql.Int, 1) // Always 1 per ticket
+                                    .query("UPDATE product_skus SET current_stock = current_stock - @qty WHERE product_sku_id = @sid");
+
+                                // Create Order Item (Price $0.00)
+                                await new sql.Request(transaction)
+                                    .input('oid', sql.Int, orderId)
+                                    .input('aid', sql.Int, attendeeId) // Linked to this attendee
+                                    .input('itype', sql.VarChar, 'Merchandise')
+                                    .input('refid', sql.Int, mSkuId)
+                                    .input('price', sql.Decimal(10, 2), 0)
+                                    .query(`INSERT INTO order_items (order_id, attendee_id, item_type, item_reference_id, price_at_purchase) VALUES (@oid, @aid, @itype, @refid, @price)`);
+                            }
                         }
                     }
                 }

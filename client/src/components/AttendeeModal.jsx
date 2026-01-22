@@ -31,6 +31,7 @@ function AttendeeModal({
 
     const { notify } = useNotification();
     const [details, setDetails] = useState(initialDetails);
+    const [productsMap, setProductsMap] = useState({}); // Cache for product details
 
     // Initialize slots if empty
     useEffect(() => {
@@ -57,6 +58,39 @@ function AttendeeModal({
             setDetails(initial);
         }
     }, [cart, user]); // Run once when cart changes
+
+    // Fetch Linked Products
+    useEffect(() => {
+        const fetchLinkedProducts = async () => {
+            const neededIds = new Set();
+            tickets.forEach(t => {
+                if (t.includes_merch && t.linkedProductIds && Array.isArray(t.linkedProductIds)) {
+                    t.linkedProductIds.forEach(pid => neededIds.add(pid));
+                }
+            });
+
+            const newIds = [...neededIds].filter(id => !productsMap[id]);
+            if (newIds.length === 0) return;
+
+            const newProducts = {};
+            await Promise.all(newIds.map(async (id) => {
+                try {
+                    const res = await fetch(`/api/products/${id}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        newProducts[id] = data;
+                    }
+                } catch (err) {
+                    console.error("Failed to load product", id, err);
+                }
+            }));
+
+            if (Object.keys(newProducts).length > 0) {
+                setProductsMap(prev => ({ ...prev, ...newProducts }));
+            }
+        };
+        fetchLinkedProducts();
+    }, [tickets, productsMap]);
 
     const handleChange = (key, field, value) => {
         setDetails(prev => ({
@@ -138,6 +172,15 @@ function AttendeeModal({
                         { field: 'arrivalDate', name: 'Arrival Date' },
                         { field: 'departureDate', name: 'Departure Date' }
                     ];
+
+                    if (ticket.includes_merch) {
+                        // Check if merch SKU is selected
+                        // Also check if product selected if multiple exist
+                        if (!d.merchSkuId) {
+                            notify(`${label}: Please select your included Merchandise option.`, "error");
+                            return;
+                        }
+                    }
 
                     for (const req of requiredFields) {
                         if (!d[req.field] || !d[req.field].trim()) {
@@ -304,6 +347,83 @@ function AttendeeModal({
                                         <input type="date" value={data.departureDate || ''} onChange={e => handleChange(key, 'departureDate', e.target.value)} style={inputStyle} />
                                     </div>
                                 </div>
+
+                                {/* Included Merchandise Selection */}
+                                {(() => {
+                                    if (ticket.includes_merch && ticket.linkedProductIds && ticket.linkedProductIds.length > 0) {
+                                        const linkedProducts = ticket.linkedProductIds
+                                            .map(pid => productsMap[pid])
+                                            .filter(p => p && p.product);
+
+                                        if (linkedProducts.length === 0) return null;
+
+                                        const selectedPid = data.selectedProductId || (linkedProducts.length === 1 ? linkedProducts[0].product.product_id : null);
+
+                                        // Auto-select single option logic for render
+                                        // Ideally we sync state, but for display we assume if 1, it's that one.
+
+                                        return (
+                                            <div className="mb-6 p-4 bg-purple-50 border border-purple-200 rounded">
+                                                <h5 className="font-bold text-sm mb-2 text-purple-900">🎁 Included Merchandise</h5>
+
+                                                {/* Product Selection (Radio) */}
+                                                {linkedProducts.length > 1 && (
+                                                    <div style={{ marginBottom: '0.75rem' }}>
+                                                        <p style={{ fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '0.25rem', color: '#4a148c' }}>Select Item:</p>
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                                            {linkedProducts.map(p => (
+                                                                <label key={p.product.product_id} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.9rem' }}>
+                                                                    <input
+                                                                        type="radio"
+                                                                        name={`merch_prod_${key}`}
+                                                                        checked={selectedPid === p.product.product_id}
+                                                                        onChange={() => {
+                                                                            handleChange(key, 'selectedProductId', p.product.product_id);
+                                                                            handleChange(key, 'merchSkuId', '');
+                                                                        }}
+                                                                    />
+                                                                    <span style={{ fontWeight: selectedPid === p.product.product_id ? 'bold' : 'normal' }}>
+                                                                        {p.product.name}
+                                                                    </span>
+                                                                </label>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* SKU Selection */}
+                                                {selectedPid && productsMap[selectedPid] && (
+                                                    <div>
+                                                        {linkedProducts.length === 1 && (
+                                                            <p className="text-xs text-purple-700 mb-2">Included Item: <strong>{productsMap[selectedPid].product.name}</strong></p>
+                                                        )}
+                                                        <p className="text-xs text-purple-700 mb-1">Select Option:</p>
+                                                        <select
+                                                            style={inputStyle}
+                                                            value={data.merchSkuId || ''}
+                                                            onChange={e => {
+                                                                if (!data.selectedProductId && linkedProducts.length === 1) {
+                                                                    handleChange(key, 'selectedProductId', selectedPid);
+                                                                }
+                                                                handleChange(key, 'merchSkuId', e.target.value);
+                                                            }}
+                                                        >
+                                                            <option value="">-- Select Option --</option>
+                                                            {productsMap[selectedPid].skus
+                                                                .filter(sku => sku.active)
+                                                                .map(sku => (
+                                                                    <option key={sku.id} value={sku.id} disabled={sku.stock < 1}>
+                                                                        {sku.description || sku.code} {sku.stock < 1 ? '(Out of Stock)' : ''}
+                                                                    </option>
+                                                                ))}
+                                                        </select>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    }
+                                    return null;
+                                })()}
 
                                 {/* Pilot Fields */}
                                 {

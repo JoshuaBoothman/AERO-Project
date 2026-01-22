@@ -196,7 +196,14 @@ function OrderDetail() {
                                         {item.ticket_name}
                                         {item.system_role === 'pilot' && <span style={{ marginLeft: '0.5rem', color: '#007bff' }}>✈️ Pilot</span>}
                                         {item.system_role === 'pit_crew' && <span style={{ marginLeft: '0.5rem', color: '#ff9800' }}>🛠️ Crew</span>}
+                                        {item.item_type === 'Merchandise' && <span style={{ marginLeft: '0.5rem', color: '#9c27b0', backgroundColor: '#f3e5f5', padding: '0 4px', borderRadius: '4px' }}>🎁 Merchandise</span>}
                                     </div>
+
+                                    {item.item_type === 'Merchandise' && item.sku_code && (
+                                        <div style={{ fontSize: '0.85rem', color: '#555', marginBottom: '0.5rem' }}>
+                                            Option: <strong>{item.sku_code}</strong>
+                                        </div>
+                                    )}
 
                                     {isEditing ? (
                                         <div style={{ display: 'grid', gap: '0.5rem', marginTop: '0.5rem' }}>

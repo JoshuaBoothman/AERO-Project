@@ -33,6 +33,7 @@ function EventDetails({ propSlug }) {
     const [purchaseSuccess, setPurchaseSuccess] = useState(null);
 
     const [myPilots, setMyPilots] = useState([]); // [{ attendee_id, ticket_code, first_name, last_name }]
+    const [productsMap, setProductsMap] = useState({}); // Cache for product details
 
     useEffect(() => {
         async function fetchEvent() {
@@ -78,6 +79,39 @@ function EventDetails({ propSlug }) {
                 .catch(err => console.error("Failed to fetch my pilots", err));
         }
     }, [user, event]);
+
+    // Fetch Linked Products for Tickets with included merch
+    useEffect(() => {
+        const fetchLinkedProducts = async () => {
+            const neededIds = new Set();
+            tickets.forEach(t => {
+                if (t.includes_merch && t.linkedProductIds && Array.isArray(t.linkedProductIds)) {
+                    t.linkedProductIds.forEach(pid => neededIds.add(pid));
+                }
+            });
+
+            const newIds = [...neededIds].filter(id => !productsMap[id]);
+            if (newIds.length === 0) return;
+
+            const newProducts = {};
+            await Promise.all(newIds.map(async (id) => {
+                try {
+                    const res = await fetch(`/api/products/${id}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        newProducts[id] = data;
+                    }
+                } catch (err) {
+                    console.error("Failed to load product", id, err);
+                }
+            }));
+
+            if (Object.keys(newProducts).length > 0) {
+                setProductsMap(prev => ({ ...prev, ...newProducts }));
+            }
+        };
+        fetchLinkedProducts();
+    }, [tickets, productsMap]);
 
     const updateCart = (ticketId, change) => {
         setCart(prev => {
@@ -210,6 +244,13 @@ function EventDetails({ propSlug }) {
                     if (!details.hasReadMop) {
                         notify(`${label}: You must read and agree to the Monitor of Procedures (MOP).`, "error");
                         return;
+                    }
+
+                    if (ticket.includes_merch) {
+                        if (!details.merchSkuId) {
+                            notify(`${label}: Please select your included Merchandise option (${ticket.product_id ? 'Option' : 'Item'}).`, "error");
+                            return;
+                        }
                     }
 
                     // Email Validation
@@ -626,6 +667,94 @@ function EventDetails({ propSlug }) {
                                                             <input className="attendee-input" type="date" value={data.departureDate || ''} onChange={e => handleAttendeeChange(key, 'departureDate', e.target.value)} style={{ width: '100%' }} />
                                                         </div>
                                                     </div>
+
+                                                    {/* Included Merchandise Selection */}
+                                                    {(() => {
+                                                        const ticketType = tickets.find(t => t.ticket_type_id === parseInt(ticketId));
+                                                        if (ticketType && ticketType.includes_merch && ticketType.linkedProductIds && ticketType.linkedProductIds.length > 0) {
+                                                            const linkedProducts = ticketType.linkedProductIds
+                                                                .map(pid => productsMap[pid])
+                                                                .filter(p => p && p.product); // Ensure loaded
+
+                                                            if (linkedProducts.length === 0) return null;
+
+                                                            const selectedPid = data.selectedProductId || (linkedProducts.length === 1 ? linkedProducts[0].product.product_id : null);
+
+                                                            // Auto-select single option if not set
+                                                            if (!data.selectedProductId && linkedProducts.length === 1) {
+                                                                // We need to trigger state update, but can't do it in render.
+                                                                // Handled by effect? or just treat as selected.
+                                                                // Better to just treat as selected for render, but user must select SKU.
+                                                            }
+
+                                                            return (
+                                                                <div style={{ marginBottom: '1rem', padding: '0.75rem', backgroundColor: '#f3e5f5', borderRadius: '4px', border: '1px solid #e1bee7' }}>
+                                                                    <h5 style={{ margin: '0 0 0.5rem', color: '#4a148c', fontSize: '0.9rem' }}>
+                                                                        🎁 Included Merchandise
+                                                                    </h5>
+
+                                                                    {/* Product Selection (Radio) */}
+                                                                    {linkedProducts.length > 1 && (
+                                                                        <div style={{ marginBottom: '0.75rem' }}>
+                                                                            <p style={{ fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '0.25rem', color: '#4a148c' }}>Select Item:</p>
+                                                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                                                                {linkedProducts.map(p => (
+                                                                                    <label key={p.product.product_id} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.9rem' }}>
+                                                                                        <input
+                                                                                            type="radio"
+                                                                                            name={`merch_prod_${key}`}
+                                                                                            checked={selectedPid === p.product.product_id}
+                                                                                            onChange={() => {
+                                                                                                handleAttendeeChange(key, 'selectedProductId', p.product.product_id);
+                                                                                                handleAttendeeChange(key, 'merchSkuId', ''); // Reset SKU
+                                                                                            }}
+                                                                                        />
+                                                                                        <span style={{ fontWeight: selectedPid === p.product.product_id ? 'bold' : 'normal' }}>
+                                                                                            {p.product.name}
+                                                                                        </span>
+                                                                                    </label>
+                                                                                ))}
+                                                                            </div>
+                                                                        </div>
+                                                                    )}
+
+                                                                    {/* SKU Selection (Dropdown) - Show only if product selected or single product */}
+                                                                    {selectedPid && productsMap[selectedPid] && (
+                                                                        <div>
+                                                                            {linkedProducts.length === 1 && (
+                                                                                <p style={{ fontSize: '0.8rem', color: '#6a1b9a', marginBottom: '0.25rem' }}>
+                                                                                    Included Item: <strong>{productsMap[selectedPid].product.name}</strong>
+                                                                                </p>
+                                                                            )}
+                                                                            <p style={{ fontSize: '0.8rem', color: '#6a1b9a', marginBottom: '0.25rem' }}>Select Option:</p>
+                                                                            <select
+                                                                                className="attendee-input"
+                                                                                style={{ width: '100%' }}
+                                                                                value={data.merchSkuId || ''}
+                                                                                onChange={e => {
+                                                                                    // If length was 1 and selectedProductId wasn't set, set it now
+                                                                                    if (!data.selectedProductId && linkedProducts.length === 1) {
+                                                                                        handleAttendeeChange(key, 'selectedProductId', selectedPid);
+                                                                                    }
+                                                                                    handleAttendeeChange(key, 'merchSkuId', e.target.value);
+                                                                                }}
+                                                                            >
+                                                                                <option value="">-- Select --</option>
+                                                                                {productsMap[selectedPid].skus
+                                                                                    .filter(sku => sku.active)
+                                                                                    .map(sku => (
+                                                                                        <option key={sku.id} value={sku.id} disabled={sku.stock < 1}>
+                                                                                            {sku.description || sku.code} {sku.stock < 1 ? '(Out of Stock)' : ''}
+                                                                                        </option>
+                                                                                    ))}
+                                                                            </select>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            );
+                                                        }
+                                                        return null;
+                                                    })()}
 
                                                     {/* Pilot Specific Fields */}
                                                     {tickets.find(t => t.ticket_type_id === parseInt(ticketId))?.system_role === 'pilot' && (
