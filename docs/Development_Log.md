@@ -1,5 +1,20 @@
 # Development Log
 
+## [2026-01-23] - ALSM Bank Details (Completed)
+- **Time**: 12:51 - 13:03
+- **Completed Items**:
+    - **Database**:
+        - Created and verified `20260123_add_bank_details.sql` to add bank columns to `organization_settings`.
+    - **Backend (API)**:
+        - Updated `updateOrganizationSettings.js` to persist Bank Name, Account Name, BSB, and Account Number.
+        - Verified `getOrganization.js` retrieves new fields.
+    - **Frontend (Client)**:
+        - Updated `OrgSettings.jsx` to include a new "Bank Details" section.
+        - Implemented dynamic placeholder for "Account Name" to default to the Organization Name.
+    - **Documentation**:
+        - Moved `20260123_alsm_bank_details.md` to `completed/`.
+        - Created `walkthrough.md`.
+
 ## [2026-01-23] - Bug Fix: Merchandise Deletion (Completed)
 - **Time**: 12:05 - 12:55
 - **Completed Items**:

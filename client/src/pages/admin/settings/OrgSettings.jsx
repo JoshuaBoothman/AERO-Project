@@ -16,7 +16,11 @@ function OrgSettings({ refreshSettings }) {
         primary_color: '#000000',
         secondary_color: '#ffffff',
         accent_color: '#ffd700',
-        logo_url: ''
+        logo_url: '',
+        bank_name: '',
+        bank_account_name: '',
+        bank_bsb: '',
+        bank_account_number: ''
     });
 
     useEffect(() => {
@@ -35,7 +39,11 @@ function OrgSettings({ refreshSettings }) {
                 primary_color: data.primary_color || '#000000',
                 secondary_color: data.secondary_color || '#ffffff',
                 accent_color: data.accent_color || '#ffd700',
-                logo_url: data.logo_url || ''
+                logo_url: data.logo_url || '',
+                bank_name: data.bank_name || '',
+                bank_account_name: data.bank_account_name || '',
+                bank_bsb: data.bank_bsb || '',
+                bank_account_number: data.bank_account_number || ''
             });
         } catch (err) {
             setError(err.message);
@@ -210,6 +218,56 @@ function OrgSettings({ refreshSettings }) {
                                 className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-secondary hover:file:bg-primary/90"
                             />
                             <p className="text-xs text-gray-500 mt-1">Recommended size: 200x60px (PNG/SVG/JPG)</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="mb-6">
+                    <h3 className="font-bold mb-3">Bank Details (For Invoicing)</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label className="block mb-2 font-medium">Bank Name</label>
+                            <input
+                                type="text"
+                                name="bank_name"
+                                value={formData.bank_name}
+                                onChange={handleChange}
+                                placeholder="e.g. Commonwealth Bank"
+                                className="form-control w-full p-2 border rounded"
+                            />
+                        </div>
+                        <div>
+                            <label className="block mb-2 font-medium">Account Name</label>
+                            <input
+                                type="text"
+                                name="bank_account_name"
+                                value={formData.bank_account_name}
+                                onChange={handleChange}
+                                placeholder={formData.organization_name || "e.g. AERO Project Inc."}
+                                className="form-control w-full p-2 border rounded"
+                            />
+                        </div>
+                        <div>
+                            <label className="block mb-2 font-medium">BSB</label>
+                            <input
+                                type="text"
+                                name="bank_bsb"
+                                value={formData.bank_bsb}
+                                onChange={handleChange}
+                                placeholder="e.g. 064-001"
+                                className="form-control w-full p-2 border rounded"
+                            />
+                        </div>
+                        <div>
+                            <label className="block mb-2 font-medium">Account Number</label>
+                            <input
+                                type="text"
+                                name="bank_account_number"
+                                value={formData.bank_account_number}
+                                onChange={handleChange}
+                                placeholder="e.g. 1002 3456"
+                                className="form-control w-full p-2 border rounded"
+                            />
                         </div>
                     </div>
                 </div>

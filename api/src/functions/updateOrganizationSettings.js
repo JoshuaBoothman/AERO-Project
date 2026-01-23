@@ -14,7 +14,18 @@ app.http('updateOrganizationSettings', {
                 return { status: 403, body: JSON.stringify({ error: "Unauthorized. Admin access required." }) };
             }
 
-            const { organization_name, support_email, primary_color, secondary_color, accent_color, logo_url } = await request.json();
+            const {
+                organization_name,
+                support_email,
+                primary_color,
+                secondary_color,
+                accent_color,
+                logo_url,
+                bank_name,
+                bank_account_name,
+                bank_bsb,
+                bank_account_number
+            } = await request.json();
 
             // 2. Update logic
             // Since it's a singleton row, we update the single row where ID is usually 1, or just update TOP 1. 
@@ -30,7 +41,11 @@ app.http('updateOrganizationSettings', {
                     primary_color = @primary,
                     secondary_color = @secondary,
                     accent_color = @accent,
-                    logo_url = @logo
+                    logo_url = @logo,
+                    bank_name = @bank_name,
+                    bank_account_name = @bank_account_name,
+                    bank_bsb = @bank_bsb,
+                    bank_account_number = @bank_account_number
                 OUTPUT INSERTED.*
             `;
 
@@ -40,7 +55,11 @@ app.http('updateOrganizationSettings', {
                 { name: 'primary', type: sql.NVarChar, value: primary_color },
                 { name: 'secondary', type: sql.NVarChar, value: secondary_color },
                 { name: 'accent', type: sql.NVarChar, value: accent_color },
-                { name: 'logo', type: sql.NVarChar, value: logo_url }
+                { name: 'logo', type: sql.NVarChar, value: logo_url },
+                { name: 'bank_name', type: sql.NVarChar, value: bank_name || null },
+                { name: 'bank_account_name', type: sql.NVarChar, value: bank_account_name || null },
+                { name: 'bank_bsb', type: sql.NVarChar, value: bank_bsb || null },
+                { name: 'bank_account_number', type: sql.NVarChar, value: bank_account_number || null }
             ]);
 
             if (result.length === 0) {
