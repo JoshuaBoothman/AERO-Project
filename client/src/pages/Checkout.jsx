@@ -80,7 +80,7 @@ function Checkout() {
                 const data = await res.json();
                 notify(`Order Success! ID: ${data.orderId}`, "success");
                 clearCart();
-                navigate('/my-orders');
+                navigate(`/orders/${data.orderId}/invoice`);
             } else {
                 const err = await res.json();
                 notify('Checkout Failed: ' + err.error, "error");

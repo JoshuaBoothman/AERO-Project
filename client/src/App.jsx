@@ -28,6 +28,7 @@ import CampingAvailabilityReport from './pages/admin/CampingAvailabilityReport';
 import EventPlanesReport from './pages/admin/EventPlanesReport';
 
 import OrderDetail from './pages/OrderDetail';
+import Invoice from './pages/Invoice';
 import CampingPage from './pages/camping/CampingPage';
 import StorePage from './pages/StorePage';
 import ShopIndex from './pages/ShopIndex';
@@ -120,9 +121,11 @@ function App() {
                 <Route path="events/:slug/camping" element={<CampingPage />} />
                 <Route path="checkout" element={<Checkout />} /> {/* Added Checkout Route */}
 
+
                 <Route path="my-orders" element={<MyOrders />} />
                 <Route path="my-planes" element={<MyPlanes />} />
                 <Route path="orders/:orderId" element={<OrderDetail />} />
+                <Route path="orders/:orderId/invoice" element={<Invoice />} />
                 <Route path="admin" element={<AdminDashboard />} />
                 <Route path="admin/map" element={<AdminMapTool />} />
                 <Route path="admin/orders" element={<AdminOrders />} />

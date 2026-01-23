@@ -50,7 +50,7 @@ app.http('createOrder', {
                 const orderReq = new sql.Request(transaction);
                 const orderRes = await orderReq
                     .input('uid', sql.Int, user.userId)
-                    .query("INSERT INTO orders (user_id, total_amount, payment_status) VALUES (@uid, 0, 'Pending'); SELECT SCOPE_IDENTITY() AS id");
+                    .query("INSERT INTO orders (user_id, total_amount, payment_status, amount_paid) VALUES (@uid, 0, 'Pending', 0); SELECT SCOPE_IDENTITY() AS id");
 
                 const orderId = orderRes.recordset[0].id;
                 let totalAmount = 0;
@@ -541,14 +541,24 @@ app.http('createOrder', {
                 }
 
                 // 8. Update Total & Finish
-                await new sql.Request(transaction).input('oid', sql.Int, orderId).input('tot', sql.Decimal(10, 2), totalAmount).query("UPDATE orders SET total_amount = @tot, payment_status = 'Paid' WHERE order_id = @oid");
-                await new sql.Request(transaction).input('oid', sql.Int, orderId).input('tot', sql.Decimal(10, 2), totalAmount).query("INSERT INTO transactions (order_id, amount, payment_method, status, timestamp) VALUES (@oid, @tot, 'Mock', 'Success', GETUTCDATE())");
+                // 8. Update Total & Finish
+                // Generate Invoice Number: INV-{YYYY}-{ORDER_ID}
+                const year = new Date().getFullYear();
+                const invoiceNumber = `INV-${year}-${orderId}`;
+
+                await new sql.Request(transaction)
+                    .input('oid', sql.Int, orderId)
+                    .input('tot', sql.Decimal(10, 2), totalAmount)
+                    .input('inv', sql.VarChar, invoiceNumber)
+                    .query("UPDATE orders SET total_amount = @tot, payment_status = 'Pending', invoice_number = @inv, amount_paid = 0 WHERE order_id = @oid");
+
+                // No transaction record created yet (Pending Payment)
 
                 await transaction.commit();
 
                 return {
                     status: 200,
-                    body: JSON.stringify({ message: "Order processed", orderId, total: totalAmount })
+                    body: JSON.stringify({ message: "Order processed", orderId, total: totalAmount, invoiceNumber })
                 };
 
             } catch (err) {

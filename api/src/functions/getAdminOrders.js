@@ -59,7 +59,11 @@ app.http('getAdminOrders', {
                      WHERE oi.order_id = o.order_id) as event_id
                 FROM orders o
                 LEFT JOIN users u ON o.user_id = u.user_id
-                LEFT JOIN persons p ON u.user_id = p.user_id
+                OUTER APPLY (
+                    SELECT TOP 1 first_name, last_name 
+                    FROM persons 
+                    WHERE user_id = u.user_id
+                ) p
                 WHERE 1=1
             `;
 

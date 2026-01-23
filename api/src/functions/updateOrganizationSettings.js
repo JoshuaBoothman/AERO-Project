@@ -24,7 +24,12 @@ app.http('updateOrganizationSettings', {
                 bank_name,
                 bank_account_name,
                 bank_bsb,
-                bank_account_number
+                bank_account_number,
+                address_line_1,
+                city,
+                state,
+                postcode,
+                phone_number
             } = await request.json();
 
             // 2. Update logic
@@ -45,7 +50,12 @@ app.http('updateOrganizationSettings', {
                     bank_name = @bank_name,
                     bank_account_name = @bank_account_name,
                     bank_bsb = @bank_bsb,
-                    bank_account_number = @bank_account_number
+                    bank_account_number = @bank_account_number,
+                    address_line_1 = @address,
+                    city = @city,
+                    state = @state,
+                    postcode = @post,
+                    phone_number = @phone
                 OUTPUT INSERTED.*
             `;
 
@@ -59,7 +69,12 @@ app.http('updateOrganizationSettings', {
                 { name: 'bank_name', type: sql.NVarChar, value: bank_name || null },
                 { name: 'bank_account_name', type: sql.NVarChar, value: bank_account_name || null },
                 { name: 'bank_bsb', type: sql.NVarChar, value: bank_bsb || null },
-                { name: 'bank_account_number', type: sql.NVarChar, value: bank_account_number || null }
+                { name: 'bank_account_number', type: sql.NVarChar, value: bank_account_number || null },
+                { name: 'address', type: sql.NVarChar, value: address_line_1 || null },
+                { name: 'city', type: sql.NVarChar, value: city || null },
+                { name: 'state', type: sql.NVarChar, value: state || null },
+                { name: 'post', type: sql.NVarChar, value: postcode || null },
+                { name: 'phone', type: sql.VarChar, value: phone_number || null }
             ]);
 
             if (result.length === 0) {

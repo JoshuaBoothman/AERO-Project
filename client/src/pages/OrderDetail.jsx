@@ -141,17 +141,43 @@ function OrderDetail() {
                     <p style={{ color: '#666', margin: 0 }}>
                         Placed on {new Date(order.order_date).toLocaleString()}
                     </p>
-                    {order.tax_invoice_number && (
-                        <p style={{ color: '#666', fontSize: '0.9rem', margin: 0 }}>
-                            Tax Invoice: #{order.tax_invoice_number}
-                        </p>
-                    )}
+                    <div className="flex gap-4 mt-2 text-sm text-gray-500">
+                        {order.invoice_number && (
+                            <span>Invoice: <strong>{order.invoice_number}</strong></span>
+                        )}
+                        {order.tax_invoice_number && (
+                            <span>Tax Invoice: <strong>{order.tax_invoice_number}</strong></span>
+                        )}
+                    </div>
+
+                    <div className="mt-4">
+                        <Link
+                            to={`/orders/${order.order_id}/invoice`}
+                            target="_blank"
+                            className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow inline-flex items-center gap-2"
+                        >
+                            <span>📄 View / Print Invoice</span>
+                        </Link>
+                    </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
                     <div style={{ fontSize: '2rem', fontWeight: 'bold' }}>
                         ${order.total_amount.toFixed(2)}
                     </div>
-                    <span className={`status-badge status-${order.payment_status?.toLowerCase()}`}>
+
+                    {order.amount_paid > 0 && (
+                        <div className="text-sm text-gray-500 mb-1">
+                            Paid: ${order.amount_paid.toFixed(2)}
+                        </div>
+                    )}
+
+                    {(order.total_amount - order.amount_paid) > 0.01 && (
+                        <div className="text-red-600 font-bold mb-2">
+                            Due: ${(order.total_amount - order.amount_paid).toFixed(2)}
+                        </div>
+                    )}
+
+                    <span className={`status-badge status-${order.payment_status?.toLowerCase().replace(' ', '-')}`}>
                         {order.payment_status}
                     </span>
                 </div>
@@ -250,6 +276,60 @@ function OrderDetail() {
                 </table>
             </div>
 
+
+            {/* PAYMENT HISTORY SECTION */}
+            {order.transactions && order.transactions.length > 0 && (
+                <>
+                    <h2 style={{ borderBottom: '2px solid #eee', paddingBottom: '0.5rem', marginBottom: '1rem' }}>Payment History</h2>
+                    <div className="card" style={{ padding: 0, overflow: 'hidden', marginBottom: '3rem' }}>
+                        <table className="admin-table">
+                            <thead>
+                                <tr>
+                                    <th style={{ paddingLeft: '1.5rem' }}>Date</th>
+                                    <th>Reference</th>
+                                    <th>Method</th>
+                                    <th style={{ textAlign: 'right', paddingRight: '1.5rem' }}>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {order.transactions.map((txn, idx) => (
+                                    <tr key={idx}>
+                                        <td style={{ paddingLeft: '1.5rem', paddingTop: '1rem', paddingBottom: '1rem' }}>
+                                            {new Date(txn.payment_date || txn.timestamp).toLocaleDateString()}
+                                        </td>
+                                        <td>{txn.reference || '-'}</td>
+                                        <td>{txn.payment_method}</td>
+                                        <td style={{ textAlign: 'right', paddingRight: '1.5rem', fontWeight: 'bold' }}>
+                                            ${txn.amount.toFixed(2)}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </>
+            )}
+
+            {/* PAY NOW INSTRUCTIONS */}
+            {(order.total_amount - order.amount_paid) > 0.01 && (
+                <div className="card bg-blue-50 border-blue-200 mb-8 p-6">
+                    <h3 className="text-blue-800 font-bold text-lg mb-2">Payment Required</h3>
+                    <p className="text-blue-900 mb-4">
+                        Please pay the outstanding balance of <strong>${(order.total_amount - order.amount_paid).toFixed(2)}</strong> via Direct Deposit.
+                    </p>
+                    <div className="bg-white p-4 rounded border border-blue-100 inline-block">
+                        <p className="text-sm text-gray-500 mb-1 uppercase tracking-wide">Payment Reference (Required)</p>
+                        <p className="text-xl font-mono font-bold">
+                            {order.invoice_number || `INV-${new Date(order.order_date).getFullYear()}-${order.order_id}`}
+                        </p>
+                    </div>
+                    <div className="mt-4">
+                        <Link to={`/orders/${order.order_id}/invoice`} target="_blank" className="text-blue-700 font-bold underline">
+                            View Invoice for Bank Details &rarr;
+                        </Link>
+                    </div>
+                </div>
+            )}
 
             {/* TICKET MANAGEMENT SECTION */}
             {ticketsToManage.length > 0 && (

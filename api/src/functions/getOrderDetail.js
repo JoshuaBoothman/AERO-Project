@@ -23,6 +23,8 @@ app.http('getOrderDetail', {
                     o.total_amount, 
                     o.payment_status, 
                     o.tax_invoice_number,
+                    o.invoice_number,
+                    o.amount_paid,
                     o.user_id
                 FROM orders o
                 WHERE o.order_id = @orderId
@@ -133,6 +135,16 @@ app.http('getOrderDetail', {
                 planes: planesMap[item.person_id] || []
             }));
 
+            // 3.6 Fetch Transactions
+            const transQuery = `
+                SELECT transaction_id, amount, payment_method, status, reference, payment_date, timestamp 
+                FROM transactions 
+                WHERE order_id = @oid 
+                ORDER BY payment_date DESC, timestamp DESC
+            `;
+            const transResult = await query(transQuery, [{ name: 'oid', type: sql.Int, value: orderId }]);
+
+
             // 4. Construct Response
             // We'll attach the items to the order object
             // If there are multiple events (unlikely but possible), we pick the first one for the header
@@ -143,7 +155,8 @@ app.http('getOrderDetail', {
                 event_name: itemsResult.length > 0 ? itemsResult[0].event_name : "Unknown Event",
                 event_slug: itemsResult.length > 0 ? itemsResult[0].event_slug : "",
                 banner_url: itemsResult.length > 0 ? itemsResult[0].banner_url : "",
-                items: itemsWithPlanes
+                items: itemsWithPlanes,
+                transactions: transResult
             };
 
             return {

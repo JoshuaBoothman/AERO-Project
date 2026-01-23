@@ -91,6 +91,70 @@ function AdminOrders() {
         }
     };
 
+    // Payment Modal State
+    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+    const [selectedOrderForPayment, setSelectedOrderForPayment] = useState(null);
+    const [paymentForm, setPaymentForm] = useState({
+        amount: '',
+        date: new Date().toISOString().split('T')[0],
+        reference: '',
+        method: 'Direct Deposit'
+    });
+    const [processingPayment, setProcessingPayment] = useState(false);
+
+    const openPaymentModal = (order) => {
+        // Default amount to balance due
+        const paid = order.amount_paid || 0; // Need to ensure API returns this in list or calculate it
+        // Wait, list API might not have amount_paid. Schema added it to orders table.
+        // Assuming getAdminOrders returns SELECT * or includes amount_paid.
+        // If not, we might need to rely on what we have: total - (paid??)
+        // If API doesn't return amount_paid, we should default to total_amount for now or 0.
+        // Let's assume getAdminOrders DOES return amount_paid (schema update should flow through if using SELECT *)
+
+        const balance = order.total_amount - (order.amount_paid || 0);
+
+        setSelectedOrderForPayment(order);
+        setPaymentForm({
+            amount: balance > 0 ? balance.toFixed(2) : order.total_amount.toFixed(2),
+            date: new Date().toISOString().split('T')[0],
+            reference: '',
+            method: 'Direct Deposit'
+        });
+        setIsPaymentModalOpen(true);
+    };
+
+    const handleRecordPayment = async (e) => {
+        e.preventDefault();
+        if (!selectedOrderForPayment) return;
+        setProcessingPayment(true);
+
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`/api/orders/${selectedOrderForPayment.order_id}/payments`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    'X-Auth-Token': token
+                },
+                body: JSON.stringify(paymentForm)
+            });
+
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || 'Payment failed');
+            }
+
+            // Success
+            setIsPaymentModalOpen(false);
+            fetchOrders(); // Refresh list
+        } catch (err) {
+            alert(err.message);
+        } finally {
+            setProcessingPayment(false);
+        }
+    };
+
     return (
         <div className="container mx-auto p-4 md:p-8">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
@@ -153,6 +217,7 @@ function AdminOrders() {
                     >
                         <option value="All">All Statuses</option>
                         <option value="Paid">Paid</option>
+                        <option value="Partially Paid">Partiailly Paid</option>
                         <option value="Pending">Pending</option>
                         <option value="Failed">Failed</option>
                         <option value="Refunded">Refunded</option>
@@ -195,7 +260,7 @@ function AdminOrders() {
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500 font-semibold tracking-wider">
-                                    <th className="p-4">ID</th>
+                                    <th className="p-4">ID / Invoice</th>
                                     <th className="p-4">Date</th>
                                     <th className="p-4">Event</th>
                                     <th className="p-4">Customer</th>
@@ -208,7 +273,10 @@ function AdminOrders() {
                             <tbody className="divide-y divide-gray-100">
                                 {orders.map(order => (
                                     <tr key={order.order_id} className="hover:bg-gray-50 transition-colors">
-                                        <td className="p-4 font-mono text-sm text-gray-600">#{order.order_id}</td>
+                                        <td className="p-4 font-mono text-sm text-gray-600">
+                                            <div>#{order.order_id}</div>
+                                            {order.invoice_number && <div className="text-xs text-blue-600 font-bold">{order.invoice_number}</div>}
+                                        </td>
                                         <td className="p-4">
                                             <div className="font-medium text-gray-900">{new Date(order.order_date).toLocaleDateString()}</div>
                                             <div className="text-xs text-gray-500">{new Date(order.order_date).toLocaleTimeString()}</div>
@@ -221,33 +289,114 @@ function AdminOrders() {
                                             <div className="text-sm text-gray-500">{order.user_email}</div>
                                         </td>
                                         <td className="p-4 text-sm text-gray-600">{order.item_count} items</td>
-                                        <td className="p-4 font-bold text-gray-900">${order.total_amount.toFixed(2)}</td>
+                                        <td className="p-4 font-bold text-gray-900">
+                                            ${order.total_amount.toFixed(2)}
+                                            {order.amount_paid > 0 && order.amount_paid < order.total_amount && (
+                                                <div className="text-xs text-orange-600 font-normal">Paid: ${order.amount_paid.toFixed(2)}</div>
+                                            )}
+                                        </td>
                                         <td className="p-4">
                                             <span className={`inline-block px-2 py-1 rounded text-xs font-bold uppercase border ${getStatusColor(order.payment_status)}`}>
                                                 {order.payment_status}
                                             </span>
                                         </td>
                                         <td className="p-4">
-                                            <Link
-                                                to={`/orders/${order.order_id}`}
-                                                className="inline-block px-3 py-1 bg-white border border-gray-300 rounded text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm"
-                                            >
-                                                View
-                                            </Link>
+                                            <div className="flex sm:flex-col lg:flex-row gap-2">
+                                                <Link
+                                                    to={`/orders/${order.order_id}`}
+                                                    className="inline-block px-3 py-1 bg-white border border-gray-300 rounded text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm text-center"
+                                                >
+                                                    View
+                                                </Link>
+                                                {order.payment_status !== 'Paid' && (
+                                                    <button
+                                                        onClick={() => openPaymentModal(order)}
+                                                        className="inline-block px-3 py-1 bg-green-50 border border-green-200 rounded text-sm font-bold text-green-700 hover:bg-green-100 transition-colors shadow-sm text-center"
+                                                    >
+                                                        Pay
+                                                    </button>
+                                                )}
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
                     </div>
-                    {orders.length === 0 && (
-                        <div className="p-12 text-center text-gray-500">
-                            <Filter className="mx-auto h-12 w-12 text-gray-300 mb-3" />
-                            <p className="text-lg font-medium text-gray-900">No orders found</p>
-                            <p className="text-sm text-gray-500">Try adjusting your filters or search terms.</p>
-                            <button onClick={handleResetFilters} className="mt-4 text-blue-600 hover:text-blue-800 font-medium text-sm">Clear all filters</button>
+                </div>
+            )}
+
+            {/* Payment Modal */}
+            {isPaymentModalOpen && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+                        <div className="px-6 py-4 border-b flex justify-between items-center">
+                            <h3 className="text-lg font-bold">Record Payment</h3>
+                            <button onClick={() => setIsPaymentModalOpen(false)} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
                         </div>
-                    )}
+                        <form onSubmit={handleRecordPayment} className="p-6 space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Amount ($)</label>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    required
+                                    className="w-full p-2 border rounded"
+                                    value={paymentForm.amount}
+                                    onChange={e => setPaymentForm({ ...paymentForm, amount: e.target.value })}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Date Paid</label>
+                                <input
+                                    type="date"
+                                    required
+                                    className="w-full p-2 border rounded"
+                                    value={paymentForm.date}
+                                    onChange={e => setPaymentForm({ ...paymentForm, date: e.target.value })}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Reference (Optional)</label>
+                                <input
+                                    type="text"
+                                    className="w-full p-2 border rounded"
+                                    placeholder="e.g. DD-12345"
+                                    value={paymentForm.reference}
+                                    onChange={e => setPaymentForm({ ...paymentForm, reference: e.target.value })}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Method</label>
+                                <select
+                                    className="w-full p-2 border rounded"
+                                    value={paymentForm.method}
+                                    onChange={e => setPaymentForm({ ...paymentForm, method: e.target.value })}
+                                >
+                                    <option value="Direct Deposit">Direct Deposit</option>
+                                    <option value="Cash">Cash</option>
+                                    <option value="EFT">EFT</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div className="pt-4 flex justify-end gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsPaymentModalOpen(false)}
+                                    className="px-4 py-2 border rounded text-gray-700 hover:bg-gray-50"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={processingPayment}
+                                    className="px-4 py-2 bg-green-600 text-white rounded font-bold hover:bg-green-700"
+                                >
+                                    {processingPayment ? 'Recording...' : 'Record Payment'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             )}
         </div>

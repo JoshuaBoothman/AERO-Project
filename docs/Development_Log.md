@@ -1,5 +1,22 @@
 # Development Log
 
+## [2026-01-23] - Invoices, Part Payments & Admin Fixes
+- **Time**: 08:20 - 15:30
+- **Completed Items**:
+    - **Features**:
+        - **Printable Invoices**: Created `Invoice.jsx` with organization branding, item breakdown, and valid tax invoice logic.
+        - **Part Payments**: Updated `AdminOrders.jsx` to allow admins to record partial payments (Direct Deposit/Cash).
+        - **Payment History**: Updated `OrderDetail.jsx` to show transaction logs, outstanding balance, and "Pay Now" instructions.
+        - **Org Settings**: Added Address, Phone, and Default Bank Details to `OrganizationSettings` for invoice headers.
+    - **Logic**:
+        - **Invoice Number**: Implemented generation (`INV-YYYY-ID`) and database persistence.
+        - **Checkout Redirect**: Updated checkout flow to redirect immediately to the Invoice page.
+        - **Routing**: Registered `/orders/:id/invoice` route in `App.jsx`.
+    - **Fixes**:
+        - **Admin Orders Duplication**: Fixed critical SQL bug in `getAdminOrders.js` using `OUTER APPLY` to prevent row duplication caused by multiple person records per user.
+    - **Documentation**:
+        - Created `walkthrough.md` for verification.
+
 ## [2026-01-23] - ALSM Bank Details (Completed)
 - **Time**: 12:51 - 13:03
 - **Completed Items**:

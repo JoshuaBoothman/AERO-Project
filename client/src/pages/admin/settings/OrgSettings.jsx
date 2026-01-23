@@ -20,7 +20,12 @@ function OrgSettings({ refreshSettings }) {
         bank_name: '',
         bank_account_name: '',
         bank_bsb: '',
-        bank_account_number: ''
+        bank_account_number: '',
+        address_line_1: '',
+        city: '',
+        state: '',
+        postcode: '',
+        phone_number: ''
     });
 
     useEffect(() => {
@@ -43,7 +48,12 @@ function OrgSettings({ refreshSettings }) {
                 bank_name: data.bank_name || '',
                 bank_account_name: data.bank_account_name || '',
                 bank_bsb: data.bank_bsb || '',
-                bank_account_number: data.bank_account_number || ''
+                bank_account_number: data.bank_account_number || '',
+                address_line_1: data.address_line_1 || '',
+                city: data.city || '',
+                state: data.state || '',
+                postcode: data.postcode || '',
+                phone_number: data.phone_number || ''
             });
         } catch (err) {
             setError(err.message);
@@ -218,6 +228,75 @@ function OrgSettings({ refreshSettings }) {
                                 className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-secondary hover:file:bg-primary/90"
                             />
                             <p className="text-xs text-gray-500 mt-1">Recommended size: 200x60px (PNG/SVG/JPG)</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="mb-6">
+                    <h3 className="font-bold mb-3">Address & Contact Details</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="md:col-span-2">
+                            <label className="block mb-2 font-medium">Address Line 1</label>
+                            <input
+                                type="text"
+                                name="address_line_1"
+                                value={formData.address_line_1}
+                                onChange={handleChange}
+                                placeholder="123 Aviation Way"
+                                className="form-control w-full p-2 border rounded"
+                            />
+                        </div>
+                        <div>
+                            <label className="block mb-2 font-medium">Town / City</label>
+                            <input
+                                type="text"
+                                name="city"
+                                value={formData.city}
+                                onChange={handleChange}
+                                placeholder="Inglewood"
+                                className="form-control w-full p-2 border rounded"
+                            />
+                        </div>
+                        <div>
+                            <label className="block mb-2 font-medium">State</label>
+                            <select
+                                name="state"
+                                value={formData.state}
+                                onChange={handleChange}
+                                className="form-control w-full p-2 border rounded"
+                            >
+                                <option value="">Select State</option>
+                                <option value="QLD">QLD</option>
+                                <option value="NSW">NSW</option>
+                                <option value="VIC">VIC</option>
+                                <option value="SA">SA</option>
+                                <option value="WA">WA</option>
+                                <option value="TAS">TAS</option>
+                                <option value="ACT">ACT</option>
+                                <option value="NT">NT</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block mb-2 font-medium">Postcode</label>
+                            <input
+                                type="text"
+                                name="postcode"
+                                value={formData.postcode}
+                                onChange={handleChange}
+                                placeholder="4387"
+                                className="form-control w-full p-2 border rounded"
+                            />
+                        </div>
+                        <div>
+                            <label className="block mb-2 font-medium">Phone Number</label>
+                            <input
+                                type="text"
+                                name="phone_number"
+                                value={formData.phone_number}
+                                onChange={handleChange}
+                                placeholder="0400 123 456"
+                                className="form-control w-full p-2 border rounded"
+                            />
                         </div>
                     </div>
                 </div>

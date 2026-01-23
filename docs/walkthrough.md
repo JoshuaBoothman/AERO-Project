@@ -1,76 +1,54 @@
-# Walkthrough - Phone Number & My Planes
+# Walkthrough: Printable Invoices & Part Payments
 
-## My Planes Management (New)
-I have successfully implemented the "My Planes Management" feature, allowing users to view, edit, and delete their registered planes.
+This update introduces fully branded printable invoices, partial payment tracking, and organization address management.
 
-### Changes
+## 1. Configure Organization Details
+To ensure your invoices look professional, add your address and contact details.
 
-#### Database
--  Used existing `planes` table.
--  **Dependencies**: verified relationships with `persons` and `event_planes`.
+1.  Navigate to **Admin > Settings > Organization**.
+2.  Scroll to the new **Address & Contact Details** section.
+3.  Enter your:
+    -   Address Line 1
+    -   Town / City
+    -   State
+    -   Postcode
+    -   Phone Number
+4.  Click **Save Settings**.
+    -   *Verification*: Refresh the page to ensure details persist.
 
-#### Frontend (Client)
-- **File**: `client/src/pages/MyPlanes.jsx`
-    -   **New Page**: Lists all planes owned by the user.
-    -   **Features**:
-        -   Display details (Name, Model, Rego, Weight, Heavy Model status).
-        -   **Edit**: Modal to update all fields including Heavy Model Certificate upload.
-        -   **Delete**: functionality with confirmation.
-- **File**: `client/src/components/Layout.jsx`
-    -   Added "My Planes" navigation link.
-    -   **Logic**: Link only appears if the user has registered planes (`GET /api/planes` returning > 0).
-- **File**: `client/src/App.jsx`
-    -   Added route `/my-planes`.
+## 2. Generate and View an Invoice
+All orders (past and future) now have an Invoice Number and printable view.
 
-#### Backend (API)
-- **File**: `api/src/functions/getPlanes.js` (New)
-    -   Fetches planes for the authenticated user (via `persons` table link).
-- **File**: `api/src/functions/updatePlane.js` (New)
-    -   Updates plane details.
-    -   **Security**: Ensures user owns the plane before updating.
-- **File**: `api/src/functions/deletePlane.js` (New)
-    -   Deletes a plane.
-    -   **Validation**: Prevents deletion if the plane is linked to an active event (`event_planes` check).
+1.  Navigate to **Admin > Orders** (or **My Orders** as a user).
+2.  Click **View** on an order.
+3.  On the Order Detail page, click the new **📄 View / Print Invoice** button.
+4.  **Verify**:
+    -   Organization Logo, Address, and Phone are visible in the header.
+    -   **Invoice #** is displayed (Format: `INV-{YYYY}-{ORDER_ID}`).
+    -   **Bill To** section shows the customer's details.
+    -   **Balance Due** is calculated correctly.
+    -   **Bank Details** are shown at the bottom for unpaid/partially paid orders.
 
-### Verification
-1.  **Navigation**:
-    -   Log in as a user *without* planes -> "My Planes" link should **NOT** be visible.
-    -   Log in as a user *with* planes -> "My Planes" link **SHOULD** be visible.
-2.  **Management**:
-    -   Navigate to `/my-planes`.
-    -   **Edit**: Click pencil icon, change "Weight" or re-upload certificate. Save. Refresh to verify persistence.
-    -   **Delete**: Click trash icon. Confirm. Plane should disappear.
-3.  **Safety**:
-    -   Try to delete a plane that is currently registered for an upcoming event (if applicable). Expected: Error message "Cannot delete plane...".
+## 3. Record a Payment (Admin Only)
+Admins can now record partial or full payments received via Direct Deposit or Cash.
 
----
+1.  Navigate to **Admin > Orders**.
+2.  Find a "Pending" order.
+3.  Click the new **Pay** button in the Action column.
+4.  In the "Record Payment" modal:
+    -   **Amount**: Enter a partial amount (e.g., $50.00).
+    -   **Date**: Select today's date.
+    -   **Reference**: Enter a simulated reference (e.g., `DD-TEST-01`).
+    -   **Method**: Select "Direct Deposit".
+5.  Click **Record Payment**.
+6.  **Verify**:
+    -   Order status changes to **Partially Paid** (if partial) or **Paid** (if full).
+    -   The "Paid" amount is updated in the list view.
+    -   Go to the **Order View** -> **Payment History** section to see the transaction log.
 
-# Walkthrough - Attendee Phone Number (Previous)
-
-I have successfully implemented the collection of phone numbers for attendees.
-
-## Changes
-
-### Database
--  Verified `persons` table schema.
--  **User Action Required**: Run `docs/schema/20260122_add_phone_number.sql` (Confirmed as Done).
-
-### Host/Frontend (Client)
-- **File**: `client/src/components/AttendeeModal.jsx`
-- **Changes**: 
-    - Added `Phone Number` input field.
-    - Added `phoneNumber` to state and validation logic.
-    - Pre-fills with User's phone number if available.
-
-### Backend (API)
-- **File**: `api/src/functions/createOrder.js`
-- **Changes**:
-    - Updated `INSERT` and `UPDATE` queries for `persons` table to include `phone_number`.
-    - Handles both Main User and Guest Attendees.
-- **File**: `api/src/functions/updateAttendee.js`
-- **Status**: Already supported `phone_number` updates.
-
-## Verification
-1.  **Registration**: When registering for an event, the "Attendee Details" modal now asks for a Phone Number.
-2.  **Validation**: The field is required.
-3.  **Persistence**: The data is saved to the `persons` table in the database upon checkout.
+## 4. Check Balance Due
+1.  On the **Order Detail** page of a partially paid order:
+    -   Verify the **Due** amount (Red text) is correct.
+    -   Verify the **Payment History** table lists your recent payment.
+2.  Open the **Printable Invoice** again.
+    -   Verify the **Less Amount Paid** and **Balance Due** rows are correct.
