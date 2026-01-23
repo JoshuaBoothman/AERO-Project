@@ -43,7 +43,7 @@ app.http('createCampground', {
             };
 
         } catch (error) {
-            context.log.error(`Error in createCampground: ${error.message}`);
+            context.error(`Error in createCampground: ${error.message}`);
             return { status: 500, body: JSON.stringify({ error: "Internal Server Error" }) };
         }
     }

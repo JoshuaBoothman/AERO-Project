@@ -50,7 +50,7 @@ app.http('getTicketTypes', {
 
             return { jsonBody: types };
         } catch (error) {
-            context.log.error(`Error getting ticket types: ${error.message}`);
+            context.error(`Error getting ticket types: ${error.message}`);
             return { status: 500, body: JSON.stringify({ error: "Internal Server Error" }) };
         }
     }
@@ -125,7 +125,7 @@ app.http('createTicketType', {
                 throw err;
             }
         } catch (error) {
-            context.log.error(`Error creating ticket type: ${error.message}`);
+            context.error(`Error creating ticket type: ${error.message}`);
             return { status: 500, body: JSON.stringify({ error: "Internal Server Error" }) };
         }
     }
@@ -199,7 +199,7 @@ app.http('updateTicketType', {
                 throw err;
             }
         } catch (error) {
-            context.log.error(`Error updating ticket type: ${error.message}`);
+            context.error(`Error updating ticket type: ${error.message}`);
             return { status: 500, body: JSON.stringify({ error: "Internal Server Error" }) };
         }
     }
@@ -227,7 +227,7 @@ app.http('deleteTicketType', {
 
             return { status: 204 };
         } catch (error) {
-            context.log.error(`Error deleting ticket type: ${error.message}`);
+            context.error(`Error deleting ticket type: ${error.message}`);
             if (error.message.includes('REFERENCE constraint')) {
                 return { status: 409, body: JSON.stringify({ error: "Cannot delete ticket type because it has associated attendees." }) };
             }

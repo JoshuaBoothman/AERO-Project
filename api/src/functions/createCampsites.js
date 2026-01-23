@@ -90,7 +90,7 @@ app.http('createCampsites', {
             }
 
         } catch (error) {
-            context.log.error(`Error creating sites for ${campgroundId}:`, error);
+            context.error(`Error creating sites for ${campgroundId}:`, error);
             return { status: 500, body: JSON.stringify({ error: "Internal Server Error" }) };
         }
     }

@@ -281,7 +281,12 @@ function ProductEditor() {
                     setSkus(prev => prev.filter(s => s.id !== skuId));
                     notify('SKU deleted', 'success');
                 } else {
-                    const data = await res.json();
+                    let data;
+                    try {
+                        data = await res.json();
+                    } catch (err) {
+                        data = { error: 'Unknown server error' };
+                    }
                     notify(data.error || 'Failed to delete SKU', 'error');
                 }
             } catch (e) { notify('Error deleting SKU', 'error'); }
@@ -290,47 +295,50 @@ function ProductEditor() {
 
     // --- Delete / Archive Handlers ---
     const handleDeleteProduct = async (force = false) => {
-        if (!force) {
-            const confirmMsg = "Are you sure you want to delete this product? This action cannot be undone.";
-            if (!window.confirm(confirmMsg)) return;
-            // Note: using window.confirm for initial check to avoid nested custom modals complexity for now, or use custom if preferred.
-            // Actually, let's just proceed to API call, the API handles the logic checks.
-            // But for "Clean" product, we want a confirm.
-        }
+        const proceedWithDelete = async () => {
+            try {
+                const res = await fetch(`/api/products/${id}${force ? '?force=true' : ''}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}`, 'X-Auth-Token': token }
+                });
 
-        try {
-            const res = await fetch(`/api/products/${id}${force ? '?force=true' : ''}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}`, 'X-Auth-Token': token }
-            });
+                if (res.ok) {
+                    notify('Product deleted successfully', 'success');
+                    window.location.href = '/admin/merchandise';
+                    return;
+                }
 
-            if (res.ok) {
-                notify('Product deleted successfully', 'success');
-                window.location.href = '/admin/merchandise'; // using location.href to ensure full refresh or navigate
-                return;
-            }
+                let data;
+                try {
+                    data = await res.json();
+                } catch (err) {
+                    console.error('Failed to parse error response:', err);
+                    notify('An unexpected error occurred (Invalid JSON response)', 'error');
+                    return;
+                }
 
-            const data = await res.json();
-
-            if (res.status === 409) {
-                if (data.code === 'HAS_ORDERS') {
-                    if (window.confirm(`${data.error} \n\nWould you like to archive this product instead?`)) {
-                        handleToggleArchive(true); // Archive it
-                    }
-                } else if (data.code === 'HAS_SKUS') {
-                    if (window.confirm(`${data.error} \n\nAre you sure you want to proceed? This will delete all SKUs and cannot be undone.`)) {
-                        handleDeleteProduct(true); // Force delete
+                if (res.status === 409) {
+                    if (data.code === 'HAS_ORDERS') {
+                        confirm(`${data.error} \n\nWould you like to archive this product instead?`, () => handleToggleArchive(true));
+                    } else if (data.code === 'HAS_SKUS') {
+                        confirm(`${data.error} \n\nAre you sure you want to proceed? This will delete all SKUs and cannot be undone.`, () => handleDeleteProduct(true));
+                    } else {
+                        notify(data.error, 'error');
                     }
                 } else {
-                    notify(data.error, 'error');
+                    notify(data.error || 'Failed to delete product', 'error');
                 }
-            } else {
-                notify(data.error || 'Failed to delete product', 'error');
-            }
 
-        } catch (e) {
-            console.error(e);
-            notify('Error deleting product', 'error');
+            } catch (e) {
+                console.error(e);
+                notify('Error deleting product', 'error');
+            }
+        };
+
+        if (!force) {
+            confirm("Are you sure you want to delete this product? This action cannot be undone.", proceedWithDelete);
+        } else {
+            proceedWithDelete();
         }
     };
 

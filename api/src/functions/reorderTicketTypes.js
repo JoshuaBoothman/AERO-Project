@@ -52,7 +52,7 @@ app.http('reorderTicketTypes', {
             }
 
         } catch (error) {
-            context.log.error(`Error reordering tickets: ${error.message}`);
+            context.error(`Error reordering tickets: ${error.message}`);
             return { status: 500, body: JSON.stringify({ error: "Internal Server Error" }) };
         }
     }

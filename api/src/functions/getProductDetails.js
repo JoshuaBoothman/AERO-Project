@@ -100,7 +100,7 @@ app.http('getProductDetails', {
             };
 
         } catch (error) {
-            context.log.error('Error fetching details:', error);
+            context.error('Error fetching details:', error);
             return { status: 500, body: JSON.stringify({ error: "Internal Server Error" }) };
         }
     }

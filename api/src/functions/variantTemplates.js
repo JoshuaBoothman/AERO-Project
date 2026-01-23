@@ -27,7 +27,7 @@ app.http('getVariantTemplates', {
 
             return { jsonBody: result };
         } catch (error) {
-            context.log.error(`Error getting variant templates: ${error.message}`);
+            context.error(`Error getting variant templates: ${error.message}`);
             return { status: 500, body: JSON.stringify({ error: "Internal Server Error" }) };
         }
     }
@@ -63,7 +63,7 @@ app.http('getVariantTemplateDetail', {
 
             return { jsonBody: template };
         } catch (error) {
-            context.log.error(`Error getting variant template detail: ${error.message}`);
+            context.error(`Error getting variant template detail: ${error.message}`);
             return { status: 500, body: JSON.stringify({ error: "Internal Server Error" }) };
         }
     }
@@ -114,7 +114,7 @@ app.http('createVariantTemplate', {
 
             return { status: 201, jsonBody: { template_id: templateId, message: "Template created successfully" } };
         } catch (error) {
-            context.log.error(`Error creating variant template: ${error.message}`);
+            context.error(`Error creating variant template: ${error.message}`);
             return { status: 500, body: JSON.stringify({ error: "Internal Server Error" }) };
         }
     }
@@ -138,7 +138,7 @@ app.http('deleteVariantTemplate', {
 
             return { status: 204 };
         } catch (error) {
-            context.log.error(`Error deleting variant template: ${error.message}`);
+            context.error(`Error deleting variant template: ${error.message}`);
             return { status: 500, body: JSON.stringify({ error: "Internal Server Error" }) };
         }
     }

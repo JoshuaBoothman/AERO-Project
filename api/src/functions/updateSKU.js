@@ -58,7 +58,7 @@ app.http('updateSKU', {
             return { status: 200, jsonBody: { message: "SKU updated" } };
 
         } catch (error) {
-            context.log.error('Error updating SKU:', error);
+            context.error('Error updating SKU:', error);
             return { status: 500, body: JSON.stringify({ error: "Internal Server Error" }) };
         }
     }

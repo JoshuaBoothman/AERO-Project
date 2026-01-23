@@ -44,7 +44,7 @@ app.http('updateProduct', {
             return { status: 200, jsonBody: { message: "Product updated successfully" } };
 
         } catch (error) {
-            context.log.error('Error updating product:', error);
+            context.error('Error updating product:', error);
             return { status: 500, body: JSON.stringify({ error: "Internal Server Error" }) };
         }
     }

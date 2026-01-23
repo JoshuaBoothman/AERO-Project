@@ -114,7 +114,7 @@ app.http('manageProductOptions', {
             }
 
         } catch (error) {
-            context.log.error('Error managing options:', error);
+            context.error('Error managing options:', error);
             return { status: 500, body: JSON.stringify({ error: "Internal Server Error" }) };
         }
     }

@@ -54,7 +54,7 @@ app.http('updateCampground', {
             };
 
         } catch (error) {
-            context.log.error(`Error updating campground ${campgroundId}:`, error);
+            context.error(`Error updating campground ${campgroundId}:`, error);
             return { status: 500, body: JSON.stringify({ error: "Internal Server Error" }) };
         }
     }

@@ -9,7 +9,7 @@ app.http('deleteSKU', {
     handler: async (request, context) => {
         const user = validateToken(request);
         if (!user || user.role !== 'admin') {
-            return { status: 401, body: JSON.stringify({ error: "Unauthorized" }) };
+            return { status: 401, jsonBody: { error: "Unauthorized" } };
         }
 
         const skuId = request.params.id;
@@ -46,7 +46,7 @@ app.http('deleteSKU', {
                 await transaction.rollback();
                 // Check for specific constraint errors
                 if (err.number === 547) {
-                    return { status: 409, body: JSON.stringify({ error: "Cannot delete SKU because it has been purchased or used in orders. Deactivate it instead." }) };
+                    return { status: 409, jsonBody: { error: "Cannot delete SKU because it has been purchased or used in orders. Deactivate it instead." } };
                 }
                 throw err;
             }
@@ -54,7 +54,7 @@ app.http('deleteSKU', {
         } catch (error) {
             context.error('Error deleting SKU:', error);
             // Also try to log the original error message to response for debugging if it's admin
-            return { status: 500, body: JSON.stringify({ error: "Internal Server Error", details: error.message }) };
+            return { status: 500, jsonBody: { error: "Internal Server Error", details: error.message } };
         }
     }
 });

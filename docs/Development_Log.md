@@ -1,5 +1,21 @@
 # Development Log
 
+## [2026-01-23] - Bug Fix: Merchandise Deletion (Completed)
+- **Time**: 12:05 - 12:55
+- **Completed Items**:
+    - **Backend (API)**:
+        - Fixed `context.log.error` -> `context.error` syntax error in `deleteProduct.js` (Azure Functions v4 fix).
+        - **Proactive Fix**: Scanned and fixed the same deprecated logging syntax in 27 other API files (including `getProducts.js`, `createCampground.js`, `ticketTypes.js`, etc.) to prevent future runtime crashes.
+        - Fixed `deleteProduct.js` and `deleteSKU.js` to use `jsonBody` format for consistent headers.
+        - Fixed SQL error in `deleteProduct.js` (Invalid column name 'id' -> 'order_item_id').
+        - Fixed FK constraint violation in `deleteProduct.js` by removing `ticket_linked_products` associations.
+        - Fixed logic error where `event_products` Table was assumed; corrected to cascade delete from `event_skus`.
+    - **Frontend (Client)**:
+        - Updated `ProductEditor.jsx` to safely handle JSON parsing errors.
+        - Replaced native `window.confirm` dialogs with custom `confirm()` modal in `handleDeleteProduct` for better UX consistency.
+    - **Documentation**:
+        - Moved `20260123_bugfix_merch_delete.md` to `completed/`.
+
 ## [2026-01-23] - Heavy Model Reports (Completed)
 - **Time**: 10:51 - 11:22
 - **Completed Items**:

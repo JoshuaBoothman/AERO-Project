@@ -13,7 +13,7 @@ app.http('getVenues', {
                 jsonBody: venues
             };
         } catch (error) {
-            context.log.error(`Error fetching venues: ${error.message}`);
+            context.error(`Error fetching venues: ${error.message}`);
             return { status: 500, body: JSON.stringify({ error: "Internal Server Error" }) };
         }
     }

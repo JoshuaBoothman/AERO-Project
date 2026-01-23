@@ -31,7 +31,7 @@ app.http('getProducts', {
             };
 
         } catch (error) {
-            context.log.error('Error fetching products:', error);
+            context.error('Error fetching products:', error);
             return { status: 500, body: JSON.stringify({ error: "Internal Server Error" }) };
         }
     }

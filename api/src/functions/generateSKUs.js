@@ -138,7 +138,7 @@ app.http('generateSKUs', {
             }
 
         } catch (error) {
-            context.log.error('Error generating SKUs:', error);
+            context.error('Error generating SKUs:', error);
             return { status: 500, body: JSON.stringify({ error: "Internal Server Error" }) };
         }
     }

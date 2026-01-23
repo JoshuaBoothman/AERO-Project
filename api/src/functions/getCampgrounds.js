@@ -13,7 +13,7 @@ app.http('getCampgrounds', {
                 jsonBody: result
             };
         } catch (error) {
-            context.log.error('Error fetching campgrounds:', error);
+            context.error('Error fetching campgrounds:', error);
             return { status: 500, body: JSON.stringify({ error: "Internal Server Error" }) };
         }
     }

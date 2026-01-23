@@ -44,7 +44,7 @@ app.http('update_schema_merch', {
             }
 
         } catch (error) {
-            context.log.error('Schema update failed:', error);
+            context.error('Schema update failed:', error);
             return { status: 500, body: JSON.stringify({ error: error.message }) };
         }
     }

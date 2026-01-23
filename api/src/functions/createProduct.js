@@ -44,7 +44,7 @@ app.http('createProduct', {
             };
 
         } catch (error) {
-            context.log.error('Error creating product:', error);
+            context.error('Error creating product:', error);
             return { status: 500, body: JSON.stringify({ error: "Internal Server Error" }) };
         }
     }

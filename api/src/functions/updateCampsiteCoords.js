@@ -47,7 +47,7 @@ app.http('updateCampsiteCoords', {
             };
 
         } catch (error) {
-            context.log.error(`Error updating campsite ${campsiteId}:`, error);
+            context.error(`Error updating campsite ${campsiteId}:`, error);
             return { status: 500, body: JSON.stringify({ error: "Internal Server Error" }) };
         }
     }

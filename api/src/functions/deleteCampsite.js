@@ -46,7 +46,7 @@ app.http('deleteCampsite', {
             };
 
         } catch (error) {
-            context.log.error(`Error deleting campsite ${campsiteId}:`, error);
+            context.error(`Error deleting campsite ${campsiteId}:`, error);
             return { status: 500, body: JSON.stringify({ error: "Internal Server Error" }) };
         }
     }

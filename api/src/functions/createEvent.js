@@ -62,7 +62,7 @@ app.http('createEvent', {
             };
 
         } catch (error) {
-            context.log.error(`Error creating event: ${error.message}`);
+            context.error(`Error creating event: ${error.message}`);
             // Check for duplicate slug error (SQL Server usually throws error 2601 or 2627)
             if (error.message.includes('unique index') || error.message.includes('duplicate key')) {
                 return { status: 409, body: JSON.stringify({ error: "Event name/slug already exists. Please choose a different name." }) };

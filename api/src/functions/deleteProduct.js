@@ -10,7 +10,7 @@ app.http('deleteProduct', {
         // Auth check
         const user = validateToken(request);
         if (!user || user.role !== 'admin') {
-            return { status: 401, body: JSON.stringify({ error: "Unauthorized" }) };
+            return { status: 401, jsonBody: { error: "Unauthorized" } };
         }
 
         const productId = request.params.id;
@@ -24,7 +24,7 @@ app.http('deleteProduct', {
             const checkOrders = await pool.request()
                 .input('pid', sql.Int, productId)
                 .query(`
-                    SELECT TOP 1 oi.id
+                    SELECT TOP 1 oi.order_item_id
                     FROM order_items oi
                     JOIN product_skus s ON oi.item_reference_id = s.product_sku_id
                     WHERE s.product_id = @pid AND oi.item_type = 'Merchandise'
@@ -64,6 +64,19 @@ app.http('deleteProduct', {
             await transaction.begin();
 
             try {
+                // Delete Ticket Links
+                await transaction.request()
+                    .input('pid', sql.Int, productId)
+                    .query("DELETE FROM ticket_linked_products WHERE product_id = @pid");
+
+                // Delete Event Links (Availability - via SKUs)
+                await transaction.request()
+                    .input('pid', sql.Int, productId)
+                    .query(`
+                        DELETE FROM event_skus 
+                        WHERE product_sku_id IN (SELECT product_sku_id FROM product_skus WHERE product_id = @pid)
+                    `);
+
                 // Delete SKU Option Links (via subquery on product_skus)
                 await transaction.request()
                     .input('pid', sql.Int, productId)
@@ -104,8 +117,8 @@ app.http('deleteProduct', {
             }
 
         } catch (error) {
-            context.log.error('Error deleting product:', error);
-            return { status: 500, body: JSON.stringify({ error: "Internal Server Error", details: error.message }) };
+            context.error('Error deleting product:', error);
+            return { status: 500, jsonBody: { error: "Internal Server Error", details: error.message } };
         }
     }
 });
