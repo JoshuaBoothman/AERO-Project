@@ -13,7 +13,7 @@ app.http('updateAttendee', {
         }
 
         const attendeeId = request.params.attendeeId;
-        const { firstName, lastName, email, phoneNumber, country, isHeavyModelInspector } = await request.json();
+        const { firstName, lastName, email, phoneNumber, country, isHeavyModelInspector, dietaryRequirements } = await request.json();
 
         try {
             // 1. Security Check: Ensure the user owns the order associated with this attendee
@@ -60,12 +60,14 @@ app.http('updateAttendee', {
             // 3. Update Attendee specific fields
             const updateAttendeeQuery = `
                 UPDATE attendees
-                SET is_heavy_model_inspector = @isInspector
+                SET is_heavy_model_inspector = @isInspector,
+                    dietary_requirements = @diet
                 WHERE attendee_id = @attendeeId
             `;
 
             await query(updateAttendeeQuery, [
                 { name: 'isInspector', type: sql.Bit, value: isHeavyModelInspector ? 1 : 0 },
+                { name: 'diet', type: sql.NVarChar, value: dietaryRequirements || null },
                 { name: 'attendeeId', type: sql.Int, value: attendeeId }
             ]);
 

@@ -230,13 +230,14 @@ app.http('createOrder', {
                                 .input('dep', sql.Date, depDate)
                                 .input('fld', sql.Bit, attendeeData.flightLineDuties ? 1 : 0)
                                 .input('inspector', sql.Bit, attendeeData.isHeavyModelInspector ? 1 : 0)
+                                .input('diet', sql.NVarChar, attendeeData.dietaryRequirements || null)
                                 .query(`
                                     INSERT INTO attendees (
                                         event_id, person_id, ticket_type_id, status, ticket_code, has_agreed_to_mop,
-                                        arrival_date, departure_date, flight_line_duties, is_heavy_model_inspector
+                                        arrival_date, departure_date, flight_line_duties, is_heavy_model_inspector, dietary_requirements
                                     ) VALUES (
                                         @eid, @pid, @ttid, 'Registered', @tcode, @mop,
-                                        @arr, @dep, @fld, @inspector
+                                        @arr, @dep, @fld, @inspector, @diet
                                     ); 
                                     SELECT SCOPE_IDENTITY() AS id;
                                 `);

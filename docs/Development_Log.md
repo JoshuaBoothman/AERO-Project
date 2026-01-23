@@ -1,5 +1,19 @@
 # Development Log
 
+## [2026-01-23] - Dietary Requirements Implementation
+- **Time**: 16:22 - 16:35
+- **Completed Items**:
+    - **Database**:
+        - Added `dietary_requirements` column to `attendees` table via SQL script.
+    - **Backend (API)**:
+        - Updated `createOrder.js` to persist dietary info during registration.
+        - Updated `updateAttendee.js` to allow editing of dietary requirements.
+        - Updated `getOrderDetail.js` to return dietary info.
+    - **Frontend (Client)**:
+        - Updated `AttendeeModal.jsx` to include a "Dietary Requirements" text area.
+    - **Verification**:
+        - Validated insertion and retrieval via walkthrough.
+
 ## [2026-01-23] - Subevent Variations (Admin UI)
 - **Time**: 14:43 - 16:05
 - **Completed Items**:

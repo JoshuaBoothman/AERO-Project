@@ -346,6 +346,16 @@ function AttendeeModal({
                                     </div>
                                 </div>
 
+                                <div className="mb-4">
+                                    <h5 className="font-bold text-sm mb-2 text-gray-700">Dietary Requirements</h5>
+                                    <textarea
+                                        placeholder="e.g. Vegetarian, Gluten Free, Nut Allergy..."
+                                        value={data.dietaryRequirements || ''}
+                                        onChange={e => handleChange(key, 'dietaryRequirements', e.target.value)}
+                                        style={{ ...inputStyle, height: '80px' }}
+                                    />
+                                </div>
+
                                 {/* Included Merchandise Selection */}
                                 {(() => {
                                     if (ticket.includes_merch && ticket.linkedProductIds && ticket.linkedProductIds.length > 0) {
