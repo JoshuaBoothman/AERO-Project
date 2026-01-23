@@ -62,7 +62,8 @@ function Checkout() {
                 })),
                 subevents: subevents.map(s => ({
                     subeventId: s.id,
-                    price: s.price
+                    price: s.price,
+                    selectedOptions: s.selectedOptions || {}
                 }))
             };
 
@@ -115,9 +116,20 @@ function Checkout() {
                     </small>
                 )}
                 {item.type === 'SUBEVENT' && (
-                    <small className="block text-gray-500 mt-1">
-                        {new Date(item.startTime).toLocaleString()}
-                    </small>
+                    <div className="mt-1">
+                        <small className="block text-gray-500">
+                            {new Date(item.startTime).toLocaleString()}
+                        </small>
+                        {item.variationDetails && (
+                            <div className="mt-1 flex flex-wrap gap-2">
+                                {item.variationDetails.map((detail, i) => (
+                                    <span key={i} className="text-xs font-medium bg-blue-50 text-blue-700 px-2 py-1 rounded border border-blue-100">
+                                        {detail}
+                                    </span>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 )}
             </div>
             <div className="flex items-center justify-between w-full sm:w-auto sm:gap-6">

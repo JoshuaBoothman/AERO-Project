@@ -1,19 +1,14 @@
-# Printable Invoices & Part Payments
+# Subevent Variations Implementation
 
 - [x] **Database Schema**
-    - [x] Add `invoice_number`, `amount_paid` to `orders` table
-    - [x] Add `reference`, `payment_date` to `transactions` table
-    - [x] Add `address_line_1`, `city`, `state`, `postcode`, `phone` to `organization_settings`
+    - [x] Create `subevent_variations`, `subevent_variation_options`, `subevent_registration_choices` tables
+    - [x] Execute SQL script (User confirmed)
 - [x] **Backend Implementation**
-    - [x] Update `createOrder.js`: Pending Status, Invoice #
-    - [x] Create `recordPayment.js`: Handle partial payments
-    - [x] Update `updateOrganizationSettings.js`: Persist Address/Phone
+    - [x] Update `getStoreItems.js`: Nest variations in response
+    - [x] Update `createOrder.js`: Calculate price adjustments & save choices
 - [x] **Frontend Implementation**
-    - [x] Update `OrgSettings.jsx`: Add Address/Contact form
-    - [x] Create `Invoice.jsx`: Printable layout with Org Address & Balances
-    - [x] Update `OrderDetail.jsx`: Payment History Table
-    - [x] Update `AdminOrders.jsx`: Payment Modal
-- [x] **Verification**
-    - [x] Verify Org Settings Persistence
-    - [x] Verify Invoice Layout (Address + Financials)
-    - [x] Verify Payment Logic
+    - [x] Create `SubeventModal.jsx`: Selection UI
+    - [x] Update `StorePage.jsx`: Integration of Modal & Cart Logic
+    - [x] Update `Checkout.jsx`: Display selected options & Payload construction
+- [ ] **Verification**
+    - [ ] Manual test of flow

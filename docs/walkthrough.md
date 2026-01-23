@@ -1,54 +1,58 @@
-# Walkthrough: Printable Invoices & Part Payments
+# Walkthrough: Subevent Variations
 
-This update introduces fully branded printable invoices, partial payment tracking, and organization address management.
+This update enables subevents (like "Steak Night") to have configurable options (Variations) that users must select before adding to cart.
 
-## 1. Configure Organization Details
-To ensure your invoices look professional, add your address and contact details.
+## 1. Setup Data (Admin UI)
+You can now manage variations directly from the Admin Dashboard.
 
-1.  Navigate to **Admin > Settings > Organization**.
-2.  Scroll to the new **Address & Contact Details** section.
-3.  Enter your:
-    -   Address Line 1
-    -   Town / City
-    -   State
-    -   Postcode
-    -   Phone Number
-4.  Click **Save Settings**.
-    -   *Verification*: Refresh the page to ensure details persist.
+1.  Navigate to **Admin > Subevents**.
+2.  Select the Event (e.g. `Festival of Aeromodelling 2026`).
+3.  Locate "Steak Night" in the list.
+4.  Click the new **Variations** button (Purple text).
+5.  **Create "Cook Time"**:
+    *   Name: `Cook Time`
+    *   Required: `Checked`
+    *   Click **Create**.
+6.  **Add Options**:
+    *   Add `Rare` (Price: 0)
+    *   Add `Medium` (Price: 0)
+    *   Add `Well Done` (Price: 0)
+7.  **Create "Sauce"**:
+    *   Name: `Add Sauce`
+    *   Required: `Unchecked` (Optional)
+    *   Click **Create**.
+8.  **Add Options**:
+    *   Add `Mushroom Sauce` (Price: 2.50)
+    *   Add `Pepper Sauce` (Price: 2.50)
 
-## 2. Generate and View an Invoice
-All orders (past and future) now have an Invoice Number and printable view.
+## 2. User Flow Verification
 
-1.  Navigate to **Admin > Orders** (or **My Orders** as a user).
-2.  Click **View** on an order.
-3.  On the Order Detail page, click the new **📄 View / Print Invoice** button.
-4.  **Verify**:
-    -   Organization Logo, Address, and Phone are visible in the header.
-    -   **Invoice #** is displayed (Format: `INV-{YYYY}-{ORDER_ID}`).
-    -   **Bill To** section shows the customer's details.
-    -   **Balance Due** is calculated correctly.
-    -   **Bank Details** are shown at the bottom for unpaid/partially paid orders.
+### Step 1: Browse Store
+1.  Navigate to the Store Page (e.g. `/events/festival-2026`).
+2.  Click the **Program / Subevents** tab.
+3.  Locate "Steak Night".
 
-## 3. Record a Payment (Admin Only)
-Admins can now record partial or full payments received via Direct Deposit or Cash.
+### Step 2: Open Selection Modal
+1.  Click **Register**.
+2.  **Verify**: A modal appears titled "Steak Night".
+3.  **Verify**: "Cook Time" (Rare, Medium, Well Done) options are distinct.
+4.  **Verify**: "Add Sauce" shows price adjustments (+$2.50).
+5.  **Verify**: The "Add to Cart" button is **Disabled** initially (since "Cook Time" is required).
 
-1.  Navigate to **Admin > Orders**.
-2.  Find a "Pending" order.
-3.  Click the new **Pay** button in the Action column.
-4.  In the "Record Payment" modal:
-    -   **Amount**: Enter a partial amount (e.g., $50.00).
-    -   **Date**: Select today's date.
-    -   **Reference**: Enter a simulated reference (e.g., `DD-TEST-01`).
-    -   **Method**: Select "Direct Deposit".
-5.  Click **Record Payment**.
-6.  **Verify**:
-    -   Order status changes to **Partially Paid** (if partial) or **Paid** (if full).
-    -   The "Paid" amount is updated in the list view.
-    -   Go to the **Order View** -> **Payment History** section to see the transaction log.
+### Step 3: Select Options
+1.  Select "Medium" (Cook Time).
+2.  Select "Mushroom Sauce (+$2.50)".
+3.  **Verify**: Total Price updates to include the $2.50 sauce.
+4.  Click **Add to Cart**.
 
-## 4. Check Balance Due
-1.  On the **Order Detail** page of a partially paid order:
-    -   Verify the **Due** amount (Red text) is correct.
-    -   Verify the **Payment History** table lists your recent payment.
-2.  Open the **Printable Invoice** again.
-    -   Verify the **Less Amount Paid** and **Balance Due** rows are correct.
+### Step 4: Cart & Checkout
+1.  Navigate to **Checkout**.
+2.  **Verify**: The "Steak Night" item lists your choices:
+    *   `Cook Time: Medium`
+    *   `Add Sauce: Mushroom Sauce`
+3.  **Verify**: The price matches the modal total.
+4.  Click **Secure Pay Now** (Mock Payment).
+
+### Step 5: Database Verification
+1.  Check `subevent_registrations` for the new record.
+2.  Check `subevent_registration_choices` to see the linked choices.

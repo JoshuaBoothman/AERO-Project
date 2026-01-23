@@ -523,20 +523,53 @@ app.http('createOrder', {
                 // 7. Process SUBEVENT Items
                 if (subevents && subevents.length > 0) {
                     for (const sub of subevents) {
-                        totalAmount += sub.price;
+                        let priceAdjustment = 0;
+                        const validOptionIds = [];
+
+                        // Validate and Calculate Options
+                        if (sub.selectedOptions && Object.keys(sub.selectedOptions).length > 0) {
+                            for (const [varId, optId] of Object.entries(sub.selectedOptions)) {
+                                const optRes = await new sql.Request(transaction)
+                                    .input('oid', sql.Int, optId)
+                                    .query("SELECT price_adjustment FROM subevent_variation_options WHERE variation_option_id = @oid");
+
+                                if (optRes.recordset.length > 0) {
+                                    priceAdjustment += optRes.recordset[0].price_adjustment;
+                                    validOptionIds.push(optId);
+                                } else {
+                                    throw new Error(`Invalid variation option ID: ${optId}`);
+                                }
+                            }
+                        }
+
+                        const finalPrice = sub.price + priceAdjustment;
+                        totalAmount += finalPrice;
 
                         const itemReq = new sql.Request(transaction);
                         const itemRes = await itemReq
                             .input('oid', sql.Int, orderId).input('aid', sql.Int, mainAttendeeId).input('itype', sql.VarChar, 'Subevent')
                             .input('refid', sql.Int, sub.subeventId)
-                            .input('price', sql.Decimal(10, 2), sub.price)
+                            .input('price', sql.Decimal(10, 2), finalPrice)
                             .query(`INSERT INTO order_items (order_id, attendee_id, item_type, item_reference_id, price_at_purchase) VALUES (@oid, @aid, @itype, @refid, @price); SELECT SCOPE_IDENTITY() AS id`);
 
                         const orderItemId = itemRes.recordset[0].id;
 
-                        await new sql.Request(transaction)
+                        // Insert Registration and return ID
+                        // Note: Previous schema check confirmed subevent_registrations has an identity PK 'subevent_registration_id'
+                        const regReq = new sql.Request(transaction);
+                        const regRes = await regReq
                             .input('sid', sql.Int, sub.subeventId).input('oiid', sql.Int, orderItemId)
-                            .query(`INSERT INTO subevent_registrations (subevent_id, order_item_id) VALUES (@sid, @oiid)`);
+                            .query(`INSERT INTO subevent_registrations (subevent_id, order_item_id) VALUES (@sid, @oiid); SELECT SCOPE_IDENTITY() AS id`);
+
+                        const registrationId = regRes.recordset[0].id;
+
+                        // Insert Choices
+                        for (const optId of validOptionIds) {
+                            await new sql.Request(transaction)
+                                .input('rid', sql.Int, registrationId)
+                                .input('oid', sql.Int, optId)
+                                .query("INSERT INTO subevent_registration_choices (subevent_registration_id, variation_option_id) VALUES (@rid, @oid)");
+                        }
                     }
                 }
 

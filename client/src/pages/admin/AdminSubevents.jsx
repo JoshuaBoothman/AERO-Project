@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import SubeventForm from '../../components/admin/SubeventForm';
+import SubeventVariationManager from '../../components/admin/SubeventVariationManager';
 import { useNotification } from '../../context/NotificationContext';
 import { useAuth } from '../../context/AuthContext';
 
@@ -10,6 +11,8 @@ function AdminSubevents() {
     const [loading, setLoading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingSubevent, setEditingSubevent] = useState(null);
+    const [variationManagerOpen, setVariationManagerOpen] = useState(false);
+    const [selectedSubeventForVariations, setSelectedSubeventForVariations] = useState(null);
     const { notify: showNotification } = useNotification();
     const { token } = useAuth();
 
@@ -212,6 +215,15 @@ function AdminSubevents() {
                                                 Edit
                                             </button>
                                             <button
+                                                onClick={() => {
+                                                    setSelectedSubeventForVariations(sub);
+                                                    setVariationManagerOpen(true);
+                                                }}
+                                                className="text-purple-600 hover:text-purple-800 font-medium mr-2"
+                                            >
+                                                Variations
+                                            </button>
+                                            <button
                                                 onClick={() => handleDeleteClick(sub.subevent_id)}
                                                 className="text-red-600 hover:text-red-800 font-medium"
                                             >
@@ -233,6 +245,13 @@ function AdminSubevents() {
                 initialData={editingSubevent}
                 eventId={selectedEventId}
             />
+
+            {variationManagerOpen && selectedSubeventForVariations && (
+                <SubeventVariationManager
+                    subevent={selectedSubeventForVariations}
+                    onClose={() => setVariationManagerOpen(false)}
+                />
+            )}
         </div>
     );
 }

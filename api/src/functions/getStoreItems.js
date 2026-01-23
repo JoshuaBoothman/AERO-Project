@@ -180,14 +180,57 @@ app.http('getStoreItems', {
                 FROM subevents
                 WHERE event_id = @eid
             `);
+
+            // [NEW] Fetch Variations and Options
+            const varRes = await pool.request().input('eid', sql.Int, eventId).query(`
+                SELECT 
+                    sv.subevent_variation_id, sv.subevent_id, sv.name as variation_name, sv.is_required,
+                    so.variation_option_id, so.name as option_name, so.price_adjustment
+                FROM subevent_variations sv
+                JOIN subevents s ON sv.subevent_id = s.subevent_id
+                LEFT JOIN subevent_variation_options so ON sv.subevent_variation_id = so.subevent_variation_id
+                WHERE s.event_id = @eid
+                ORDER BY sv.subevent_variation_id, so.variation_option_id
+            `);
+
+            // Process Variations Map
+            const variationMap = new Map();
+            varRes.recordset.forEach(row => {
+                if (!variationMap.has(row.subevent_id)) {
+                    variationMap.set(row.subevent_id, []);
+                }
+                const subVars = variationMap.get(row.subevent_id);
+
+                let variation = subVars.find(v => v.id === row.subevent_variation_id);
+                if (!variation) {
+                    variation = {
+                        id: row.subevent_variation_id,
+                        name: row.variation_name,
+                        isRequired: row.is_required,
+                        options: []
+                    };
+                    subVars.push(variation);
+                }
+
+                if (row.variation_option_id) {
+                    variation.options.push({
+                        id: row.variation_option_id,
+                        name: row.option_name,
+                        priceAdjustment: row.price_adjustment
+                    });
+                }
+            });
+
             const subevents = subRes.recordset.map(s => ({
                 id: s.subevent_id,
+                subeventId: s.subevent_id,
                 name: s.name,
                 description: s.description,
                 startTime: s.start_time,
                 endTime: s.end_time,
                 price: s.cost,
-                capacity: s.capacity
+                capacity: s.capacity,
+                variations: variationMap.get(s.subevent_id) || []
             }));
 
             // 6. Fetch Ticket Types (NEW)

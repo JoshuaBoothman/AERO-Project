@@ -8,6 +8,7 @@ import ProductCard from '../components/ProductCard';
 import ProductModal from '../components/ProductModal';
 import AssetSelectionModal from '../components/AssetSelectionModal';
 import AttendeeModal from '../components/AttendeeModal';
+import SubeventModal from '../components/SubeventModal';
 
 function StorePage({ orgSettings }) {
     const { slug } = useParams();
@@ -96,6 +97,9 @@ function StorePage({ orgSettings }) {
     // Ticket Modal State
     const [selectedTicketForModal, setSelectedTicketForModal] = useState(null);
 
+    // Subevent Modal State
+    const [selectedSubevent, setSelectedSubevent] = useState(null);
+
     // Handlers
     const handleAddMerch = (product, sku) => {
         // Construct cart item
@@ -139,7 +143,23 @@ function StorePage({ orgSettings }) {
     };
 
     const handleAddSubevent = (subevent) => {
-        addToCart({ ...subevent, eventId: data.eventId, type: 'SUBEVENT' });
+        if (subevent.variations && subevent.variations.length > 0) {
+            setSelectedSubevent(subevent);
+        } else {
+            addToCart({ ...subevent, eventId: data.eventId, type: 'SUBEVENT' });
+            notify(`${subevent.name} added to cart!`, 'success');
+        }
+    };
+
+    const handleConfirmSubevent = (subevent, selections, totalPrice) => {
+        addToCart({
+            ...subevent,
+            eventId: data.eventId,
+            type: 'SUBEVENT',
+            price: totalPrice,
+            selectedOptions: selections
+        });
+        setSelectedSubevent(null);
         notify(`${subevent.name} added to cart!`, 'success');
     };
 
@@ -371,6 +391,15 @@ function StorePage({ orgSettings }) {
                     eventDates={{ start: data.eventStartDate, end: data.eventEndDate }}
                     onClose={() => setSelectedAssetType(null)}
                     onAddToCart={handleAddAssetToCart}
+                />
+            )}
+
+            {/* Subevent Modal */}
+            {selectedSubevent && (
+                <SubeventModal
+                    subevent={selectedSubevent}
+                    onClose={() => setSelectedSubevent(null)}
+                    onAddToCart={handleConfirmSubevent}
                 />
             )}
 

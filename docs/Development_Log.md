@@ -1,5 +1,22 @@
 # Development Log
 
+## [2026-01-23] - Subevent Variations (Admin UI)
+- **Time**: 14:43 - 16:05
+- **Completed Items**:
+    - **Database**:
+        - Created `subevent_variations`, `subevent_variation_options`, and `subevent_registration_choices` tables.
+    - **Backend (API)**:
+        - Updated `getStoreItems.js` to return proper nested variation structures.
+        - Updated `createOrder.js` to calculate price adjustments and save user choices.
+        - Created `manageSubeventVariations.js` (Azure Function) for Admin CRUD operations.
+    - **Frontend (Client)**:
+        - **Store**: Created `SubeventModal.jsx` for customers to select options (e.g., "Cook Time", "Sauce").
+        - **Cart/Checkout**: Updated logic to display selected variations and include them in the order payload.
+        - **Admin**: Created `SubeventVariationManager.jsx` and integrated it into `AdminSubevents.jsx` for managing options.
+    - **Documentation**:
+        - Updated `walkthrough.md` with verification steps.
+        - Archived `subevent_variations_admin.md` and `20260123_subevent_variations.md` to `completed/`.
+
 ## [2026-01-23] - Invoices, Part Payments & Admin Fixes
 - **Time**: 08:20 - 15:30
 - **Completed Items**:
