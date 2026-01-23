@@ -1,5 +1,16 @@
 # Development Log
 
+## [2026-01-24] - Bug Fix: User ID in Persons Table
+- **Time**: 07:23 - 09:05
+- **Completed Items**:
+    - **Backend (API)**:
+        - Fixed logic in `createOrder.js` where guest attendees (different email) were not being linked to the authenticated user's ID.
+        - Implemented explicit linking: New persons created during checkout are now assigned the current `user_id`, allowing the buyer to manage them.
+        - Verified logic prevents overwriting `user_id` for existing persons (email match) to preserve account integrity.
+    - **Verification**:
+        - Debugged with console logs to identify the "orphan" person creation flow.
+        - Confirmed fix with user verification.
+
 ## [2026-01-23] - Pit Crew to Pilot Linking
 - **Time**: 16:35 - 16:57
 - **Completed Items**:

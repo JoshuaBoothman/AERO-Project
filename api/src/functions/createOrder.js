@@ -30,6 +30,7 @@ app.http('createOrder', {
 
             try {
                 // 1. Get or Create Person ID for the MAIN User
+
                 const mainUserPersonReq = new sql.Request(transaction);
                 let personCheck = await mainUserPersonReq.input('u_id', sql.Int, user.userId)
                     .query("SELECT person_id FROM persons WHERE user_id = @u_id");
@@ -159,6 +160,8 @@ app.http('createOrder', {
                                 if (checkPRes.recordset.length > 0) {
                                     attendeePersonId = checkPRes.recordset[0].person_id;
                                     // UPDATE Existing Guest Person
+                                    // NOTE: We do NOT update user_id here. If they already exist, they might be another user or managed by someone else.
+                                    // We only update contact details.
                                     await new sql.Request(transaction)
                                         .input('pid', sql.Int, attendeePersonId)
                                         .input('fn', sql.NVarChar, pFirstName)
@@ -183,12 +186,16 @@ app.http('createOrder', {
                                     `);
                                 } else {
                                     // INSERT New Person
+                                    // CRITICAL CHANGE: Assign NEW persons to the CURRENT USER (as managed profiles)
+                                    // unless specific logic dictates otherwise. 
+                                    // The user clearly expects to own these records.
+
                                     const pReq = new sql.Request(transaction);
                                     const pRes = await pReq
                                         .input('fn', sql.NVarChar, pFirstName)
                                         .input('ln', sql.NVarChar, pLastName)
                                         .input('em', sql.NVarChar, safeAttendeeEmail || null)
-                                        .input('uid', sql.Int, null) // Guest, no user_id usually
+                                        .input('uid', sql.Int, user.userId) // LINKED TO BUYER
                                         .input('dob', sql.Date, pDob)
                                         .input('addr', sql.NVarChar, pAddr)
                                         .input('city', sql.NVarChar, pCity)
