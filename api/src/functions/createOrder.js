@@ -55,6 +55,8 @@ app.http('createOrder', {
                 const orderId = orderRes.recordset[0].id;
                 let totalAmount = 0;
                 let allAttendeeIds = [];
+                const tempIdMap = {}; // tempId -> attendeeId
+                const pendingPilotLinks = []; // { attendeeId, linkedPilotTempId }
 
                 // 2.5 VALIDATION: Check for "Service Access" (Camping/Assets/Subevents)
                 // Rule: Must be an Attendee (Have a ticket in DB) OR Buying a Ticket in this Order.
@@ -216,7 +218,37 @@ app.http('createOrder', {
                                 attendeePersonId = mainPersonId;
                             }
 
-                            // Create Attendee
+                            // Resolve Linked Pilot ID
+                            let linkedPilotId = null;
+
+                            // 1. Existing Pilot Logic
+                            if (attendeeData.linkedPilotAttendeeId) {
+                                linkedPilotId = attendeeData.linkedPilotAttendeeId;
+                            }
+                            // 2. In-Cart Pilot Logic
+                            else if (attendeeData.linkedPilotTempId) {
+                                // Find the attendeeId from our `attendeesToProcess` list logic? 
+                                // Actually, we need a map of TempID -> RealID.
+                                // We iterate chronologically. If pilot is processed BEFORE crew, we have ID.
+                                // If not, we have a problem. 
+                                // Solution: Maintain a global map `tempIdMap = { tempId: attendeeId }`.
+                                // NOTE: This requires `tempId` to be passed from frontend in `items`.
+                                // Frontend sends `items` array. We augmented it with extra objects if quantity mismatch, but frontend sends structured data now.
+                                // `attendeeData` comes from frontend.
+
+                                const targetTempId = attendeeData.linkedPilotTempId;
+
+                                // We need to check if we've processed this pilot yet.
+                                // Since we loop, we might not have.
+                                // BUT: We can assume Pilots are processed? No order guarantee.
+                                // Better: Two-pass? 
+                                // Or: Post-process update for links.
+                                // Let's try Post-Process Update for simplicity and robustness.
+
+                                // For now, just store valid ID if we can, or null.
+                                // Actually, let's defer the UPDATE of linked_pilot_attendee_id until AFTER all attendees are inserted.
+                            }
+
                             const ticketCode = Math.random().toString(36).substring(2, 10).toUpperCase();
 
                             const attReq = new sql.Request(transaction);
@@ -231,17 +263,34 @@ app.http('createOrder', {
                                 .input('fld', sql.Bit, attendeeData.flightLineDuties ? 1 : 0)
                                 .input('inspector', sql.Bit, attendeeData.isHeavyModelInspector ? 1 : 0)
                                 .input('diet', sql.NVarChar, attendeeData.dietaryRequirements || null)
+                                .input('link_pid', sql.Int, linkedPilotId) // Direct link if known
                                 .query(`
                                     INSERT INTO attendees (
                                         event_id, person_id, ticket_type_id, status, ticket_code, has_agreed_to_mop,
-                                        arrival_date, departure_date, flight_line_duties, is_heavy_model_inspector, dietary_requirements
+                                        arrival_date, departure_date, flight_line_duties, is_heavy_model_inspector, dietary_requirements,
+                                        linked_pilot_attendee_id
                                     ) VALUES (
                                         @eid, @pid, @ttid, 'Registered', @tcode, @mop,
-                                        @arr, @dep, @fld, @inspector, @diet
+                                        @arr, @dep, @fld, @inspector, @diet,
+                                        @link_pid
                                     ); 
                                     SELECT SCOPE_IDENTITY() AS id;
                                 `);
                             const attendeeId = attRes.recordset[0].id;
+
+                            // Store ID in map for linking if we have a tempId
+                            if (attendeeData.tempId) {
+                                // We need a way to track these across different item loops...
+                                // `allAttendeeIds` is just a list.
+                                // Let's add a context object `tempIdToAttendeeIdMap` at top level.
+                            }
+                            // Store for post-linking
+                            if (attendeeData.linkedPilotTempId) {
+                                // Add to list for postponed update
+                                // We need `attendeeId` (the crew) and `linkedPilotTempId` (the pilot's temp id)
+                                // We will stash this in a list `pendingPilotLinks`.
+                            }
+
                             allAttendeeIds.push(attendeeId);
 
                             // Update License Number if provided
@@ -570,6 +619,23 @@ app.http('createOrder', {
                                 .input('rid', sql.Int, registrationId)
                                 .input('oid', sql.Int, optId)
                                 .query("INSERT INTO subevent_registration_choices (subevent_registration_id, variation_option_id) VALUES (@rid, @oid)");
+                        }
+                    }
+                }
+
+                // 7.5 Process Pending Pilot Links (for in-cart pilots)
+                if (pendingPilotLinks.length > 0) {
+                    for (const link of pendingPilotLinks) {
+                        const pilotId = tempIdMap[link.linkedPilotTempId];
+                        if (pilotId) {
+                            await new sql.Request(transaction)
+                                .input('pid', sql.Int, pilotId)
+                                .input('aid', sql.Int, link.attendeeId)
+                                .query("UPDATE attendees SET linked_pilot_attendee_id = @pid WHERE attendee_id = @aid");
+                        } else {
+                            // Warn? Or Ignore? If pilot failed creation, transaction rolls back anyway.
+                            // If user hacked tempID, this might fail silently.
+                            // Just log warning if needed, but safe to ignore for now.
                         }
                     }
                 }

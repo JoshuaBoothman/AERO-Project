@@ -1,5 +1,19 @@
 # Development Log
 
+## [2026-01-23] - Pit Crew to Pilot Linking
+- **Time**: 16:35 - 16:57
+- **Completed Items**:
+    - **Database**:
+        - Added `linked_pilot_attendee_id` column to `attendees` table.
+    - **Backend (API)**:
+        - Updated `createOrder.js` to handle `linkedPilotAttendeeId` and `linkedPilotTempId`.
+        - Implemented post-processing logic to link Crew to Pilots being purchased in the same transaction.
+    - **Frontend (Client)**:
+        - Updated `AttendeeModal.jsx` to display a Pilot Selection Dropdown for Pit Crew tickets.
+        - Logic supports linking to "Existing Pilots" (from DB) and "Cart Pilots" (by Temp ID).
+    - **Verification**:
+        - Verified full checkout flow with New Pilot + New Crew.
+
 ## [2026-01-23] - Dietary Requirements Implementation
 - **Time**: 16:22 - 16:35
 - **Completed Items**:

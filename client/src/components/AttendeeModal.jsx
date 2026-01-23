@@ -561,6 +561,97 @@ function AttendeeModal({
                                         </div>
                                     )
                                 }
+
+                                {
+                                    ticket?.system_role === 'pit_crew' && (
+                                        <div className="mt-4 p-4 bg-white border border-gray-200 rounded">
+                                            <h5 className="font-bold mb-2">🏁 Pit Crew Registration</h5>
+
+                                            {(() => {
+                                                // Calculate available pilots (Existing + In Cart)
+                                                // 1. Existing Pilots
+                                                const existingPilots = myPilots.map(p => ({
+                                                    id: p.attendee_id,
+                                                    name: `${p.first_name} ${p.last_name}`,
+                                                    isNew: false
+                                                }));
+
+                                                // 2. Pilots in Cart
+                                                const newPilots = [];
+                                                Object.entries(cart).forEach(([tId, q]) => {
+                                                    const t = tickets.find(ticket => (ticket.ticket_type_id || ticket.id) === parseInt(tId));
+                                                    if (t?.system_role === 'pilot') {
+                                                        for (let i = 0; i < q; i++) {
+                                                            const pKey = `${tId}_${i}`;
+                                                            const pDetails = details[pKey];
+                                                            if (pDetails) {
+                                                                const pName = (pDetails.firstName || pDetails.lastName)
+                                                                    ? `${pDetails.firstName} ${pDetails.lastName}`.trim()
+                                                                    : `Pilot #${i + 1}`;
+                                                                newPilots.push({
+                                                                    tempId: pDetails.tempId,
+                                                                    name: `${pName} (In Cart)`,
+                                                                    isNew: true
+                                                                });
+                                                            }
+                                                        }
+                                                    }
+                                                });
+
+                                                const allPilots = [...existingPilots, ...newPilots];
+
+                                                if (allPilots.length === 0) {
+                                                    return (
+                                                        <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded text-sm">
+                                                            <strong>Warning:</strong> You must have a registered Pilot to be a Pit Crew member.
+                                                            Please indicate which Pilot you are crewing for. If the Pilot is new, please add their ticket to your cart first.
+                                                        </div>
+                                                    );
+                                                }
+
+                                                return (
+                                                    <div className="mb-4">
+                                                        <label className="block text-sm font-bold text-gray-700 mb-1">Select Pilot you are crewing for *</label>
+                                                        <select
+                                                            style={inputStyle}
+                                                            value={
+                                                                data.linkedPilotTempId ? `new:${data.linkedPilotTempId}` :
+                                                                    data.linkedPilotAttendeeId ? `existing:${data.linkedPilotAttendeeId}` :
+                                                                        ""
+                                                            }
+                                                            onChange={e => {
+                                                                const val = e.target.value;
+                                                                if (!val) {
+                                                                    handleChange(key, 'linkedPilotAttendeeId', null);
+                                                                    handleChange(key, 'linkedPilotTempId', null);
+                                                                    return;
+                                                                }
+                                                                const [type, id] = val.split(':');
+                                                                if (type === 'existing') {
+                                                                    handleChange(key, 'linkedPilotAttendeeId', parseInt(id));
+                                                                    handleChange(key, 'linkedPilotTempId', null);
+                                                                } else {
+                                                                    handleChange(key, 'linkedPilotAttendeeId', null);
+                                                                    handleChange(key, 'linkedPilotTempId', id);
+                                                                }
+                                                            }}
+                                                        >
+                                                            <option value="">-- Select Pilot --</option>
+                                                            {allPilots.map(p => (
+                                                                <option key={p.isNew ? `new:${p.tempId}` : `existing:${p.id}`} value={p.isNew ? `new:${p.tempId}` : `existing:${p.id}`}>
+                                                                    {p.name}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                        <p className="text-xs text-gray-500 mt-1">
+                                                            Pit Crew members must be linked to a specific Pilot.
+                                                        </p>
+                                                    </div>
+                                                );
+                                            })()}
+                                        </div>
+                                    )
+                                }
                             </div>
                         );
                     });
