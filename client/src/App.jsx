@@ -25,6 +25,7 @@ import AdminSettings from './pages/admin/AdminSettings';
 import VariantTemplates from './pages/admin/VariantTemplates';
 import PublicRegistrationsReport from './pages/admin/PublicRegistrationsReport';
 import CampingAvailabilityReport from './pages/admin/CampingAvailabilityReport';
+import EventPlanesReport from './pages/admin/EventPlanesReport';
 
 import OrderDetail from './pages/OrderDetail';
 import CampingPage from './pages/camping/CampingPage';
@@ -132,6 +133,7 @@ function App() {
                 <Route path="admin/settings" element={<AdminSettings />} />
                 <Route path="admin/variant-templates" element={<VariantTemplates />} />
                 <Route path="admin/reports/public-registrations/:slug" element={<PublicRegistrationsReport />} />
+                <Route path="admin/reports/event-planes/:eventId" element={<EventPlanesReport />} />
                 <Route path="admin/reports/camping" element={<CampingAvailabilityReport />} />
 
               </Route>

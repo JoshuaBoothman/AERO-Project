@@ -12,7 +12,6 @@ None.
 #### [NEW] [EventPlanesReport.jsx](file:///c:/laragon/www/AERO-Project/client/src/components/admin/reports/EventPlanesReport.jsx)
 - Table listing all planes attached to Attendees for the current event.
 - Columns: Pilot Name, Plane Name, Model, Weight, **Heavy Model (Yes/No)**, **Certificate Button**.
-- Filter: "Show Only Heavy Models".
 
 #### [MODIFY] [AdminDashboard.jsx](file:///c:/laragon/www/AERO-Project/client/src/pages/admin/AdminDashboard.jsx)
 - Add "Event Planes" link under the "Attendees" card.
@@ -25,5 +24,4 @@ None.
 ## Verification Plan
 ### Manual Verification
 1.  **Access**: Click "Event Planes" on Admin Dashboard.
-2.  **Filter**: Toggle "Heavy Models Only".
 3.  **View**: Click "View Certificate" on a heavy model. Verify image/pdf opens.

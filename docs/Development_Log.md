@@ -1,7 +1,21 @@
 # Development Log
 
-## [2026-01-23] - My Planes Management (Completed)
-- **Time**: 08:20 - 10:44
+## [2026-01-23] - Heavy Model Reports (Completed)
+- **Time**: 10:51 - 11:22
+- **Completed Items**:
+    - **Backend (API)**:
+        - Created `getEventPlanes.js` endpoint to list planes for event attendees.
+        - Fixed `isAdmin` auth check logic in `getEventPlanes` (checking `user.role` vs `request` object).
+    - **Frontend (Admin)**:
+        - Created `EventPlanesReport.jsx` table with certificate viewing.
+        - Updated `AdminDashboard.jsx` with link to new report.
+        - Removed "Heavy Model" column as per client feedback (all planes are heavy).
+        - Fixed duplicate route definitions in `App.jsx`.
+    - **Documentation**:
+        - Moved `20260222_heavy_model_reports.md` to `completed/`.
+        - Updated `walkthrough.md`.
+
+
 - **Completed Items**:
     - **Features**:
         - Implemented "My Planes" section for authenticated users.

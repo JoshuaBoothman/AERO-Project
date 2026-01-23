@@ -308,6 +308,12 @@ function AdminDashboard() {
                     >
                         View Air Show Attendees
                     </Link>
+                    <Link
+                        to={`/admin/reports/event-planes/${event.event_id}`}
+                        className="bg-white text-gray-700 border border-gray-300 px-5 py-2.5 rounded-lg font-semibold hover:bg-gray-50 hover:text-[var(--accent-color)] transition-colors shadow-sm ml-4"
+                    >
+                        View Event Planes
+                    </Link>
                 </div>
 
             </div>
