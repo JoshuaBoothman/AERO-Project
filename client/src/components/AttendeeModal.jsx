@@ -469,23 +469,49 @@ function AttendeeModal({
                                             </div>
 
                                             {/* Heavy Models Toggle */}
-                                            <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-sm">
-                                                <label className="flex items-center gap-2 cursor-pointer font-bold">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={data.bringingHeavyModels || false}
+                                            <div className="mb-4 space-y-3">
+                                                {/* Are you bringing heavy models? */}
+                                                <div className="p-3 bg-yellow-50 border border-yellow-200 rounded text-sm">
+                                                    <label className="flex items-center gap-2 cursor-pointer font-bold text-gray-800">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={data.bringingHeavyModels || false}
+                                                            onChange={e => {
+                                                                const newVal = e.target.checked;
+                                                                handleChange(key, 'bringingHeavyModels', newVal);
+                                                                if (newVal) {
+                                                                    handleChange(key, 'isHeavyModelInspector', false); // Mutually exclusive UI flow usually
+                                                                }
+                                                            }}
+                                                        />
+                                                        Are you bringing any Heavy Models?
+                                                    </label>
+                                                </div>
+
+                                                {/* Are you a heavy model inspector? */}
+                                                <div className="p-3 bg-blue-50 border border-blue-200 rounded text-sm">
+                                                    <label className="block text-xs font-bold text-blue-900 mb-1">Are you a Heavy Model Inspector?</label>
+                                                    <select
+                                                        style={inputStyle}
+                                                        value={data.isHeavyModelInspector ? "Yes" : "No"}
                                                         onChange={e => {
-                                                            const newVal = e.target.checked;
-                                                            handleChange(key, 'bringingHeavyModels', newVal);
-                                                            // Optional: Clear planes if unchecked? leaving for now in case of accidental toggle
+                                                            const isInspector = e.target.value === "Yes";
+                                                            handleChange(key, 'isHeavyModelInspector', isInspector);
+                                                            if (isInspector) {
+                                                                // If inspector, hide planes? Assumption: Inspectors don't register planes HERE, or it hides the requirement.
+                                                                // User request: "if is_heavy_model_inspector = True, the plane section should be hidden."
+                                                                handleChange(key, 'bringingHeavyModels', false);
+                                                            }
                                                         }}
-                                                    />
-                                                    Are you bringing any Heavy Models?
-                                                </label>
+                                                    >
+                                                        <option value="No">No</option>
+                                                        <option value="Yes">Yes</option>
+                                                    </select>
+                                                </div>
                                             </div>
 
-                                            {/* Aircraft List - Only if Bringing Heavy Models */}
-                                            {data.bringingHeavyModels && (
+                                            {/* Aircraft List - Only if Bringing Heavy Models AND Not Inspector (Logic implies hidden if Inspector) */}
+                                            {data.bringingHeavyModels && !data.isHeavyModelInspector && (
                                                 <div>
                                                     <h6 className="font-bold text-sm mb-2">Heavy Aircraft List</h6>
                                                     {(data.planes || [{}]).map((plane, pIdx) => (

@@ -70,6 +70,7 @@ app.http('getOrderDetail', {
                     a.ticket_code,
                     a.attendee_id,
                     a.ticket_type_id,
+                    a.is_heavy_model_inspector,
                     e.name as event_name,
                     e.slug as event_slug,
                     e.banner_url,

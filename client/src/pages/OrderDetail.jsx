@@ -393,6 +393,13 @@ function OrderDetail() {
                                                 <div style={{ minWidth: '150px' }}>
                                                     <div style={{ fontSize: '0.8rem', fontWeight: 'bold', textTransform: 'uppercase', color: '#888', marginBottom: '0.25rem' }}>License / AUS #</div>
                                                     <div>{item.license_number || 'N/A'}</div>
+                                                    {item.is_heavy_model_inspector && (
+                                                        <div style={{ marginTop: '0.5rem' }}>
+                                                            <span className="status-badge" style={{ backgroundColor: '#e8f5e9', color: '#2e7d32', border: '1px solid #c8e6c9' }}>
+                                                                ✔ HM Inspector
+                                                            </span>
+                                                        </div>
+                                                    )}
                                                 </div>
                                                 <div style={{ flex: 1 }}>
                                                     <div style={{ fontSize: '0.8rem', fontWeight: 'bold', textTransform: 'uppercase', color: '#888', marginBottom: '0.25rem' }}>Registered Aircraft</div>
