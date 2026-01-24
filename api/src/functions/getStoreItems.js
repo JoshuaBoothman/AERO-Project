@@ -235,7 +235,7 @@ app.http('getStoreItems', {
 
             // 6. Fetch Ticket Types (NEW)
             const ticketRes = await pool.request().input('eid', sql.Int, eventId).query(`
-                SELECT ticket_type_id, name, description, price, system_role, includes_merch
+                SELECT ticket_type_id, name, description, price, system_role, includes_merch, price_no_flight_line
                 FROM event_ticket_types
                 WHERE event_id = @eid
                 ORDER BY sort_order ASC, price ASC
@@ -259,6 +259,7 @@ app.http('getStoreItems', {
                 price: t.price,
                 system_role: t.system_role,
                 includes_merch: t.includes_merch,
+                price_no_flight_line: t.price_no_flight_line,
                 linkedProductIds: links.filter(l => l.ticket_type_id === t.ticket_type_id).map(l => l.product_id)
             }));
 

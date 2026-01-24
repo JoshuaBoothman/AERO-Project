@@ -90,6 +90,7 @@ function EventForm() {
         system_role: 'spectator', // spectator, pilot, staff, etc.
         description: '',
         includes_merch: false,
+        price_no_flight_line: '',
         linkedProductIds: [] // [NEW] Link Multiple Products
     });
 
@@ -409,7 +410,9 @@ function EventForm() {
 
     const openCreateTicket = () => {
         setEditingTicket(null);
-        setTicketForm({ name: '', price: '', system_role: 'spectator', description: '', includes_merch: false, linkedProductIds: [] });
+        setEditingTicket(null);
+        setTicketForm({ name: '', price: '', system_role: 'spectator', description: '', includes_merch: false, price_no_flight_line: '', linkedProductIds: [] });
+        setShowTicketModal(true);
         setShowTicketModal(true);
     };
 
@@ -421,6 +424,7 @@ function EventForm() {
             system_role: ticket.system_role,
             description: ticket.description || '',
             includes_merch: ticket.includes_merch || false,
+            price_no_flight_line: ticket.price_no_flight_line || '',
             linkedProductIds: ticket.linkedProductIds || [] // Ensure Array
         });
         setShowTicketModal(true);
@@ -976,6 +980,20 @@ function EventForm() {
                                     name="price" value={ticketForm.price} onChange={handleTicketChange}
                                 />
                             </div>
+
+                            {ticketForm.system_role === 'pilot' && (
+                                <div style={{ background: '#f0f9ff', padding: '10px', borderRadius: '4px', border: '1px solid #bae6fd' }}>
+                                    <label style={{ display: 'block', marginBottom: '0.3rem' }}>Price - No Flight Line Duties ($)</label>
+                                    <input
+                                        type="number" step="0.01" className="form-control" placeholder="Leave empty to use Standard Price"
+                                        name="price_no_flight_line" value={ticketForm.price_no_flight_line} onChange={handleTicketChange}
+                                    />
+                                    <small style={{ color: '#0284c7', display: 'block', marginTop: '5px' }}>
+                                        If set, this higher price is charged when a pilot <strong>does not</strong> agree to duties.
+                                        Standard Price applies if they <strong>do</strong> agree.
+                                    </small>
+                                </div>
+                            )}
 
                             <div>
                                 <label style={{ display: 'block', marginBottom: '0.3rem' }}>Description</label>

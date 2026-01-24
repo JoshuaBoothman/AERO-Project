@@ -88,11 +88,11 @@ app.http('createOrder', {
                     for (const item of items) {
                         const ticketReq = new sql.Request(transaction);
                         const ticketRes = await ticketReq.input('tt_id', sql.Int, item.ticketTypeId)
-                            .query("SELECT price, system_role, includes_merch FROM event_ticket_types WHERE ticket_type_id = @tt_id");
+                            .query("SELECT price, system_role, includes_merch, price_no_flight_line FROM event_ticket_types WHERE ticket_type_id = @tt_id");
 
                         if (ticketRes.recordset.length === 0) throw new Error(`Invalid ticket type: ${item.ticketTypeId}`);
                         const ticketType = ticketRes.recordset[0];
-                        const price = ticketType.price;
+                        let price = ticketType.price;
 
                         const attendeesToProcess = item.attendees || [];
                         if (attendeesToProcess.length < item.quantity) {
@@ -101,6 +101,28 @@ app.http('createOrder', {
                         }
 
                         for (const attendeeData of attendeesToProcess) {
+                            // PRICING LOGIC: If Pilot AND No Duties AND Specific Price exists
+                            const isPilot = ticketType.system_role === 'pilot';
+                            const agreedToDuties = attendeeData.flightLineDuties; // boolean from frontend
+
+                            if (isPilot && !agreedToDuties && ticketType.price_no_flight_line != null) {
+                                // Use the higher price (or whatever acts as the 'no duties' price)
+                                price = ticketType.price_no_flight_line;
+                            } else {
+                                // Reset to standard price (in case previous loop changed it, though 'price' is let outside? No 'let price' is outside loop but initialized with standard. Wait.)
+                                // 'let price' is defined OUTSIDE the loop.
+                                // If I change it HERE inside the loop, it stays changed for next iteration?
+                                // Ah, `price` is defined at line 95 (outside attendee loop).
+                                // So if I change it for attendee 1, attendee 2 inherits it if I don't reset.
+                                // I should reset it or calculate 'finalPrice' inside the loop.
+                                price = ticketType.price; // Start with standard
+                            }
+
+                            // Re-apply logic cleanly:
+                            if (isPilot && !agreedToDuties && ticketType.price_no_flight_line != null) {
+                                price = ticketType.price_no_flight_line;
+                            }
+
                             totalAmount += price;
 
                             // Create/Get Person

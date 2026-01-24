@@ -174,10 +174,21 @@ function StorePage({ orgSettings }) {
         // Key is `${ticketId}_0` since we assume qty 1 for this flow
         const attendees = Object.values(details);
 
+        // Calculate price based on first attendee's choice (assuming single ticket flow here)
+        // Store Page currently adds 1 qty at a time via modal.
+        let finalPrice = selectedTicketForModal.price;
+        if (selectedTicketForModal.system_role === 'pilot' && selectedTicketForModal.price_no_flight_line) {
+            const attendee = attendees[0];
+            if (attendee && !attendee.flightLineDuties) {
+                finalPrice = selectedTicketForModal.price_no_flight_line;
+            }
+        }
+
         const item = {
             ...selectedTicketForModal,
             type: 'TICKET',
             quantity: 1,
+            price: finalPrice, // Override base price
             eventId: data.eventId, // Ensure eventId is passed
             attendees: attendees
         };

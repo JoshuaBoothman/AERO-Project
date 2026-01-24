@@ -467,6 +467,7 @@ function AttendeeModal({
                                             />
 
                                             {/* Flight Line Duties (New) */}
+                                            {/* Flight Line Duties */}
                                             <div className="mb-4">
                                                 <label className="flex items-center gap-2 cursor-pointer">
                                                     <input
@@ -474,7 +475,18 @@ function AttendeeModal({
                                                         checked={data.flightLineDuties || false}
                                                         onChange={e => handleChange(key, 'flightLineDuties', e.target.checked)}
                                                     />
-                                                    <span className="font-medium text-sm">I agree to perform flight line duties</span>
+                                                    <div>
+                                                        <span className="font-medium text-sm">I agree to perform flight line duties</span>
+                                                        {ticket.price_no_flight_line && (
+                                                            <div className="text-xs mt-1">
+                                                                {data.flightLineDuties ? (
+                                                                    <span className="text-green-600 font-bold">Price: ${Number(ticket.price).toFixed(2)} (Standard)</span>
+                                                                ) : (
+                                                                    <span className="text-amber-600 font-bold">Price: ${Number(ticket.price_no_flight_line).toFixed(2)} (No Duties Surcharge)</span>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </label>
                                             </div>
 

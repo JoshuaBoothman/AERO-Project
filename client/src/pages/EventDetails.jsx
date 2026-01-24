@@ -38,7 +38,7 @@ function EventDetails({ propSlug }) {
     useEffect(() => {
         async function fetchEvent() {
             try {
-                const response = await fetch(`/api/events/${slug}`);
+                const response = await fetch(`/api/events/${slug}`, { cache: 'no-store' });
                 if (response.status === 404) throw new Error('Event not found');
                 const data = await response.json();
 
