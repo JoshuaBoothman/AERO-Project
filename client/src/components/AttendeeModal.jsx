@@ -338,11 +338,25 @@ function AttendeeModal({
                                 <div className="grid grid-cols-2 gap-4 mb-4">
                                     <div>
                                         <label className="text-xs text-gray-500">Arrival Date</label>
-                                        <input type="date" value={data.arrivalDate || ''} onChange={e => handleChange(key, 'arrivalDate', e.target.value)} style={inputStyle} />
+                                        <input
+                                            type="date"
+                                            value={data.arrivalDate || ''}
+                                            min={event?.eventStartDate ? event.eventStartDate.split('T')[0] : undefined}
+                                            max={event?.eventEndDate ? event.eventEndDate.split('T')[0] : undefined}
+                                            onChange={e => handleChange(key, 'arrivalDate', e.target.value)}
+                                            style={inputStyle}
+                                        />
                                     </div>
                                     <div>
                                         <label className="text-xs text-gray-500">Departure Date</label>
-                                        <input type="date" value={data.departureDate || ''} onChange={e => handleChange(key, 'departureDate', e.target.value)} style={inputStyle} />
+                                        <input
+                                            type="date"
+                                            value={data.departureDate || ''}
+                                            min={event?.eventStartDate ? event.eventStartDate.split('T')[0] : undefined}
+                                            max={event?.eventEndDate ? event.eventEndDate.split('T')[0] : undefined}
+                                            onChange={e => handleChange(key, 'departureDate', e.target.value)}
+                                            style={inputStyle}
+                                        />
                                     </div>
                                 </div>
 

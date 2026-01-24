@@ -387,7 +387,7 @@ function StorePage({ orgSettings }) {
                 {/* CAMPING */}
                 {activeTab === 'camping' && (
                     <div className="mt-4">
-                        <CampingPage embedded={true} />
+                        <CampingPage embedded={true} event={data} />
                     </div>
                 )}
 

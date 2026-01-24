@@ -6,7 +6,7 @@ import CampingListView from '../../components/CampingListView';
 
 import AdminMapTool from './AdminMapTool';
 
-function CampingPage({ embedded = false }) {
+function CampingPage({ embedded = false, event = null }) {
     const { slug } = useParams();
     const navigate = useNavigate();
     const { user, token } = useAuth();
@@ -42,15 +42,29 @@ function CampingPage({ embedded = false }) {
     const [children, setChildren] = useState(0);
 
     // --- EFFECT: Load Data ---
-    // --- EFFECT: Load Data ---
     useEffect(() => {
         setLoading(true);
         if (isIndex && !embedded) {
             fetchEventsIndex();
+        } else if (embedded && event) {
+            // Use passed event data
+            setEventId(event.event_id || event.id || event.eventId);
+            setEventName(event.name || event.eventName);
+
+            const s = event.start_date || event.eventStartDate;
+            const e = event.end_date || event.eventEndDate;
+
+            if (s && e) {
+                const startRaw = s.split('T')[0];
+                const endRaw = e.split('T')[0];
+                setDates({ start: startRaw, end: endRaw });
+                setEventBounds({ start: startRaw, end: endRaw });
+            }
+            // Don't set loading false yet, we need availability
         } else {
             fetchEventDetails();
         }
-    }, [slug, isIndex, embedded]);
+    }, [slug, isIndex, embedded, event]);
 
     // --- EFFECT: Load Availability (Detail Mode) ---
     useEffect(() => {
@@ -220,6 +234,8 @@ function CampingPage({ embedded = false }) {
                     <input
                         type="date"
                         value={dates.start}
+                        min={eventBounds.start}
+                        max={eventBounds.end}
                         onChange={e => setDates({ ...dates, start: e.target.value })}
                         style={{ padding: '8px', background: useFullEventPrice ? '#eee' : 'white' }}
                         disabled={useFullEventPrice}
@@ -230,6 +246,8 @@ function CampingPage({ embedded = false }) {
                     <input
                         type="date"
                         value={dates.end}
+                        min={eventBounds.start}
+                        max={eventBounds.end}
                         onChange={e => setDates({ ...dates, end: e.target.value })}
                         style={{ padding: '8px', background: useFullEventPrice ? '#eee' : 'white' }}
                         disabled={useFullEventPrice}

@@ -153,6 +153,8 @@ function CampsiteModal({ event, onClose, onAddToCart, orgSettings }) {
                             <input
                                 type="date"
                                 value={startDate}
+                                min={formatDate(event?.start_date)}
+                                max={formatDate(event?.end_date)}
                                 onChange={e => !useFullEventPrice && setStartDate(e.target.value)}
                                 disabled={useFullEventPrice}
                                 style={{ padding: '4px', background: useFullEventPrice ? '#eee' : 'white' }}
@@ -163,6 +165,8 @@ function CampsiteModal({ event, onClose, onAddToCart, orgSettings }) {
                             <input
                                 type="date"
                                 value={endDate}
+                                min={formatDate(event?.start_date)}
+                                max={formatDate(event?.end_date)}
                                 onChange={e => !useFullEventPrice && setEndDate(e.target.value)}
                                 disabled={useFullEventPrice}
                                 style={{ padding: '4px', background: useFullEventPrice ? '#eee' : 'white' }}

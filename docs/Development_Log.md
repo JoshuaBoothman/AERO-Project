@@ -1,5 +1,17 @@
 # Development Log
 
+## [2026-01-25] - Limit Date Selection
+- **Time**: 09:50 - 10:15
+- **Completed Items**:
+    - **Frontend (Client)**:
+        - Updated `CampsiteModal.jsx` to restrict date pickers to Event Start/End dates using `min` and `max` attributes.
+        - Updated `AssetSelectionModal.jsx` to restrict Hire Start/End dates to Event dates.
+        - Updated `AttendeeModal.jsx` to restrict Arrival/Departure dates to Event dates.
+        - Updated `CampingPage.jsx` to restrict booking dates to event bounds and handled inconsistent date property names (`start_date` vs `eventStartDate`).
+        - Updated `StorePage.jsx` to pass full event data to the embedded Camping view.
+    - **Verification**:
+        - Verified code implementation matches requirements.
+
 ## [2026-01-24] - Bug Fix: User ID in Persons Table
 - **Time**: 07:23 - 09:05
 - **Completed Items**:

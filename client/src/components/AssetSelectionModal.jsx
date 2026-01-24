@@ -151,6 +151,8 @@ function AssetSelectionModal({ asset, hireDates, setHireDates, eventDates, onClo
                                                     type="date"
                                                     className="p-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-primary outline-none"
                                                     value={hireDates.start}
+                                                    min={eventDates?.start ? new Date(eventDates.start).toISOString().split('T')[0] : undefined}
+                                                    max={eventDates?.end ? new Date(eventDates.end).toISOString().split('T')[0] : undefined}
                                                     onChange={e => setHireDates ? setHireDates({ ...hireDates, start: e.target.value }) : null}
                                                 />
                                                 <span>to</span>
@@ -158,6 +160,8 @@ function AssetSelectionModal({ asset, hireDates, setHireDates, eventDates, onClo
                                                     type="date"
                                                     className="p-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-primary outline-none"
                                                     value={hireDates.end}
+                                                    min={eventDates?.start ? new Date(eventDates.start).toISOString().split('T')[0] : undefined}
+                                                    max={eventDates?.end ? new Date(eventDates.end).toISOString().split('T')[0] : undefined}
                                                     onChange={e => setHireDates ? setHireDates({ ...hireDates, end: e.target.value }) : null}
                                                 />
                                             </div>
