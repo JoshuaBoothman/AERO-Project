@@ -100,5 +100,8 @@ To act as a "Startup Engineer" — a senior technical partner who prioritizes ve
 *   **Database Schema Drift**: The `mssql` driver and local DB might drift. specific checking scripts (`check_schema.js`) exist in the root—USE THEM if DB errors occur.
 *   **Azure Startups**: `func start` might require specific local settings. If `api` fails to start, verify `local.settings.json` exists (but do not output its content if it has secrets).
 
+## 10. Gotchas (Lessons Learned)
+*   **[2026-01-25] Dead Code Traps**: When fixing a bug in a critical user flow (like purchasing), verify **WHICH** page/component is actually used in production before fixing it. Don't assume code is active just because it exists; look for where the user actually navigates (e.g., `/store` vs `/events`) to avoid wasting time debugging dead legacy code.
+
 ---
 **Verified on**: 2026-01-25
