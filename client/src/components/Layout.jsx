@@ -137,10 +137,10 @@ function Layout({ orgSettings, loading, error, refreshSettings }) {
                       <div className="absolute top-full left-0 mt-0 w-56 bg-white text-gray-800 rounded-md shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 overflow-hidden border border-gray-100 transform origin-top scale-95 group-hover:scale-100">
                         <div className="py-1 flex flex-col">
                           <Link
-                            to="#"
+                            to="/my-roster-events"
                             className="px-4 py-3 hover:bg-gray-50 text-sm border-b border-gray-50 last:border-0 hover:text-accent font-medium"
                           >
-                            Flightline Roster
+                            Flight Line Duties
                           </Link>
                           <Link
                             to="/faq"
@@ -224,7 +224,7 @@ function Layout({ orgSettings, loading, error, refreshSettings }) {
 
                     <div className="w-16 h-1 bg-white/10 my-1"></div>
                     <span className="text-sm font-bold text-accent uppercase tracking-wider">Information</span>
-                    <NavLink to="#" className="text-xl">Flightline Roster</NavLink>
+                    <NavLink to="/my-roster-events" className="text-xl">Flight Line Duties</NavLink>
                     <NavLink to="/faq" className="text-xl">FAQ</NavLink>
                     <NavLink to="#" className="text-xl">Event Schedule</NavLink>
 

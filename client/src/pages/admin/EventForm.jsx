@@ -858,6 +858,26 @@ function EventForm() {
                     </div>
                 )}
 
+                {/* 8. Flight Lines (Only in Edit Mode) */}
+                {isEditMode && (
+                    <div style={{ backgroundColor: '#fff', padding: '1.5rem', borderRadius: '8px', marginBottom: '2rem', border: '1px solid #e5e7eb' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div>
+                                <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Flight Line Duties</h3>
+                                <p style={{ margin: '5px 0 0', fontSize: '0.8rem', color: '#666' }}>Configure flight lines, schedules, and duty roster.</p>
+                            </div>
+                            <button
+                                type="button"
+                                className="primary-button"
+                                style={{ fontSize: '0.85rem' }}
+                                onClick={() => navigate(`/admin/events/${slug}/flight-lines`)}
+                            >
+                                Manage Flight Lines
+                            </button>
+                        </div>
+                    </div>
+                )}
+
                 <div className="form-actions" style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', alignItems: 'center' }}>
                     {isEditMode && (
                         <button

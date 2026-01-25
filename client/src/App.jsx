@@ -13,6 +13,8 @@ import EventPurchase from './pages/EventPurchase';
 
 import MyOrders from './pages/MyOrders';
 import MyPlanes from './pages/MyPlanes';
+import MyFlightLineDuties from './pages/MyFlightLineDuties';
+import RosterEventSelector from './pages/RosterEventSelector';
 import AdminOrders from './pages/admin/AdminOrders';
 import EventForm from './pages/admin/EventForm';
 import AdminMapTool from './pages/camping/AdminMapTool';
@@ -26,6 +28,8 @@ import VariantTemplates from './pages/admin/VariantTemplates';
 import PublicRegistrationsReport from './pages/admin/PublicRegistrationsReport';
 import CampingAvailabilityReport from './pages/admin/CampingAvailabilityReport';
 import EventPlanesReport from './pages/admin/EventPlanesReport';
+import FlightLinesSetup from './pages/admin/FlightLinesSetup';
+import FlightLineRoster from './pages/admin/FlightLineRoster';
 
 import OrderDetail from './pages/OrderDetail';
 import Invoice from './pages/Invoice';
@@ -109,6 +113,8 @@ function App() {
                 <Route path="events/new" element={<EventForm />} />
                 <Route path="events/:slug" element={<EventDetails />} />
                 <Route path="events/:slug/edit" element={<EventForm />} />
+                <Route path="admin/events/:slug/flight-lines" element={<FlightLinesSetup />} />
+                <Route path="admin/events/:slug/roster" element={<FlightLineRoster />} />
                 <Route path="login" element={<Login />} />
                 <Route path="register" element={<Register />} />
                 <Route path="verify-email" element={<VerifyEmail />} />
@@ -124,6 +130,8 @@ function App() {
 
                 <Route path="my-orders" element={<MyOrders />} />
                 <Route path="my-planes" element={<MyPlanes />} />
+                <Route path="my-roster-events" element={<RosterEventSelector />} />
+                <Route path="events/:slug/my-duties" element={<MyFlightLineDuties />} />
                 <Route path="orders/:orderId" element={<OrderDetail />} />
                 <Route path="orders/:orderId/invoice" element={<Invoice />} />
                 <Route path="admin" element={<AdminDashboard />} />

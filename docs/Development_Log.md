@@ -1,5 +1,34 @@
 # Development Log
 
+## [2026-01-25] - Flight Line Duties System (Completed)
+- **Time**: 12:30 - 16:00
+- **Completed Items**:
+    - **Database**:
+        - Created `flight_lines` and `flight_line_roster` tables.
+        - Added `flight_line_duties` (bit) column to `attendees` table.
+    - **Backend (API)**:
+        - Created comprehensive CRUD endpoints for Flight Lines and Rosters.
+        - **Schedule Generator**: Implemented logic to batch-create duty slots based on start/end times and slot duration.
+        - **Auto-Assign Algorithm**: Created intelligent assignment logic (`autoAssignFlightLineRoster.js`) that respects:
+            - Pilot Registration Status.
+            - Arrival/Departure Date availability.
+            - Exclusion of existing Subevent bookings (Conflicts).
+            - Random distribution for fairness.
+        - **Management**: Created endpoints for manual assignment, unassignment, time editing, and bulk clearing.
+        - **User View**: Created `getMyFlightLineDuties.js` to fetch personal rosters for logged-in users.
+    - **Frontend (Client)**:
+        - **Admin Setup**: Created `FlightLinesSetup.jsx` for managing locations and generating schedules.
+        - **Admin Roster**: Created `FlightLineRoster.jsx` with a Grid View, featuring:
+            - Date filtering.
+            - Visual Status Indicators (Yellow for Unassigned, Red for Conflicts).
+            - Modal-based Pilot Assignment (with filtering).
+        - **User View**: Created `MyFlightLineDuties.jsx` and `RosterEventSelector.jsx` for pilots to view their schedules.
+        - **Navigation**: Integrated "Flight Line Duties" into the main "Information" menu and Admin Dashboard.
+    - **Documentation**:
+        - Created `implementation_plans/flight_line_duties.md`.
+        - Created `walkthrough.md` validating the entire workflow.
+
+
 ## [2026-01-25] - Negative Stock Levels (Backorders)
 - **Time**: 11:49 - 12:04
 - **Completed Items**:
