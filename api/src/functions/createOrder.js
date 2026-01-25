@@ -387,9 +387,9 @@ app.http('createOrder', {
                                     throw new Error(`Selected merchandise (Product ${skuProductId}) is not included with this ticket type.`);
                                 }
 
-                                if (mStock < 1) {
-                                    throw new Error(`Insufficient stock for included merchandise (SKU ${mSkuId}).`);
-                                }
+                                // if (mStock < 1) {
+                                //     throw new Error(`Insufficient stock for included merchandise (SKU ${mSkuId}).`);
+                                // }
 
                                 // Deduct Stock
                                 await new sql.Request(transaction)
@@ -531,7 +531,7 @@ app.http('createOrder', {
                         const currentStock = skuRes.recordset[0].current_stock;
 
                         // Check Stock
-                        if (currentStock < qty) throw new Error(`Insufficient stock for SKU ${skuId}. Requested: ${qty}, Available: ${currentStock}`);
+                        // if (currentStock < qty) throw new Error(`Insufficient stock for SKU ${skuId}. Requested: ${qty}, Available: ${currentStock}`);
 
                         // Update Stock
                         const stockReq = new sql.Request(transaction);

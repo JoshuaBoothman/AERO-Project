@@ -52,7 +52,7 @@ function ProductModal({ product, onClose, onAddToCart }) {
 
     const handleAdd = () => {
         if (!matchedSku) return notify("Unavailable combination", "error");
-        if (matchedSku.stock <= 0) return notify("Out of stock", "error");
+        // if (matchedSku.stock <= 0) return notify("Out of stock", "error");
         onAddToCart(product, matchedSku);
         onClose();
     };
@@ -88,11 +88,7 @@ function ProductModal({ product, onClose, onAddToCart }) {
                         <div className="text-3xl font-bold text-primary mb-1">
                             {matchedSku ? `$${matchedSku.price}` : <span className="text-gray-400 text-xl font-normal">Select options</span>}
                         </div>
-                        {matchedSku && (
-                            <div className={`text-sm font-medium ${matchedSku.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                {matchedSku.stock > 0 ? `In Stock (${matchedSku.stock})` : 'Sold Out'}
-                            </div>
-                        )}
+                        {/* Stock status hidden from customers */}
                     </div>
 
                     <div className="space-y-5 mb-8 flex-grow">
@@ -122,15 +118,15 @@ function ProductModal({ product, onClose, onAddToCart }) {
                     <div className="mt-auto">
                         <button
                             onClick={handleAdd}
-                            disabled={!matchedSku || matchedSku.stock <= 0}
+                            disabled={!matchedSku}
                             className={`w-full py-4 text-lg font-bold rounded-lg transition-all transform active:scale-[0.99]
-                                ${matchedSku && matchedSku.stock > 0
+                                ${matchedSku
                                     ? 'bg-primary text-secondary hover:brightness-110 shadow-lg'
                                     : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                                 }
                             `}
                         >
-                            {matchedSku && matchedSku.stock <= 0 ? 'Sold Out' : 'Add to Cart'}
+                            Add to Cart
                         </button>
                     </div>
 

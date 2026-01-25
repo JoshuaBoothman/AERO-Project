@@ -1,5 +1,20 @@
 # Development Log
 
+## [2026-01-25] - Negative Stock Levels (Backorders)
+- **Time**: 11:49 - 12:04
+- **Completed Items**:
+    - **Backend (API)**:
+        - Updated `createOrder.js` to remove stock validation checks for both included merchandise and standalone merchandise purchases.
+        - Stock deduction logic maintained - `current_stock` now decrements into negative values representing backorders.
+    - **Frontend (Client)**:
+        - Updated `ProductModal.jsx` to allow adding out-of-stock items to cart.
+        - Removed all stock status indicators from customer-facing UI (stock levels completely hidden).
+        - Changed button text to always display "Add to Cart" regardless of stock availability.
+        - Updated `AttendeeModal.jsx` to allow selection of out-of-stock SKUs for ticket-included merchandise.
+    - **Verification**:
+        - Created walkthrough.md with manual verification steps.
+
+
 ## [2026-01-25] - My Planes (My Hangar) Implementation (Completed)
 - **Time**: 09:30 - 11:28
 - **Completed Items**:

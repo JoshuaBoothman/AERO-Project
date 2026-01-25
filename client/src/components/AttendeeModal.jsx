@@ -434,8 +434,8 @@ function AttendeeModal({
                                                             {productsMap[selectedPid].skus
                                                                 .filter(sku => sku.active)
                                                                 .map(sku => (
-                                                                    <option key={sku.id} value={sku.id} disabled={sku.stock < 1}>
-                                                                        {sku.description || sku.code} {sku.stock < 1 ? '(Out of Stock)' : ''}
+                                                                    <option key={sku.id} value={sku.id}>
+                                                                        {sku.description || sku.code}
                                                                     </option>
                                                                 ))}
                                                         </select>
