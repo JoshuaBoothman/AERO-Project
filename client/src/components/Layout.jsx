@@ -32,28 +32,8 @@ function Layout({ orgSettings, loading, error, refreshSettings }) {
     setIsMobileMenuOpen(false);
   }, [location.pathname]);
 
-  // Check if user has planes (for My Planes menu)
-  useEffect(() => {
-    const checkPlanes = async () => {
-      if (user && user.role !== 'admin') {
-        try {
-          const res = await fetch('/api/planes', {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`,
-              'X-Auth-Token': localStorage.getItem('token')
-            }
-          });
-          if (res.ok) {
-            const data = await res.json();
-            setHasPlanes(data.length > 0);
-          }
-        } catch (e) {
-          console.error("Failed to check planes", e);
-        }
-      }
-    };
-    checkPlanes();
-  }, [user]);
+  // Check if user has planes (for My Planes menu) - REMOVED: Always show for authenticated users
+  // useEffect(() => { ... }, [user]);
 
   if (loading) return <div>Loading settings...</div>;
   if (error) return <div>Error: {error}</div>;
@@ -194,7 +174,7 @@ function Layout({ orgSettings, loading, error, refreshSettings }) {
                       <span className="font-medium">Hi, {user.firstName}</span>
 
                       <NavLink to="/my-orders">My Orders</NavLink>
-                      {hasPlanes && <NavLink to="/my-planes">My Planes</NavLink>}
+                      <NavLink to="/my-planes">My Planes</NavLink>
 
                       <button
                         onClick={handleLogout}
@@ -251,7 +231,7 @@ function Layout({ orgSettings, loading, error, refreshSettings }) {
                     <div className="w-16 h-1 bg-white/20 my-2"></div>
                     <span className="text-xl opacity-75">Hi, {user.firstName}</span>
                     <NavLink to="/my-orders" className="text-2xl">My Orders</NavLink>
-                    {hasPlanes && <NavLink to="/my-planes" className="text-2xl">My Planes</NavLink>}
+                    <NavLink to="/my-planes" className="text-2xl">My Planes</NavLink>
                     <button onClick={handleLogout} className="text-2xl text-accent font-bold mt-4">Logout</button>
                   </>
                 )}

@@ -32,6 +32,7 @@ app.http('getUserEventAttendees', {
             const query = `
                 SELECT 
                     a.attendee_id,
+                    p.person_id,
                     a.ticket_code,
                     p.first_name,
                     p.last_name,

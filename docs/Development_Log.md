@@ -1,5 +1,26 @@
 # Development Log
 
+## [2026-01-25] - My Planes (My Hangar) Implementation (Completed)
+- **Time**: 09:30 - 11:28
+- **Completed Items**:
+    - **Backend (API)**:
+        - Created `getPilotEvents.js` to find events where the user has a "Pilot" role attendance.
+        - Created `createPlane.js` for plane registration, validating ownership of the linked person.
+        - Updated `getUserEventAttendees.js` to return `person_id` for proper linking.
+    - **Frontend (Client)**:
+        - Updated `Layout.jsx` to make "My Planes" accessible to all authenticated users.
+        - **Wizard Workflow**: Implemented a 3-step wizard in `MyPlanes.jsx`:
+            1. **Select Event**: Pick an event where you are a pilot.
+            2. **Select Pilot**: Pick the specific person profile (Pilot).
+            3. **Plane Details**: Register the aircraft.
+        - **Refactor**: Removed the "Heavy Model" checkbox; refactored logic to treat all planes as heavy models (Weight & Certificate required).
+    - **Verification**:
+        - Verified database schema integrity.
+        - Linted and fixed frontend code.
+        - Created walkthrough.md.
+    - **Documentation**:
+        - Moved `20260124_my_planes_modifications.md` to `completed/`.
+
 ## [2026-01-25] - Limit Date Selection
 - **Time**: 09:50 - 10:15
 - **Completed Items**:
