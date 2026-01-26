@@ -17,7 +17,7 @@ app.http('updateEvent', {
             }
 
             // 2. Parse Body
-            const { name, description, start_date, end_date, venue_id, banner_url, status, is_purchasing_enabled, is_public_viewable, mop_url } = await request.json();
+            const { name, description, start_date, end_date, venue_id, banner_url, status, is_purchasing_enabled, is_public_viewable, mop_url, dinner_date } = await request.json();
 
             // 3. Update Query
             // Note: We are NOT updating the slug to preserve URLs.
@@ -33,7 +33,8 @@ app.http('updateEvent', {
                     status = @status,
                     is_purchasing_enabled = @is_purchasing_enabled,
                     is_public_viewable = @is_public_viewable,
-                    mop_url = @mop_url
+                    mop_url = @mop_url,
+                    dinner_date = @dinner_date
                 WHERE event_id = @eventId
             `;
 
@@ -48,7 +49,8 @@ app.http('updateEvent', {
                 { name: 'status', type: sql.NVarChar, value: status },
                 { name: 'is_purchasing_enabled', type: sql.Bit, value: is_purchasing_enabled ? 1 : 0 },
                 { name: 'is_public_viewable', type: sql.Bit, value: is_public_viewable ? 1 : 0 },
-                { name: 'mop_url', type: sql.NVarChar, value: mop_url || null }
+                { name: 'mop_url', type: sql.NVarChar, value: mop_url || null },
+                { name: 'dinner_date', type: sql.DateTime, value: dinner_date || null }
             ]);
 
             return {

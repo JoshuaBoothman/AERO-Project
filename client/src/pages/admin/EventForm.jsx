@@ -65,7 +65,8 @@ function EventForm() {
         status: 'Draft',
         is_purchasing_enabled: false,
         is_public_viewable: false,
-        mop_url: ''
+        mop_url: '',
+        dinner_date: ''
     });
 
     const isEditMode = !!slug;
@@ -193,7 +194,8 @@ function EventForm() {
                         status: eventData.status || 'Draft',
                         is_purchasing_enabled: eventData.is_purchasing_enabled,
                         is_public_viewable: eventData.is_public_viewable,
-                        mop_url: eventData.mop_url || ''
+                        mop_url: eventData.mop_url || '',
+                        dinner_date: formatDateTime(eventData.dinner_date)
                     });
 
                     // Fetch Ticket Types
@@ -625,6 +627,22 @@ function EventForm() {
                             </small>
                         )}
                     </div>
+                </div>
+
+                <div className="form-group mb-4">
+                    <label>Official Dinner Date (Optional)</label>
+                    <input
+                        type="datetime-local" name="dinner_date"
+                        min={formData.start_date}
+                        max={formData.end_date}
+                        value={formData.dinner_date} onChange={handleChange}
+                        className="form-control"
+                    />
+                    {formData.dinner_date && (
+                        <small style={{ color: '#666', display: 'block', marginTop: '0.2rem' }}>
+                            Selected: {formatDateDisplay(formData.dinner_date)}
+                        </small>
+                    )}
                 </div>
 
                 {/* 3. Venue */}

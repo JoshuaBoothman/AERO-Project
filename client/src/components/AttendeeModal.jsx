@@ -27,7 +27,7 @@ function AttendeeModal({
     event,
     confirmLabel = "Confirm"
 }) {
-    if (!show) return null;
+
 
     const { notify } = useNotification();
     const [details, setDetails] = useState(initialDetails);
@@ -240,6 +240,8 @@ function AttendeeModal({
     // Reusable styles
     const inputStyle = { width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' };
 
+    if (!show) return null;
+
     return (
         <div className="modal-overlay fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
             <div className="modal-content bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
@@ -359,6 +361,20 @@ function AttendeeModal({
                                         />
                                     </div>
                                 </div>
+
+                                {event?.dinner_date && (
+                                    <div className="mb-4 p-3 bg-indigo-50 border border-indigo-100 rounded">
+                                        <h5 className="font-bold text-sm mb-2 text-indigo-900">🍽️ Official Dinner</h5>
+                                        <label className="flex items-center gap-2 cursor-pointer text-indigo-900 font-medium">
+                                            <input
+                                                type="checkbox"
+                                                checked={data.attendingDinner || false}
+                                                onChange={e => handleChange(key, 'attendingDinner', e.target.checked)}
+                                            />
+                                            Will you be attending the official dinner on {new Date(event.dinner_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}?
+                                        </label>
+                                    </div>
+                                )}
 
                                 <div className="mb-4">
                                     <h5 className="font-bold text-sm mb-2 text-gray-700">Dietary Requirements</h5>

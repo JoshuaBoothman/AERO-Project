@@ -36,7 +36,9 @@ app.http('getUserEventAttendees', {
                     a.ticket_code,
                     p.first_name,
                     p.last_name,
-                    t.name as ticket_name
+                    t.name as ticket_name,
+                    a.attending_dinner,
+                    a.dietary_requirements
                 FROM attendees a
                 JOIN persons p ON a.person_id = p.person_id
                 JOIN event_ticket_types t ON a.ticket_type_id = t.ticket_type_id

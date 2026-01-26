@@ -1,5 +1,22 @@
 # Development Log
 
+## [2026-01-26] - Official Dinner Management
+- **Time**: 11:30 - 11:45
+- **Completed Items**:
+    - **Backend (API)**:
+        - Updated `getEventDetail.js`, `createEvent.js`, `updateEvent.js` to manage `dinner_date`.
+        - Updated `createOrder.js` to capture `attending_dinner` RSVP.
+        - Updated `updateAttendee.js` to allow RSVP changes.
+        - Updated `getUserEventAttendees.js` to select RSVP status.
+    - **Frontend (Client)**:
+        - Updated `EventForm.jsx` to manage Official Dinner Date.
+        - Updated `AttendeeModal.jsx` to collect Dinner RSVP during registration.
+    - **Verification**:
+        - Verified database schema.
+        - Fixed `AttendeeModal` React Hooks lint error.
+        - Restricted Official Dinner Date picker to Event Start/End dates.
+        - Fixed `getStoreItems` API to include `dinner_date`, resolving missing checkbox in Store.
+
 ## [2026-01-26] - Junior Pilot System Role (Completed)
 - **Time**: 11:10 - 11:25
 - **Completed Items**:

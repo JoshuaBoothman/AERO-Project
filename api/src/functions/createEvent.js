@@ -15,7 +15,7 @@ app.http('createEvent', {
             }
 
             // 2. Parse Body
-            const { name, description, start_date, end_date, venue_id, banner_url, status, is_purchasing_enabled, is_public_viewable } = await request.json();
+            const { name, description, start_date, end_date, venue_id, banner_url, status, is_purchasing_enabled, is_public_viewable, dinner_date } = await request.json();
 
             if (!name || !start_date || !end_date || !venue_id) {
                 return { status: 400, body: JSON.stringify({ error: "Missing required fields (name, dates, venue)" }) };
@@ -31,12 +31,14 @@ app.http('createEvent', {
             const insertQuery = `
                 INSERT INTO events (
                     name, slug, description, start_date, end_date, venue_id, 
-                    banner_url, status, is_purchasing_enabled, is_public_viewable
+                    banner_url, status, is_purchasing_enabled, is_public_viewable,
+                    dinner_date
                 )
                 OUTPUT INSERTED.event_id, INSERTED.slug
                 VALUES (
                     @name, @slug, @description, @start_date, @end_date, @venue_id, 
-                    @banner_url, @status, @is_purchasing_enabled, @is_public_viewable
+                    @banner_url, @status, @is_purchasing_enabled, @is_public_viewable,
+                    @dinner_date
                 )
             `;
 
@@ -50,7 +52,8 @@ app.http('createEvent', {
                 { name: 'banner_url', type: sql.NVarChar, value: banner_url || null },
                 { name: 'status', type: sql.NVarChar, value: status || 'Draft' }, // Default to Draft
                 { name: 'is_purchasing_enabled', type: sql.Bit, value: is_purchasing_enabled ? 1 : 0 },
-                { name: 'is_public_viewable', type: sql.Bit, value: is_public_viewable ? 1 : 0 }
+                { name: 'is_public_viewable', type: sql.Bit, value: is_public_viewable ? 1 : 0 },
+                { name: 'dinner_date', type: sql.DateTime, value: dinner_date || null }
             ]);
 
             return {
