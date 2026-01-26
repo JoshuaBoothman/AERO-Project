@@ -47,7 +47,9 @@ function Checkout() {
                     campsiteId: c.id,
                     checkIn: c.checkIn,
                     checkOut: c.checkOut,
-                    price: c.price
+                    price: c.price,
+                    adults: c.adults,
+                    children: c.children
                 })),
                 merchandise: merch.map(m => ({
                     skuId: m.id,

@@ -1,5 +1,13 @@
 # Development Log
 
+## [2026-01-26] - Campsite Pricing Fix (Completed)
+- **Time**: 12:47 - 12:55
+- **Completed Items**:
+    - **Bug Fix**: Resolved "Invalid price" checkout error for campsites with extra adults.
+    - **Root Cause**: The frontend `Checkout.jsx` was not sending `adults` and `children` counts in the order payload, causing the backend to default to 1 adult and fail price validation.
+    - **Fix**: Updated `Checkout.jsx` to map these fields correctly.
+    - **Verification**: Verified fix with user.
+
 ## [2026-01-26] - Bug Fix: Heavy Model Flag Default (Completed)
 - **Time**: 12:30 - 12:35
 - **Completed Items**:
