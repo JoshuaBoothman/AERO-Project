@@ -1,5 +1,18 @@
 # Development Log
 
+## [2026-01-26] - Pit Crew Manual Pilot Name (Completed)
+- **Time**: 11:47 - 12:05
+- **Completed Items**:
+    - **Backend (API)**:
+        - Updated `createOrder.js` to persist `pilot_name` when provided.
+        - Updated `updateAttendee.js` to allow editing `pilot_name`.
+    - **Frontend (Client)**:
+        - Updated `AttendeeModal.jsx` to include a "Manual Pilot Name" option for Pit Crew.
+        - Implemented validation ensuring either a Linked Pilot or Manual Name is provided.
+    - **Verification**:
+        - Linted frontend code.
+        - Confirmed logical flow covers database schema changes (`pilot_name` column).
+
 ## [2026-01-26] - Official Dinner Management
 - **Time**: 11:30 - 11:45
 - **Completed Items**:

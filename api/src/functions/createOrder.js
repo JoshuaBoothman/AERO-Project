@@ -104,6 +104,7 @@ app.http('createOrder', {
                             // PRICING LOGIC: If Pilot AND No Duties AND Specific Price exists
                             const isPilot = ['pilot', 'junior_pilot'].includes(ticketType.system_role);
                             const agreedToDuties = attendeeData.flightLineDuties; // boolean from frontend
+                            const pilotName = attendeeData.pilotName || null;
 
                             if (isPilot && !agreedToDuties && ticketType.price_no_flight_line != null) {
                                 // Use the higher price (or whatever acts as the 'no duties' price)
@@ -294,15 +295,16 @@ app.http('createOrder', {
                                 .input('diet', sql.NVarChar, attendeeData.dietaryRequirements || null)
                                 .input('link_pid', sql.Int, linkedPilotId) // Direct link if known
                                 .input('dinner', sql.Bit, attendeeData.attendingDinner ? 1 : 0)
+                                .input('p_name', sql.NVarChar, pilotName)
                                 .query(`
                                     INSERT INTO attendees (
                                         event_id, person_id, ticket_type_id, status, ticket_code, has_agreed_to_mop,
                                         arrival_date, departure_date, flight_line_duties, is_heavy_model_inspector, dietary_requirements,
-                                        linked_pilot_attendee_id, attending_dinner
+                                        linked_pilot_attendee_id, attending_dinner, pilot_name
                                     ) VALUES (
                                         @eid, @pid, @ttid, 'Registered', @tcode, @mop,
                                         @arr, @dep, @fld, @inspector, @diet,
-                                        @link_pid, @dinner
+                                        @link_pid, @dinner, @p_name
                                     ); 
                                     SELECT SCOPE_IDENTITY() AS id;
                                 `);
