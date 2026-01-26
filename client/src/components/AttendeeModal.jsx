@@ -109,7 +109,7 @@ function AttendeeModal({
     // Plane Actions
     const updatePlane = (key, index, field, value) => {
         setDetails(prev => {
-            const currentPlanes = prev[key]?.planes || [{}];
+            const currentPlanes = prev[key]?.planes || [{ isHeavy: true }];
             const newPlanes = [...currentPlanes];
             if (!newPlanes[index]) newPlanes[index] = {};
             newPlanes[index] = { ...newPlanes[index], [field]: value };

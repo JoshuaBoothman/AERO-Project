@@ -1,5 +1,13 @@
 # Development Log
 
+## [2026-01-26] - Bug Fix: Heavy Model Flag Default (Completed)
+- **Time**: 12:30 - 12:35
+- **Completed Items**:
+    - **Frontend (Client)**:
+        - Fixed logic in `AttendeeModal.jsx` where the first plane added during registration was defaulting to `is_heavy_model = false`. It is now explicitly initialized to `true`.
+    - **Database**:
+        - Created `docs/db_updates/20260126_fix_heavy_model_flag.sql` to remediate existing records where the flag was incorrectly set to false.
+
 ## [2026-01-26] - Pit Crew Manual Pilot Name (Completed)
 - **Time**: 11:47 - 12:05
 - **Completed Items**:
