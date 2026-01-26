@@ -124,11 +124,15 @@ function CampingPage({ embedded = false, event = null }) {
     };
 
     // --- EFFECT: Auto-Check Full Event ---
+    // REMOVED: Defaulting to full event dates on package selection.
+    // We now allow custom dates even with full event package (as requested).
     useEffect(() => {
         if (selectedSite?.full_event_price && eventBounds.start && eventBounds.end) {
+            // Check if user has manually selected full duration
             const isFullDuration = dates.start === eventBounds.start && dates.end === eventBounds.end;
             if (isFullDuration) {
-                setUseFullEventPrice(true);
+                // Optional: We could auto-check it if they match, but let's leave it manual or sticky.
+                // setUseFullEventPrice(true); 
             }
         }
     }, [dates, eventBounds, selectedSite]);
@@ -237,8 +241,7 @@ function CampingPage({ embedded = false, event = null }) {
                         min={eventBounds.start}
                         max={eventBounds.end}
                         onChange={e => setDates({ ...dates, start: e.target.value })}
-                        style={{ padding: '8px', background: useFullEventPrice ? '#eee' : 'white' }}
-                        disabled={useFullEventPrice}
+                        style={{ padding: '8px', background: 'white' }}
                     />
                 </div>
                 <div>
@@ -249,8 +252,7 @@ function CampingPage({ embedded = false, event = null }) {
                         min={eventBounds.start}
                         max={eventBounds.end}
                         onChange={e => setDates({ ...dates, end: e.target.value })}
-                        style={{ padding: '8px', background: useFullEventPrice ? '#eee' : 'white' }}
-                        disabled={useFullEventPrice}
+                        style={{ padding: '8px', background: 'white' }}
                     />
                 </div>
                 <button onClick={fetchAvailability} style={{ height: '38px', marginTop: 'auto', padding: '0 20px', background: 'black', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>

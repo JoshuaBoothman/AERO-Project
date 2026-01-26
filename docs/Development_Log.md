@@ -1,5 +1,12 @@
 # Development Log
 
+## [2026-01-26] - Camping: Full Event Package Date Logic (Completed)
+- **Time**: 13:30 - 13:45
+- **Completed Items**:
+    - **Feature**: Decoupled the "Full Event Package" pricing option from the date selection in `CampingPage.jsx`. Users can now select the package price while specifying their actual arrival/departure dates (even if shorter than the full event).
+    - **Logic**: Removed the auto-update effect that forced dates to match event bounds when the package was selected. Removed the `disabled` state from date inputs.
+    - **Verification**: Verified that the backend `createOrder.js` correctly accepts the full event price even when dates do not match the full duration.
+
 ## [2026-01-26] - Campsite Pricing Fix (Completed)
 - **Time**: 12:47 - 12:55
 - **Completed Items**:
