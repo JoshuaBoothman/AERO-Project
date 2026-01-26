@@ -111,7 +111,7 @@ app.http('getOrderDetail', {
 
             // 3.5 Fetch Planes for Pilot Attendees
             // Extract unique person IDs for pilots
-            const pilotPersonIds = [...new Set(itemsResult.filter(i => i.system_role === 'pilot').map(i => i.person_id))];
+            const pilotPersonIds = [...new Set(itemsResult.filter(i => ['pilot', 'junior_pilot'].includes(i.system_role)).map(i => i.person_id))];
             let planesMap = {};
 
             if (pilotPersonIds.length > 0) {

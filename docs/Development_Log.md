@@ -1,5 +1,22 @@
 # Development Log
 
+## [2026-01-26] - Junior Pilot System Role (Completed)
+- **Time**: 11:10 - 11:25
+- **Completed Items**:
+    - **Backend (API)**:
+        - Updated `createOrder.js` to treat `junior_pilot` like `pilot` for pricing logic.
+        - Updated `getOrderDetail.js` to fetch aircraft details for Junior Pilots.
+        - Updated `getUserEventAttendees.js` to return Junior Pilots for selection lists.
+    - **Frontend (Client)**:
+        - **Attendee Modal**: Enabled Pilot fields (AUS#, MOP, Planes) for `junior_pilot`.
+        - **Logic**: Explicitly HID the "Flight Line Duties" checkbox for Junior Pilots.
+        - **Pit Crew Linking**: Enabled Pit Crew to link to Junior Pilots.
+        - **Admin**: Added "Junior Pilot" option and visual badge to `EventForm.jsx`.
+        - **Order Details**: Added "Junior Pilot" badge and Aircraft listing.
+    - **Verification**:
+        - Verified database constraint was updated by user.
+        - Implemented logic ensuring Junior Pilots pay the standard price (or no-duty price if configured same) without duty requirement.
+
 ## [2026-01-25] - Flight Line Duties System (Completed)
 - **Time**: 12:30 - 16:00
 - **Completed Items**:

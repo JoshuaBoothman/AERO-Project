@@ -4,6 +4,8 @@
 Enable a comprehensive system for selling merchandise for events. This includes a full Admin workflow for managing products, variants (e.g., Size, Color), and event-specific pricing, as well as the User workflow for browsing and purchasing items.
 
 ## User Review Required
+- [Junior Pilot Implementation Plan](implementation_plans/20260126_junior_pilots.md)
+
 > [!IMPORTANT]
 > **Schema Change**: `order_items`.`attendee_id` must be made **NULLable** to support merchandise items that are not linked to a specific attendee ticket.
 

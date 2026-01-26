@@ -32,6 +32,7 @@ function SortableTicketRow({ ticket, onEdit, onDelete }) {
             <td style={{ padding: '0.5rem' }}>${Number(ticket.price).toFixed(2)}</td>
             <td style={{ padding: '0.5rem' }}>
                 {ticket.system_role === 'pilot' && <span style={{ background: '#e0f2fe', color: '#0369a1', padding: '2px 6px', borderRadius: '4px', fontSize: '0.75rem', marginRight: '4px' }}>Pilot</span>}
+                {ticket.system_role === 'junior_pilot' && <span style={{ background: '#eef2ff', color: '#4338ca', padding: '2px 6px', borderRadius: '4px', fontSize: '0.75rem', marginRight: '4px' }}>Junior Pilot</span>}
                 {ticket.system_role === 'pit_crew' && <span style={{ background: '#f0fdf4', color: '#15803d', padding: '2px 6px', borderRadius: '4px', fontSize: '0.75rem' }}>Pit Crew</span>}
             </td>
             <td style={{ padding: '0.5rem', textAlign: 'right' }}>
@@ -673,11 +674,11 @@ function EventForm() {
 
                 {/* 5. MOP PDF */}
                 <div className="form-group mb-4" style={{ border: '1px solid #ced4da', padding: '1rem', borderRadius: '4px', background: '#fafafa' }}>
-                    <label style={{ marginBottom: '0.5rem', display: 'block' }}>MOP PDF (Manual of Procedures)</label>
+                    <label style={{ marginBottom: '0.5rem', display: 'block' }}>Pilot Declaration PDF</label>
                     <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                         {formData.mop_url ? (
                             <a href={formData.mop_url} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#2563eb', textDecoration: 'none', padding: '10px', background: 'white', border: '1px solid #ddd', borderRadius: '4px' }}>
-                                <span style={{ fontSize: '1.2rem' }}>📄</span> View MOP
+                                <span style={{ fontSize: '1.2rem' }}>📄</span> View Pilot Declaration
                             </a>
                         ) : (
                             <div style={{ padding: '10px 20px', background: '#eee', color: '#999', fontSize: '0.8rem', borderRadius: '4px', border: '1px solid #ddd' }}>No Document</div>
@@ -710,7 +711,7 @@ function EventForm() {
                                 }}
                                 className="form-control-file"
                             />
-                            <p style={{ fontSize: '0.8rem', color: '#666', marginTop: '5px' }}>Upload MOP PDF (Replaces current). Pilots must acknowledge this.</p>
+                            <p style={{ fontSize: '0.8rem', color: '#666', marginTop: '5px' }}>Upload Pilot Declaration (Replaces current). Pilots must acknowledge this.</p>
                         </div>
                     </div>
                 </div>
@@ -1001,7 +1002,7 @@ function EventForm() {
                                 />
                             </div>
 
-                            {ticketForm.system_role === 'pilot' && (
+                            {['pilot', 'junior_pilot'].includes(ticketForm.system_role) && (
                                 <div style={{ background: '#f0f9ff', padding: '10px', borderRadius: '4px', border: '1px solid #bae6fd' }}>
                                     <label style={{ display: 'block', marginBottom: '0.3rem' }}>Price - No Flight Line Duties ($)</label>
                                     <input
@@ -1031,6 +1032,7 @@ function EventForm() {
                                 >
                                     <option value="spectator">Spectator</option>
                                     <option value="pilot">Pilot</option>
+                                    <option value="junior_pilot">Junior Pilot</option>
                                     <option value="pit_crew">Pit Crew</option>
                                     <option value="staff">Staff</option>
                                     <option value="volunteer">Volunteer</option>

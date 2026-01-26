@@ -102,7 +102,7 @@ app.http('createOrder', {
 
                         for (const attendeeData of attendeesToProcess) {
                             // PRICING LOGIC: If Pilot AND No Duties AND Specific Price exists
-                            const isPilot = ticketType.system_role === 'pilot';
+                            const isPilot = ['pilot', 'junior_pilot'].includes(ticketType.system_role);
                             const agreedToDuties = attendeeData.flightLineDuties; // boolean from frontend
 
                             if (isPilot && !agreedToDuties && ticketType.price_no_flight_line != null) {

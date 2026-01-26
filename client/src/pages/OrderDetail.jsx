@@ -355,6 +355,7 @@ function OrderDetail() {
                                             }}>
                                                 {item.item_name}
                                                 {item.system_role === 'pilot' && <span style={{ marginLeft: '0.5rem', color: '#007bff' }}>✈️ Pilot</span>}
+                                                {item.system_role === 'junior_pilot' && <span style={{ marginLeft: '0.5rem', color: '#4338ca' }}>✈️ Junior Pilot</span>}
                                                 {item.system_role === 'pit_crew' && <span style={{ marginLeft: '0.5rem', color: '#ff9800' }}>🛠️ Crew</span>}
                                             </div>
 
@@ -467,7 +468,7 @@ function OrderDetail() {
                                     </div>
 
                                     {/* Pilot Details Section */}
-                                    {item.system_role === 'pilot' && (
+                                    {['pilot', 'junior_pilot'].includes(item.system_role) && (
                                         <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #eee' }}>
                                             <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
                                                 <div style={{ minWidth: '150px' }}>

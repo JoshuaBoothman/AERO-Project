@@ -149,7 +149,7 @@ function AttendeeModal({
         // Validate
         for (const [ticketTypeId, quantity] of Object.entries(cart)) {
             const ticket = tickets.find(t => (t.ticket_type_id || t.id) === parseInt(ticketTypeId));
-            if (ticket?.system_role === 'pilot') {
+            if (['pilot', 'junior_pilot'].includes(ticket?.system_role)) {
                 for (let i = 0; i < quantity; i++) {
                     const key = `${ticketTypeId}_${i}`;
                     const d = details[key] || {};
@@ -208,7 +208,7 @@ function AttendeeModal({
 
 
                     if (!d.hasReadMop) {
-                        notify(`${label}: You must read and agree to the Monitor of Procedures (MOP).`, "error");
+                        notify(`${label}: You must read and agree to the pilot declaration.`, "error");
                         return;
                     }
 
@@ -449,7 +449,7 @@ function AttendeeModal({
 
                                 {/* Pilot Fields */}
                                 {
-                                    ticket?.system_role === 'pilot' && (
+                                    ['pilot', 'junior_pilot'].includes(ticket?.system_role) && (
                                         <div className="mt-4 p-4 bg-white border border-gray-200 rounded">
                                             <h5 className="font-bold mb-2">✈️ Pilot & Aircraft Registration</h5>
 
@@ -459,7 +459,7 @@ function AttendeeModal({
                                                     Please read the Agreement.
                                                     {event && event.mop_url ? (
                                                         <a href={event.mop_url} target="_blank" rel="noopener noreferrer" className="underline ml-1 font-bold">
-                                                            Read MOP
+                                                            Read Pilot Declaration
                                                         </a>
                                                     ) : null}
                                                 </p>
@@ -469,7 +469,7 @@ function AttendeeModal({
                                                         checked={data.hasReadMop || false}
                                                         onChange={e => handleChange(key, 'hasReadMop', e.target.checked)}
                                                     />
-                                                    <span className="font-medium">I have read and agree to the MOP</span>
+                                                    <span className="font-medium">I have read and agree to the pilot declaration</span>
                                                 </label>
                                             </div>
 
@@ -481,28 +481,30 @@ function AttendeeModal({
                                             />
 
                                             {/* Flight Line Duties (New) */}
-                                            {/* Flight Line Duties */}
-                                            <div className="mb-4">
-                                                <label className="flex items-center gap-2 cursor-pointer">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={data.flightLineDuties || false}
-                                                        onChange={e => handleChange(key, 'flightLineDuties', e.target.checked)}
-                                                    />
-                                                    <div>
-                                                        <span className="font-medium text-sm">I agree to perform flight line duties</span>
-                                                        {ticket.price_no_flight_line && (
-                                                            <div className="text-xs mt-1">
-                                                                {data.flightLineDuties ? (
-                                                                    <span className="text-green-600 font-bold">Price: ${Number(ticket.price).toFixed(2)} (Standard)</span>
-                                                                ) : (
-                                                                    <span className="text-amber-600 font-bold">Price: ${Number(ticket.price_no_flight_line).toFixed(2)} (No Duties Surcharge)</span>
-                                                                )}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </label>
-                                            </div>
+                                            {/* Flight Line Duties - ONLY FOR PILOTS, NOT JUNIOR PILOTS */}
+                                            {ticket.system_role === 'pilot' && (
+                                                <div className="mb-4">
+                                                    <label className="flex items-center gap-2 cursor-pointer">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={data.flightLineDuties || false}
+                                                            onChange={e => handleChange(key, 'flightLineDuties', e.target.checked)}
+                                                        />
+                                                        <div>
+                                                            <span className="font-medium text-sm">I agree to perform flight line duties</span>
+                                                            {ticket.price_no_flight_line && (
+                                                                <div className="text-xs mt-1">
+                                                                    {data.flightLineDuties ? (
+                                                                        <span className="text-green-600 font-bold">Price: ${Number(ticket.price).toFixed(2)} (Standard)</span>
+                                                                    ) : (
+                                                                        <span className="text-amber-600 font-bold">Price: ${Number(ticket.price_no_flight_line).toFixed(2)} (No Duties Surcharge)</span>
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </label>
+                                                </div>
+                                            )}
 
                                             {/* Heavy Models Toggle */}
                                             <div className="mb-4 space-y-3">
@@ -606,7 +608,7 @@ function AttendeeModal({
                                                 const newPilots = [];
                                                 Object.entries(cart).forEach(([tId, q]) => {
                                                     const t = tickets.find(ticket => (ticket.ticket_type_id || ticket.id) === parseInt(tId));
-                                                    if (t?.system_role === 'pilot') {
+                                                    if (['pilot', 'junior_pilot'].includes(t?.system_role)) {
                                                         for (let i = 0; i < q; i++) {
                                                             const pKey = `${tId}_${i}`;
                                                             const pDetails = details[pKey];
