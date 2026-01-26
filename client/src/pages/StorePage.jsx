@@ -143,21 +143,20 @@ function StorePage({ orgSettings }) {
     };
 
     const handleAddSubevent = (subevent) => {
-        if (subevent.variations && subevent.variations.length > 0) {
-            setSelectedSubevent(subevent);
-        } else {
-            addToCart({ ...subevent, eventId: data.eventId, type: 'SUBEVENT' });
-            notify(`${subevent.name} added to cart!`, 'success');
-        }
+        // ALWAYS open modal to select Attendee
+        setSelectedSubevent(subevent);
     };
 
-    const handleConfirmSubevent = (subevent, selections, totalPrice) => {
+    const handleConfirmSubevent = (subevent, selections, totalPrice, attendeeLink) => {
         addToCart({
             ...subevent,
             eventId: data.eventId,
             type: 'SUBEVENT',
             price: totalPrice,
-            selectedOptions: selections
+            selectedOptions: selections,
+            attendeeId: attendeeLink.attendeeId, // Existing
+            attendeeTempId: attendeeLink.attendeeTempId, // New (Cart)
+            attendeeName: attendeeLink.name // For display in cart if needed
         });
         setSelectedSubevent(null);
         notify(`${subevent.name} added to cart!`, 'success');
@@ -182,6 +181,11 @@ function StorePage({ orgSettings }) {
             if (attendee && !attendee.flightLineDuties) {
                 finalPrice = selectedTicketForModal.price_no_flight_line;
             }
+        }
+
+        // Generate a Temp ID for linking subevents
+        if (attendees.length > 0) {
+            attendees[0].tempId = `TEMP-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
         }
 
         const item = {
@@ -411,6 +415,8 @@ function StorePage({ orgSettings }) {
                     subevent={selectedSubevent}
                     onClose={() => setSelectedSubevent(null)}
                     onAddToCart={handleConfirmSubevent}
+                    myPilots={myPilots}
+                    cart={cart}
                 />
             )}
 

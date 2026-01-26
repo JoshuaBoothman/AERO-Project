@@ -1,58 +1,49 @@
-# Walkthrough: Subevent Variations
+# Walkthrough: Subevent Attendee Linking
 
-This update enables subevents (like "Steak Night") to have configurable options (Variations) that users must select before adding to cart.
+I have implemented the logic to link Subevents to specific Attendees.
 
-## 1. Setup Data (Admin UI)
-You can now manage variations directly from the Admin Dashboard.
+## Changes
 
-1.  Navigate to **Admin > Subevents**.
-2.  Select the Event (e.g. `Festival of Aeromodelling 2026`).
-3.  Locate "Steak Night" in the list.
-4.  Click the new **Variations** button (Purple text).
-5.  **Create "Cook Time"**:
-    *   Name: `Cook Time`
-    *   Required: `Checked`
-    *   Click **Create**.
-6.  **Add Options**:
-    *   Add `Rare` (Price: 0)
-    *   Add `Medium` (Price: 0)
-    *   Add `Well Done` (Price: 0)
-7.  **Create "Sauce"**:
-    *   Name: `Add Sauce`
-    *   Required: `Unchecked` (Optional)
-    *   Click **Create**.
-8.  **Add Options**:
-    *   Add `Mushroom Sauce` (Price: 2.50)
-    *   Add `Pepper Sauce` (Price: 2.50)
+### Schema link
+- [x] **Database**: Added `attendee_id` to `subevent_registrations`. (Confirmed by you)
+- [x] **Script**: `api/scripts/ensure_schema_minimal.js` updated to reflect this change.
 
-## 2. User Flow Verification
+### Backend
+- [x] **[createOrder.js](file:///c:/laragon/www/AERO-Project/api/src/functions/createOrder.js)**: 
+    - Added logic to populate `tempIdMap` from tickets in the cart.
+    - Added logic to resolve `subevent.attendeeId` or `subevent.attendeeTempId` to a real `attendee_id` during transaction.
+    - Updated `INSERT` statements for `order_items` and `subevent_registrations` to include the specific `attendee_id`.
 
-### Step 1: Browse Store
-1.  Navigate to the Store Page (e.g. `/events/festival-2026`).
-2.  Click the **Program / Subevents** tab.
-3.  Locate "Steak Night".
+### Frontend
+- [x] **[StorePage.jsx](file:///c:/laragon/www/AERO-Project/client/src/pages/StorePage.jsx)**:
+    - Automatically generates a unique `tempId` for every ticket added to the cart to ensure it can be tracked.
+    - Updated `handleAddSubevent` to **always** open the `SubeventModal` (instead of skipping it if no variations exist).
+    - Passes `myPilots` (existing attendees) and `cart` (new tickets) to the modal.
+- [x] **[SubeventModal.jsx](file:///c:/laragon/www/AERO-Project/client/src/components/SubeventModal.jsx)**:
+    - Added a "Who is this for?" dropdown.
+    - Aggregates "Existing Attendees" and "New Tickets in Cart" into a selectable list.
+    - Validates that an attendee is selected before allowing "Add to Cart".
 
-### Step 2: Open Selection Modal
-1.  Click **Register**.
-2.  **Verify**: A modal appears titled "Steak Night".
-3.  **Verify**: "Cook Time" (Rare, Medium, Well Done) options are distinct.
-4.  **Verify**: "Add Sauce" shows price adjustments (+$2.50).
-5.  **Verify**: The "Add to Cart" button is **Disabled** initially (since "Cook Time" is required).
+## Verification Tests
 
-### Step 3: Select Options
-1.  Select "Medium" (Cook Time).
-2.  Select "Mushroom Sauce (+$2.50)".
-3.  **Verify**: Total Price updates to include the $2.50 sauce.
-4.  Click **Add to Cart**.
+Please perform the following manual tests:
 
-### Step 4: Cart & Checkout
-1.  Navigate to **Checkout**.
-2.  **Verify**: The "Steak Night" item lists your choices:
-    *   `Cook Time: Medium`
-    *   `Add Sauce: Mushroom Sauce`
-3.  **Verify**: The price matches the modal total.
-4.  Click **Secure Pay Now** (Mock Payment).
+1.  **New Ticket + Subevent**:
+    - Go to the Store.
+    - Add an "Adult Ticket - Pilot" to the cart.
+    - Click "Register" on a Subevent.
+    - **Expectation**: The modal opens, and you can select "New Ticket: [Name]" from the dropdown.
+    - Add to Cart and Checkout.
+    - **Verify DB**: Check `subevent_registrations` has a valid `attendee_id` matching the new pilot.
 
-### Step 5: Database Verification
-1.  Check `subevent_registrations` for the new record.
-2.  Check `subevent_registration_choices` to see the linked choices.
+2.  **No Ticket Checks**:
+    - Remove all tickets from cart.
+    - Try to register for a Subevent.
+    - **Expectation**: The modal warns "No attendees found" (if you have no existing attendees), or allows selection of existing attendees only.
+
+3.  **Multiple People**:
+    - Add Ticket A (Pilot) and Ticket B (Helper).
+    - Register Subevent 1 -> Select Ticket A.
+    - Register Subevent 2 -> Select Ticket B.
+    - Checkout.
+    - **Verify DB**: Two registrations, linked to different `attendee_id`s.

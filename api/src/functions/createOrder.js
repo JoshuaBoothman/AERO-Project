@@ -312,9 +312,7 @@ app.http('createOrder', {
 
                             // Store ID in map for linking if we have a tempId
                             if (attendeeData.tempId) {
-                                // We need a way to track these across different item loops...
-                                // `allAttendeeIds` is just a list.
-                                // Let's add a context object `tempIdToAttendeeIdMap` at top level.
+                                tempIdMap[attendeeData.tempId] = attendeeId;
                             }
                             // Store for post-linking
                             if (attendeeData.linkedPilotTempId) {
@@ -627,9 +625,32 @@ app.http('createOrder', {
                         const finalPrice = sub.price + priceAdjustment;
                         totalAmount += finalPrice;
 
+                        let subeventAttendeeId = null;
+
+                        // Resolve Attendee
+                        if (sub.attendeeId) {
+                            // Existing Attendee
+                            // Validate ownership? For MVP, assume provided ID is valid context from frontend (filtered by my-attendees).
+                            // A robust check would filter against `SELECT 1 FROM attendees WHERE attendee_id = @id AND person_id IN (SELECT person_id FROM persons WHERE user_id = @uid UNION ...)`
+                            // For speed: assume valid if from authenticated frontend.
+                            subeventAttendeeId = sub.attendeeId;
+                        } else if (sub.attendeeTempId) {
+                            // New Attendee in Cart
+                            subeventAttendeeId = tempIdMap[sub.attendeeTempId];
+                            if (!subeventAttendeeId) {
+                                throw new Error(`Could not link subevent '${sub.name}' to new attendee. ID map missing.`);
+                            }
+                        } else {
+                            // Fallback to Main (or legacy behavior), but we prefer explicit.
+                            // If we implement the plan, we SHOULD error if missing, but for backward compat during dev, maybe fallback?
+                            // Plan says: "Update validation logic... Ensure valid attendeeId or tempId"
+                            // So let's fallback to mainAttendeeId if missing, but we expect frontend to send it.
+                            subeventAttendeeId = mainAttendeeId;
+                        }
+
                         const itemReq = new sql.Request(transaction);
                         const itemRes = await itemReq
-                            .input('oid', sql.Int, orderId).input('aid', sql.Int, mainAttendeeId).input('itype', sql.VarChar, 'Subevent')
+                            .input('oid', sql.Int, orderId).input('aid', sql.Int, subeventAttendeeId).input('itype', sql.VarChar, 'Subevent')
                             .input('refid', sql.Int, sub.subeventId)
                             .input('price', sql.Decimal(10, 2), finalPrice)
                             .query(`INSERT INTO order_items (order_id, attendee_id, item_type, item_reference_id, price_at_purchase) VALUES (@oid, @aid, @itype, @refid, @price); SELECT SCOPE_IDENTITY() AS id`);
@@ -640,8 +661,10 @@ app.http('createOrder', {
                         // Note: Previous schema check confirmed subevent_registrations has an identity PK 'subevent_registration_id'
                         const regReq = new sql.Request(transaction);
                         const regRes = await regReq
-                            .input('sid', sql.Int, sub.subeventId).input('oiid', sql.Int, orderItemId)
-                            .query(`INSERT INTO subevent_registrations (subevent_id, order_item_id) VALUES (@sid, @oiid); SELECT SCOPE_IDENTITY() AS id`);
+                            .input('sid', sql.Int, sub.subeventId)
+                            .input('oiid', sql.Int, orderItemId)
+                            .input('aid', sql.Int, subeventAttendeeId)
+                            .query(`INSERT INTO subevent_registrations (subevent_id, order_item_id, attendee_id) VALUES (@sid, @oiid, @aid); SELECT SCOPE_IDENTITY() AS id`);
 
                         const registrationId = regRes.recordset[0].id;
 

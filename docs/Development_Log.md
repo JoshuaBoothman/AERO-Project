@@ -1,5 +1,21 @@
 # Development Log
 
+## [2026-01-26] - Subevent Registration Attendee Linking (Completed)
+- **Time**: 14:15 - 15:10
+- **Completed Items**:
+    - **Feature**: Implemented linking of Subevent Registrations to specific Attendees (Pilots/Guests) during checkout.
+    - **Database**: 
+        - Added `attendee_id` field to `subevent_registrations` table (Manual Script applied).
+        - Updated `ensure_schema_minimal.js` to reflect this change.
+    - **Backend (API)**:
+        - Updated `createOrder.js` to resolve specific attendees for subevents using `tempId` mapping from cart items.
+        - Logic now creates a `subevent_registrations` record linked to the correct `persons` identity.
+    - **Frontend (Client)**:
+        - **Store**: Updated `StorePage.jsx` to generate Temp IDs for tickets to enable linking.
+        - **UI**: Updated `SubeventModal.jsx` to force attendee selection from a dropdown (Existing Attendees + New Cart Tickets) before adding to cart.
+    - **Verification**:
+        - Created `walkthrough.md` with verification steps.
+
 ## [2026-01-26] - Camping: Full Event Package Date Logic (Completed)
 - **Time**: 13:30 - 13:45
 - **Completed Items**:

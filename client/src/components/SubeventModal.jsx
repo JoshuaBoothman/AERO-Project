@@ -1,8 +1,57 @@
 import React, { useState } from 'react';
 import { X, Check } from 'lucide-react';
 
-export default function SubeventModal({ subevent, onClose, onAddToCart }) {
+export default function SubeventModal({ subevent, onClose, onAddToCart, myPilots = [], cart = [] }) {
     const [selections, setSelections] = useState({});
+    const [selectedAttendeeKey, setSelectedAttendeeKey] = useState("");
+
+    // Aggregate Available Attendees
+    const getAvailableAttendees = () => {
+        const list = [];
+
+        // Existing Attendees
+        myPilots.forEach(p => {
+            const label = p.pilot_name || `${p.first_name} ${p.last_name}`;
+            list.push({
+                key: `existing-${p.attendee_id}`,
+                label: `${label} (Existing)`,
+                value: { attendeeId: p.attendee_id, name: label }
+            });
+        });
+
+        // Cart Tickets
+        cart.filter(item => item.type === 'TICKET').forEach((ticket, index) => {
+            // Use ticket name or person name if available
+            let label = ticket.name;
+            if (ticket.attendees && ticket.attendees[0]) {
+                const att = ticket.attendees[0];
+                if (att.firstName && att.lastName) {
+                    label = `${att.firstName} ${att.lastName} (${ticket.name})`;
+                }
+            }
+
+            // We need a unique ID. Using tempId if available, else index fallback (risky but handled in StorePage now)
+            const tempId = ticket.attendees?.[0]?.tempId;
+            if (tempId) {
+                list.push({
+                    key: `cart-${tempId}`,
+                    label: `New Ticket: ${label}`,
+                    value: { attendeeTempId: tempId, name: label }
+                });
+            }
+        });
+
+        return list;
+    };
+
+    const attendees = getAvailableAttendees();
+
+    // Auto-select if only one option?
+    // useEffect(() => {
+    //     if (attendees.length === 1 && !selectedAttendeeKey) {
+    //         setSelectedAttendeeKey(attendees[0].key);
+    //     }
+    // }, [attendees]);
 
     const handleSelectionChange = (variationId, optionId) => {
         setSelections(prev => ({
@@ -16,11 +65,13 @@ export default function SubeventModal({ subevent, onClose, onAddToCart }) {
         // Iterate over selections
         Object.values(selections).forEach(optId => {
             // Find option across all variations
-            for (const v of subevent.variations) {
-                const opt = v.options.find(o => o.id === optId);
-                if (opt) {
-                    total += opt.priceAdjustment;
-                    break;
+            if (subevent.variations) {
+                for (const v of subevent.variations) {
+                    const opt = v.options.find(o => o.id === optId);
+                    if (opt) {
+                        total += opt.priceAdjustment;
+                        break;
+                    }
                 }
             }
         });
@@ -28,6 +79,8 @@ export default function SubeventModal({ subevent, onClose, onAddToCart }) {
     };
 
     const isValid = () => {
+        if (!selectedAttendeeKey) return false;
+
         if (!subevent.variations) return true;
         return subevent.variations.every(v => {
             if (!v.isRequired) return true;
@@ -37,7 +90,8 @@ export default function SubeventModal({ subevent, onClose, onAddToCart }) {
 
     const handleSubmit = () => {
         if (isValid()) {
-            onAddToCart(subevent, selections, calculateTotal());
+            const selectedAtt = attendees.find(a => a.key === selectedAttendeeKey)?.value;
+            onAddToCart(subevent, selections, calculateTotal(), selectedAtt);
         }
     };
 
@@ -62,6 +116,34 @@ export default function SubeventModal({ subevent, onClose, onAddToCart }) {
                 {/* Scrollable Content */}
                 <div className="p-6 overflow-y-auto">
                     <div className="space-y-6">
+
+                        {/* Attendee Selection */}
+                        <div className="space-y-3">
+                            <label className="block text-sm font-semibold text-gray-700">
+                                Who is this for? <span className="text-red-500 ml-1">*</span>
+                            </label>
+                            <div className="relative">
+                                <select
+                                    value={selectedAttendeeKey}
+                                    onChange={(e) => setSelectedAttendeeKey(e.target.value)}
+                                    className="w-full p-3 border border-gray-200 rounded-lg appearance-none bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                                >
+                                    <option value="">-- Select Attendee --</option>
+                                    {attendees.map(att => (
+                                        <option key={att.key} value={att.key}>{att.label}</option>
+                                    ))}
+                                </select>
+                                <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-500">
+                                    <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" /></svg>
+                                </div>
+                            </div>
+                            {attendees.length === 0 && (
+                                <p className="text-sm text-red-500">No attendees found. Please add a ticket to your cart first.</p>
+                            )}
+                        </div>
+
+                        {subevent.variations && subevent.variations.length > 0 && <hr className="border-gray-100" />}
+
                         {subevent.variations && subevent.variations.map(variation => (
                             <div key={variation.id} className="space-y-3">
                                 <label className="block text-sm font-semibold text-gray-700">
@@ -97,8 +179,8 @@ export default function SubeventModal({ subevent, onClose, onAddToCart }) {
                             </div>
                         ))}
 
-                        {(!subevent.variations || subevent.variations.length === 0) && (
-                            <p className="text-gray-500">No options to configure.</p>
+                        {(!subevent.variations || subevent.variations.length === 0) && attendees.length > 0 && (
+                            <p className="text-gray-500 text-sm italic">This item has no additional options to configure.</p>
                         )}
                     </div>
                 </div>

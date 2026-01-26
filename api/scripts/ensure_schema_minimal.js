@@ -205,7 +205,8 @@ async function run() {
         await query(`IF OBJECT_ID('subevent_registrations', 'U') IS NULL CREATE TABLE subevent_registrations (
             registration_id INT IDENTITY(1,1) PRIMARY KEY,
             subevent_id INT,
-            order_item_id INT
+            order_item_id INT,
+            attendee_id INT NULL
         )`);
 
         // Asset Hires
