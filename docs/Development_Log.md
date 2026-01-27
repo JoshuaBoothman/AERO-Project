@@ -1,5 +1,51 @@
 # Development Log
 
+## [2026-01-27] - Pit Crew Tickets (Completed)
+- **Time**: 16:30 - 16:45
+- **Completed Items**:
+    - **Feature**: Implemented Pit Crew ticket functionality with optional AUS Number and Flight Line Duties.
+    - **Frontend (Client)**:
+        - Updated `AttendeeModal.jsx` to include an "AUS Number" field for Pit Crew tickets.
+        - Implemented logic to show "Flight Line Duties" checkbox only if an AUS Number is provided.
+        - Verified that selecting Flight Line Duties does not trigger price changes for Pit Crew (confirmed by plan).
+    - **Verification**:
+        - Verified existing database schema supports `license_number` and `flight_line_duties`.
+        - Linted `AttendeeModal.jsx` to ensure no new errors.
+
+## [2026-01-27] - Subevent Date/Timezone Bug Fixes (Completed)
+- **Time**: 13:00 - 16:30
+- **Completed Items**:
+    - **Bug Fix**: Resolved critical timezone conversion issues affecting subevent dates and times across the entire application.
+    - **Root Cause**: 
+        - JavaScript Date methods (`getDate()`, `getHours()`, etc.) were applying UTC+11 timezone offset to datetime values.
+        - SQL Server stores datetime without timezone info (wall-clock time), but JavaScript was interpreting and converting them.
+        - Example: DB stored "10-Jul 16:00" → Displayed as "11-Jul 02:00" (10-hour shift).
+    - **Solution**:
+        - Created `client/src/utils/dateHelpers.js` with 5 utility functions using **UTC methods** (`getUTCDate()`, `getUTCHours()`, etc.).
+        - Replaced all inline date formatting with centralized utilities across 6 files.
+    - **Files Updated**:
+        - **Input Formatting**: `SubeventForm.jsx`, `EventForm.jsx` (use `formatDateTimeForInput()`).
+        - **Display Formatting**: `AdminSubevents.jsx`, `StorePage.jsx`, `OrderDetail.jsx`, `Checkout.jsx`.
+    - **Additional Fixes**:
+        - Added `cache: 'no-store'` to subevent fetch calls to prevent stale data issues.
+    - **Documentation**:
+        - Updated `.agent/skills/startup-engineer/SKILL.md` with "Date/Time Handling Protocol".
+        - Prohibits direct use of `toLocaleString()` / `toISOString()` on datetime fields.
+        - Mandates use of `dateHelpers` utilities for all future datetime handling.
+    - **Verification**: User tested and confirmed fixes resolve the display issue completely.
+
+## [2026-01-27] - Camping Availability Report Authentication Fix (Completed)
+- **Time**: 12:30 - 13:00
+- **Completed Items**:
+    - **Bug Fix**: Resolved "403 Unauthorized" error when accessing the Camping Availability Report on the live environment.
+    - **Root Cause**: 
+        - API call in `CampingAvailabilityReport.jsx` was missing authentication headers.
+        - Azure Functions require both `Authorization: Bearer <token>` and `X-Auth-Token: <token>` headers.
+    - **Solution**:
+        - Added `getAuthHeaders()` utility to construct proper headers.
+        - Updated fetch call to include both required authentication headers.
+    - **Verification**: User confirmed report loads successfully on live environment.
+
 ## [2026-01-27] - Day Pass Tickets Implementation (Completed)
 - **Time**: 15:30 - 16:15
 - **Completed Items**:

@@ -713,6 +713,37 @@ function AttendeeModal({
                                         <div className="mt-4 p-4 bg-white border border-gray-200 rounded">
                                             <h5 className="font-bold mb-2">🏁 Pit Crew Registration</h5>
 
+                                            {/* AUS Number & Flight Line Duties */}
+                                            <div className="mb-4">
+                                                <label className="block text-sm font-bold text-gray-700 mb-1">AUS Number (Optional)</label>
+                                                <input
+                                                    placeholder="AUS Number"
+                                                    value={data.licenseNumber || ''}
+                                                    onChange={e => handleChange(key, 'licenseNumber', e.target.value)}
+                                                    style={inputStyle}
+                                                />
+                                            </div>
+
+                                            {data.licenseNumber && data.licenseNumber.trim().length > 0 && (
+                                                <div className="mb-4 bg-green-50 p-3 rounded border border-green-100">
+                                                    <label className="flex items-center gap-2 cursor-pointer">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={data.flightLineDuties || false}
+                                                            onChange={e => handleChange(key, 'flightLineDuties', e.target.checked)}
+                                                        />
+                                                        <div>
+                                                            <span className="font-medium text-sm text-green-900">I agree to perform flight line duties</span>
+                                                            <div className="text-xs mt-1 text-green-700">
+                                                                Thank you for volunteering! This helps us run a safe event.
+                                                            </div>
+                                                        </div>
+                                                    </label>
+                                                </div>
+                                            )}
+
+                                            <div className="border-t border-gray-100 my-4 pt-2"></div>
+                                            <label className="block text-sm font-bold text-gray-700 mb-2">Pilot Association</label>
                                             <div className="flex gap-4 mb-3 text-sm">
                                                 <label className="flex items-center gap-2 cursor-pointer">
                                                     <input
