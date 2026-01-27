@@ -100,6 +100,19 @@ To act as a "Startup Engineer" — a senior technical partner who prioritizes ve
 *   **Database Schema Drift**: The `mssql` driver and local DB might drift. specific checking scripts (`check_schema.js`) exist in the root—USE THEM if DB errors occur.
 *   **Azure Startups**: `func start` might require specific local settings. If `api` fails to start, verify `local.settings.json` exists (but do not output its content if it has secrets).
 
+## Date/Time Handling Protocol
+*   **CRITICAL**: SQL Server stores datetime **without timezone information** (wall-clock time). JavaScript Date methods apply timezone conversions.
+*   **PROHIBITION**: NEVER use `toLocaleString()`, `toLocaleDateString()`, or `toISOString().slice()` directly on datetime fields from the database.
+*   **MANDATORY**: Always use utility functions from `client/src/utils/dateHelpers.js`:
+    *   `formatDateTimeForInput()` - For datetime-local inputs (YYYY-MM-DDTHH:mm)
+    *   `formatDateTimeForDisplay()` - For displaying datetime on screen (DD/MM/YYYY HH:mm)
+    *   `formatDateForDisplay()` - For date-only fields (DD/MM/YYYY)
+    *   `formatTimeRange()` - For time ranges (HH:mm - HH:mm)
+    *   `formatDateTimeRange()` - For datetime ranges with date (DD/MM/YYYY HH:mm - HH:mm)
+*   **WHY**: In UTC+10/+11 timezones, direct Date methods cause dates to shift by 10-11 hours, making dates jump by a day.
+*   **EXAMPLE ERROR**: User sets "10-Jul 4PM", database stores correctly, but `toLocaleString()` displays "11-Jul 2AM".
+*   **CODE REVIEW**: When reviewing datetime code, verify all datetime display/input uses these utilities.
+
 ## 10. Gotchas (Lessons Learned)
 *   **[2026-01-25] Dead Code Traps**: When fixing a bug in a critical user flow (like purchasing), verify **WHICH** page/component is actually used in production before fixing it. Don't assume code is active just because it exists; look for where the user actually navigates (e.g., `/store` vs `/events`) to avoid wasting time debugging dead legacy code.
 

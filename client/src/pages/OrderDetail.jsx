@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import QRCode from 'react-qr-code';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
+import { formatDateTimeForDisplay } from '../utils/dateHelpers';
 
 function OrderDetail() {
     const { orderId } = useParams();
@@ -248,10 +249,7 @@ function OrderDetail() {
 
                                         {item.item_type === 'Subevent' && item.subevent_start && (
                                             <div>
-                                                {(() => {
-                                                    const d = new Date(item.subevent_start);
-                                                    return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()} ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
-                                                })()}
+                                                {formatDateTimeForDisplay(item.subevent_start)}
                                             </div>
                                         )}
 

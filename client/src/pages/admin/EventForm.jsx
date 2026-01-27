@@ -6,6 +6,7 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical } from 'lucide-react';
+import { formatDateTimeForInput } from '../../utils/dateHelpers';
 
 function SortableTicketRow({ ticket, onEdit, onDelete }) {
     const {
@@ -177,19 +178,6 @@ function EventForm() {
                     const eventRes = await fetch(`/api/events/${slug}`, { headers });
                     if (!eventRes.ok) throw new Error('Failed to load event');
                     const eventData = await eventRes.json();
-
-                    const formatDateTime = (dateStr) => {
-                        if (!dateStr) return '';
-                        // Parse the ISO string and extract the local datetime components
-                        // This preserves the "wall clock" time seen in the database
-                        const date = new Date(dateStr);
-                        const year = date.getFullYear();
-                        const month = String(date.getMonth() + 1).padStart(2, '0');
-                        const day = String(date.getDate()).padStart(2, '0');
-                        const hours = String(date.getHours()).padStart(2, '0');
-                        const minutes = String(date.getMinutes()).padStart(2, '0');
-                        return `${year}-${month}-${day}T${hours}:${minutes}`;
-                    };
 
                     setFormData({
                         event_id: eventData.event_id,

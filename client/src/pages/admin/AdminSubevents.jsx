@@ -3,6 +3,7 @@ import SubeventForm from '../../components/admin/SubeventForm';
 import SubeventVariationManager from '../../components/admin/SubeventVariationManager';
 import { useNotification } from '../../context/NotificationContext';
 import { useAuth } from '../../context/AuthContext';
+import { formatDateTimeForDisplay } from '../../utils/dateHelpers';
 
 function AdminSubevents() {
     const [events, setEvents] = useState([]);
@@ -202,14 +203,8 @@ function AdminSubevents() {
                                             <div className="text-xs text-gray-500 truncate max-w-[200px]">{sub.description}</div>
                                         </td>
                                         <td className="p-4 text-sm">
-                                            <div className="whitespace-nowrap">Start: {(() => {
-                                                const d = new Date(sub.start_time);
-                                                return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()} ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
-                                            })()}</div>
-                                            <div className="whitespace-nowrap text-gray-500">End: {(() => {
-                                                const d = new Date(sub.end_time);
-                                                return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()} ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
-                                            })()}</div>
+                                            <div className="whitespace-nowrap">Start: {formatDateTimeForDisplay(sub.start_time)}</div>
+                                            <div className="whitespace-nowrap text-gray-500">End: {formatDateTimeForDisplay(sub.end_time)}</div>
                                         </td>
                                         <td className="p-4">{sub.capacity || 'Unlimited'}</td>
                                         <td className="p-4">${Number(sub.cost).toFixed(2)}</td>

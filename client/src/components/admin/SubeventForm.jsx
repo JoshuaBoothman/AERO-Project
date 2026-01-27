@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNotification } from '../../context/NotificationContext';
+import { formatDateTimeForInput } from '../../utils/dateHelpers';
 
 function SubeventForm({ isOpen, onClose, onSubmit, initialData }) {
     const { notify } = useNotification();
@@ -17,24 +18,11 @@ function SubeventForm({ isOpen, onClose, onSubmit, initialData }) {
         if (initialData) {
             // Format dates for input datetime-local if necessary, or assume API sends ISO
             // HTML datetime-local expects YYYY-MM-DDThh:mm
-            const formatDateTime = (dateStr) => {
-                if (!dateStr) return '';
-                // Parse the ISO string and extract the local datetime components
-                // This preserves the "wall clock" time seen in the database
-                const date = new Date(dateStr);
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                const hours = String(date.getHours()).padStart(2, '0');
-                const minutes = String(date.getMinutes()).padStart(2, '0');
-                return `${year}-${month}-${day}T${hours}:${minutes}`;
-            };
-
             setFormData({
                 name: initialData.name || '',
                 description: initialData.description || '',
-                start_time: formatDateTime(initialData.start_time),
-                end_time: formatDateTime(initialData.end_time),
+                start_time: formatDateTimeForInput(initialData.start_time),
+                end_time: formatDateTimeForInput(initialData.end_time),
                 capacity: initialData.capacity || '',
                 cost: initialData.cost || 0,
                 img_url: initialData.img_url || ''

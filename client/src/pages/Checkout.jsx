@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useNotification } from '../context/NotificationContext';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { formatDateTimeForDisplay } from '../utils/dateHelpers';
 
 function Checkout() {
     const { cart, removeFromCart, clearCart, cartTotal } = useCart();
@@ -120,10 +121,7 @@ function Checkout() {
                 {item.type === 'SUBEVENT' && (
                     <div className="mt-1">
                         <small className="block text-gray-500">
-                            {(() => {
-                                const d = new Date(item.startTime);
-                                return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()} ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
-                            })()}
+                            {formatDateTimeForDisplay(item.startTime)}
                         </small>
                         {item.variationDetails && (
                             <div className="mt-1 flex flex-wrap gap-2">
