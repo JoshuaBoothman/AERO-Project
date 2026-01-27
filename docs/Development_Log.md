@@ -1,5 +1,23 @@
 # Development Log
 
+## [2026-01-27] - Admin Camping Updates
+**Milestone:** Improved Admin Camping Tool Usability
+
+### Completed Items
+*   **Admin Map Tool**
+    *   **Features**: 
+        *   Defaulted "Event" dropdown to the current or next upcoming event.
+        *   Sorted events by date in the dropdown.
+    *   **UI**: Removed intrusive "Click map to place" overlay; Relying on crosshair cursor.
+*   **Camping Availability Report**
+    *   **Features**: 
+        *   Defaulted "Event" dropdown to the current or next upcoming event.
+        *   Sorted events by date in the dropdown.
+
+### Verification
+*   **Manual**: Review of code changes confirms logic aligns with requirements.
+
+
 ## [2026-01-27] - Flight Line Roster Filtering (Completed)
 - **Time**: 17:00 - 17:15
 - **Completed Items**:
@@ -1663,3 +1681,4 @@ The "Camping" page for "Festival of Aeromodelling 2026" was displaying "No campg
 
 ### Next Steps
 *   **Testing:** Full end-to-end regression testing of the checkout flow with multiple ticket types.
+

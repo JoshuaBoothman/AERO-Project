@@ -88,7 +88,18 @@ function AdminMapTool() {
             const res = await fetch('/api/events', { headers });
             if (res.ok) {
                 const list = await res.json();
-                setEvents(list);
+
+                // Sort by start_date ascending
+                const sorted = list.sort((a, b) => new Date(a.start_date) - new Date(b.start_date));
+                setEvents(sorted);
+
+                // Auto-select: First event where end_date >= today, or the last one (most recent)
+                if (sorted.length > 0) {
+                    const today = new Date();
+                    const active = sorted.find(e => new Date(e.end_date) >= today) || sorted[sorted.length - 1];
+                    // Only set if not already set (though this runs on mount, so it's fine)
+                    if (active) setSelectedEventId(active.event_id);
+                }
             }
         } catch (e) { console.error(e); }
     };
@@ -850,10 +861,11 @@ function AdminMapTool() {
                                                 height: '20px',
                                                 background: orgSettings?.primary_color || 'blue',
                                                 borderRadius: '50%',
-                                                transform: 'translate(-50%, -50%)',
-                                                border: selectedSiteId === site.campsite_id ? '2px solid yellow' : '2px solid white',
+                                                transform: selectedSiteId === site.campsite_id ? 'translate(-50%, -50%) scale(1.3)' : 'translate(-50%, -50%)',
+                                                border: selectedSiteId === site.campsite_id ? '3px solid #FFD700' : '2px solid white',
                                                 cursor: 'pointer',
-                                                boxShadow: '0 2px 4px rgba(0,0,0,0.5)'
+                                                zIndex: selectedSiteId === site.campsite_id ? 100 : 1,
+                                                boxShadow: selectedSiteId === site.campsite_id ? '0 0 15px #FFD700, 0 0 5px black' : '0 2px 4px rgba(0,0,0,0.5)'
                                             }}
                                             title={site.site_number}
                                         />
@@ -863,11 +875,7 @@ function AdminMapTool() {
                         </div>
 
                         {/* Overlay Instructions */}
-                        {selectedSiteId && (
-                            <div style={{ position: 'absolute', top: 10, left: '50%', transform: 'translateX(-50%)', background: 'rgba(0,0,0,0.8)', color: 'white', padding: '5px 15px', borderRadius: '20px', pointerEvents: 'none' }}>
-                                Click map to place <strong>{sites.find(s => s.campsite_id === selectedSiteId)?.site_number}</strong>
-                            </div>
-                        )}
+
                     </div>
 
 

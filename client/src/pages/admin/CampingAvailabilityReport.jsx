@@ -20,10 +20,13 @@ function CampingAvailabilityReport() {
         fetch('/api/events')
             .then(res => res.json())
             .then(data => {
-                setEvents(data);
-                if (data.length > 0) {
+                // Sort by start_date ascending
+                const sorted = data.sort((a, b) => new Date(a.start_date) - new Date(b.start_date));
+                setEvents(sorted);
+
+                if (sorted.length > 0) {
                     // Default to first active/future event
-                    const active = data.find(e => new Date(e.end_date) >= new Date()) || data[0];
+                    const active = sorted.find(e => new Date(e.end_date) >= new Date()) || sorted[sorted.length - 1];
                     setSelectedEventId(active.event_id);
                     // Default dates: Event dates
                     setDates({
