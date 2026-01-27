@@ -1,5 +1,17 @@
 # Development Log
 
+## [2026-01-27] - Flight Line Roster Filtering (Completed)
+- **Time**: 17:00 - 17:15
+- **Completed Items**:
+    - **Feature**: Implemented client-side filtering of the Flight Line Roster by Flight Line.
+    - **Frontend (Admin)**:
+        - Updated `FlightLineRoster.jsx` to fetch available flight lines.
+        - Added state and logic to filter roster slots by selected flight line.
+        - Added a "Filter by Flight Line" dropdown control to the UI.
+    - **Verification**:
+        - Linted `FlightLineRoster.jsx` (existing warnings noted, no new critical errors).
+        - Confirmed code structure matches implementation plan.
+
 ## [2026-01-27] - Air Show Registration Updates (Completed)
 - **Time**: 16:45 - 17:00
 - **Completed Items**:

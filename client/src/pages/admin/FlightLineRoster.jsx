@@ -14,6 +14,8 @@ function FlightLineRoster() {
     const [eligiblePilots, setEligiblePilots] = useState([]);
     const [selectedDate, setSelectedDate] = useState('');
     const [availableDates, setAvailableDates] = useState([]);
+    const [flightLines, setFlightLines] = useState([]);
+    const [selectedFlightLine, setSelectedFlightLine] = useState('all');
 
     // Modals
     const [assignModal, setAssignModal] = useState({ show: false, slot: null });
@@ -42,6 +44,7 @@ function FlightLineRoster() {
         if (!event) return;
         fetchRoster();
         fetchEligiblePilots();
+        fetchFlightLines();
     }, [event]);
 
     const fetchRoster = async () => {
@@ -77,6 +80,19 @@ function FlightLineRoster() {
             if (!res.ok) throw new Error('Failed to fetch pilots');
             const data = await res.json();
             setEligiblePilots(data);
+        } catch (err) {
+            notify(err.message, 'error');
+        }
+    };
+
+    const fetchFlightLines = async () => {
+        try {
+            const res = await fetch(`/api/events/${event.event_id}/flight-lines`, {
+                headers: { 'Authorization': `Bearer ${token}`, 'X-Auth-Token': token }
+            });
+            if (!res.ok) throw new Error('Failed to fetch flight lines');
+            const data = await res.json();
+            setFlightLines(data);
         } catch (err) {
             notify(err.message, 'error');
         }
@@ -309,7 +325,10 @@ function FlightLineRoster() {
         return baseStyle;
     };
 
-    const filteredRoster = roster.filter(slot => slot.roster_date === selectedDate);
+    const filteredRoster = roster.filter(slot =>
+        slot.roster_date === selectedDate &&
+        (selectedFlightLine === 'all' || slot.flight_line_id === parseInt(selectedFlightLine))
+    );
 
     if (loading) return <div className="container">Loading...</div>;
     if (!event) return <div className="container">Event not found</div>;
@@ -340,6 +359,22 @@ function FlightLineRoster() {
                             {availableDates.map(date => (
                                 <option key={date} value={date}>
                                     {new Date(date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div style={{ flex: '1', minWidth: '200px' }}>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Filter by Flight Line:</label>
+                        <select
+                            value={selectedFlightLine}
+                            onChange={(e) => setSelectedFlightLine(e.target.value)}
+                            className="form-control"
+                            style={{ width: '100%' }}
+                        >
+                            <option value="all">All Flight Lines</option>
+                            {flightLines.map(fl => (
+                                <option key={fl.flight_line_id} value={fl.flight_line_id}>
+                                    {fl.flight_line_name}
                                 </option>
                             ))}
                         </select>
