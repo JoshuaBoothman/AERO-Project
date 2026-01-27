@@ -48,13 +48,14 @@ function AttendeeModal({
                         country: 'Australia',
                         state: '',
                         tempId: tempId,
-                        arrivalDate: event?.eventStartDate ? event.eventStartDate.split('T')[0] : '',
-                        departureDate: event?.eventEndDate ? event.eventEndDate.split('T')[0] : ''
+                        arrivalDate: '',
+                        departureDate: ''
                     };
                 }
             });
             setDetails(initial);
         }
+        // eslint-disable-next-line
     }, [cart, user]); // Run once when cart changes
 
     // Fetch Linked Products
@@ -149,58 +150,61 @@ function AttendeeModal({
         // Validate
         for (const [ticketTypeId, quantity] of Object.entries(cart)) {
             const ticket = tickets.find(t => (t.ticket_type_id || t.id) === parseInt(ticketTypeId));
-            if (['pilot', 'junior_pilot'].includes(ticket?.system_role)) {
-                for (let i = 0; i < quantity; i++) {
-                    const key = `${ticketTypeId}_${i}`;
-                    const d = details[key] || {};
-                    const label = d.firstName ? `${d.firstName} ${d.lastName}` : `Attendee #${i + 1}`;
 
-                    // Mandatory Fields Validation
-                    const requiredFields = [
-                        { field: 'firstName', name: 'First Name' },
-                        { field: 'lastName', name: 'Last Name' },
-                        { field: 'dateOfBirth', name: 'Date of Birth' },
-                        { field: 'address', name: 'Address' },
-                        { field: 'city', name: 'City' },
-                        { field: 'state', name: 'State' },
-                        { field: 'postcode', name: 'Postcode' },
-                        { field: 'emergencyName', name: 'Emergency Contact Name' },
-                        { field: 'emergencyPhone', name: 'Emergency Contact Phone' },
-                        { field: 'phoneNumber', name: 'Phone Number' },
-                        { field: 'arrivalDate', name: 'Arrival Date' },
-                        { field: 'departureDate', name: 'Departure Date' }
-                    ];
+            for (let i = 0; i < quantity; i++) {
+                const key = `${ticketTypeId}_${i}`;
+                const d = details[key] || {};
+                const label = d.firstName ? `${d.firstName} ${d.lastName}` : `Attendee #${i + 1}`;
 
-                    if (ticket.includes_merch) {
-                        if (!d.merchSkuId) {
-                            notify(`${label}: Please select your included Merchandise option.`, "error");
-                            return;
-                        }
-                    }
+                // Common Mandatory Fields for ALL Tickets
+                const requiredFields = [
+                    { field: 'firstName', name: 'First Name' },
+                    { field: 'lastName', name: 'Last Name' },
+                    { field: 'dateOfBirth', name: 'Date of Birth' },
+                    { field: 'address', name: 'Address' },
+                    { field: 'city', name: 'City' },
+                    { field: 'state', name: 'State' },
+                    { field: 'postcode', name: 'Postcode' },
+                    { field: 'country', name: 'Country' },
+                    { field: 'emergencyName', name: 'Emergency Contact Name' },
+                    { field: 'emergencyPhone', name: 'Emergency Contact Phone' },
+                    { field: 'phoneNumber', name: 'Phone Number' },
+                    { field: 'arrivalDate', name: 'Arrival Date' },
+                    { field: 'departureDate', name: 'Departure Date' }
+                ];
 
-                    for (const req of requiredFields) {
-                        if (!d[req.field] || !d[req.field].trim()) {
-                            notify(`${label}: Please enter ${req.name}.`, "error");
-                            return;
-                        }
-                    }
-
-                    // Email Validation
-                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                    if (!emailRegex.test(d.email)) {
-                        notify(`${label}: Please enter a valid Email Address.`, "error");
+                for (const req of requiredFields) {
+                    if (!d[req.field] || !d[req.field].trim()) {
+                        notify(`${label}: Please enter ${req.name}.`, "error");
                         return;
                     }
+                }
 
-                    // DOB Validation (Future Date Check)
-                    const dobDate = new Date(d.dateOfBirth);
-                    const today = new Date();
-                    if (dobDate > today) {
-                        notify(`${label}: Date of Birth cannot be in the future.`, "error");
+                // Email Validation
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(d.email)) {
+                    notify(`${label}: Please enter a valid Email Address.`, "error");
+                    return;
+                }
+
+                // DOB Validation (Future Date Check)
+                const dobDate = new Date(d.dateOfBirth);
+                const today = new Date();
+                if (dobDate > today) {
+                    notify(`${label}: Date of Birth cannot be in the future.`, "error");
+                    return;
+                }
+
+                // Merch Check
+                if (ticket.includes_merch) {
+                    if (!d.merchSkuId) {
+                        notify(`${label}: Please select your included Merchandise option.`, "error");
                         return;
                     }
+                }
 
-
+                // Pilot Specific Validation
+                if (['pilot', 'junior_pilot'].includes(ticket?.system_role)) {
                     if (!d.hasReadMop) {
                         notify(`${label}: You must read and agree to the pilot declaration.`, "error");
                         return;
@@ -225,55 +229,9 @@ function AttendeeModal({
                         }
                     }
                 }
-            }
 
-            if (ticket?.system_role === 'pit_crew') {
-                for (let i = 0; i < quantity; i++) {
-                    const key = `${ticketTypeId}_${i}`;
-                    const d = details[key] || {};
-                    const label = d.firstName ? `${d.firstName} ${d.lastName}` : `Attendee #${i + 1}`;
-
-                    // Mandatory Fields
-                    const requiredFields = [
-                        { field: 'firstName', name: 'First Name' },
-                        { field: 'lastName', name: 'Last Name' },
-                        { field: 'dateOfBirth', name: 'Date of Birth' },
-                        { field: 'address', name: 'Address' },
-                        { field: 'city', name: 'City' },
-                        { field: 'state', name: 'State' },
-                        { field: 'postcode', name: 'Postcode' },
-                        { field: 'emergencyName', name: 'Emergency Contact Name' },
-                        { field: 'emergencyPhone', name: 'Emergency Contact Phone' },
-                        { field: 'phoneNumber', name: 'Phone Number' },
-                        { field: 'arrivalDate', name: 'Arrival Date' },
-                        { field: 'departureDate', name: 'Departure Date' }
-                    ];
-
-                    if (ticket.includes_merch && !d.merchSkuId) {
-                        notify(`${label}: Please select your included Merchandise option.`, "error");
-                        return;
-                    }
-
-                    for (const req of requiredFields) {
-                        if (!d[req.field] || !d[req.field].trim()) {
-                            notify(`${label}: Please enter ${req.name}.`, "error");
-                            return;
-                        }
-                    }
-
-                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                    if (!emailRegex.test(d.email)) {
-                        notify(`${label}: Please enter a valid Email Address.`, "error");
-                        return;
-                    }
-                    const dobDate = new Date(d.dateOfBirth);
-                    const today = new Date();
-                    if (dobDate > today) {
-                        notify(`${label}: Date of Birth cannot be in the future.`, "error");
-                        return;
-                    }
-
-                    // Pit Crew Specific Validation
+                // Pit Crew Specific Validation
+                if (ticket?.system_role === 'pit_crew') {
                     if (d.pilotEntryMode === 'manual') {
                         if (!d.pilotName || !d.pilotName.trim()) {
                             notify(`${label}: Please enter Pilot Name.`, "error");
@@ -445,7 +403,7 @@ function AttendeeModal({
                                 })()}
 
 
-                                {event?.dinner_date && (
+                                {event?.dinner_date && !ticket.is_day_pass && (
                                     <div className="mb-4 p-3 bg-indigo-50 border border-indigo-100 rounded">
                                         <h5 className="font-bold text-sm mb-2 text-indigo-900">🍽️ Official Dinner</h5>
                                         <label className="flex items-center gap-2 cursor-pointer text-indigo-900 font-medium">
@@ -454,20 +412,23 @@ function AttendeeModal({
                                                 checked={data.attendingDinner || false}
                                                 onChange={e => handleChange(key, 'attendingDinner', e.target.checked)}
                                             />
-                                            Will you be attending the official dinner on {new Date(event.dinner_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}?
+                                            I will be attending (tick if yes) - Official Dinner on {new Date(event.dinner_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
                                         </label>
                                     </div>
                                 )}
 
-                                <div className="mb-4">
-                                    <h5 className="font-bold text-sm mb-2 text-gray-700">Dietary Requirements</h5>
-                                    <textarea
-                                        placeholder="e.g. Vegetarian, Gluten Free, Nut Allergy..."
-                                        value={data.dietaryRequirements || ''}
-                                        onChange={e => handleChange(key, 'dietaryRequirements', e.target.value)}
-                                        style={{ ...inputStyle, height: '80px' }}
-                                    />
-                                </div>
+                                {!ticket.is_day_pass && (
+                                    <div className="mb-4">
+                                        <h5 className="font-bold text-sm mb-2 text-gray-700">Dietary Requirements</h5>
+                                        <textarea
+                                            placeholder="e.g. Vegetarian, Gluten Free, Nut Allergy..."
+                                            value={data.dietaryRequirements || ''}
+                                            onChange={e => handleChange(key, 'dietaryRequirements', e.target.value)}
+                                            disabled={!data.attendingDinner}
+                                            style={{ ...inputStyle, height: '80px', backgroundColor: !data.attendingDinner ? '#f3f4f6' : 'white', cursor: !data.attendingDinner ? 'not-allowed' : 'text' }}
+                                        />
+                                    </div>
+                                )}
 
                                 {/* Included Merchandise Selection */}
                                 {(() => {
@@ -653,11 +614,8 @@ function AttendeeModal({
                                                         onChange={e => {
                                                             const isInspector = e.target.value === "Yes";
                                                             handleChange(key, 'isHeavyModelInspector', isInspector);
-                                                            if (isInspector) {
-                                                                // If inspector, hide planes? Assumption: Inspectors don't register planes HERE, or it hides the requirement.
-                                                                // User request: "if is_heavy_model_inspector = True, the plane section should be hidden."
-                                                                handleChange(key, 'bringingHeavyModels', false);
-                                                            }
+                                                            // Logic Update: We longer uncheck bringingHeavyModels here.
+                                                            // The UI below simply hides the plane list if inspector is true.
                                                         }}
                                                     >
                                                         <option value="No">No</option>

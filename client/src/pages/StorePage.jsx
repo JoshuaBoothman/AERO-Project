@@ -467,6 +467,7 @@ function StorePage({ orgSettings }) {
 
             {/* Ticket Attendee Modal */}
             <AttendeeModal
+                key={selectedTicketForModal ? selectedTicketForModal.id : 'closed'}
                 show={!!selectedTicketForModal}
                 onClose={() => setSelectedTicketForModal(null)}
                 onConfirm={handleConfirmTicket}

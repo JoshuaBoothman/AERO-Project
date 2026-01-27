@@ -1,4 +1,31 @@
-# Development Log
+## [2026-01-28] - Attendee Details Refinement (Completed)
+- **Time**: 08:30 - 08:45
+- **Completed Items**:
+    - **Feature**: Refined Attendee Modal logic to improve data quality and UX.
+    - **Frontend (Client)**:
+        - **Validation**: Implemented strict frontend validation for all contact fields in `AttendeeModal.jsx` (replacing need for DB constraints).
+        - **Day Pass**: Hidden "Official Dinner" and "Dietary Requirements" fields for Day Pass tickets.
+        - **Defaults**: Removed pre-filled arrival/departure dates to force explicit user selection.
+        - **Logic**: Fixed Heavy Model Inspector logic to keep "Bringing Heavy Models" checked when Inspector is selected.
+        - **Reset**: Enforced form reset in `StorePage.jsx` when opening modal for new tickets.
+    - **Documentation**:
+        - Updated and archived implementation plan.
+    - **Verification**:
+        - Verified code syntax and logic via linting and review.
+
+## [2026-01-28] - Fix 401 on My-Attendees (Completed)
+- **Time**: 06:15 - 06:20
+- **Completed Items**:
+    - **Bug Fix**: Resolved 401 Unauthorized error in `StorePage.jsx` when fetching user attendees.
+    - **Root Cause**: The fetch call was missing the `X-Auth-Token` header required by Azure, and was reading a potential stale token from `localStorage`.
+    - **Fix**:
+        - Updated `StorePage.jsx` to use `useAuth()` hook for token retrieval (reactive state).
+        - Added `X-Auth-Token` header to the API request.
+    - **Documentation**:
+        - Updated `.agent/skills/startup-engineer/SKILL.md` with a "Gotcha" about Azure Auth Headers.
+        - Archived implementation plan to `completed/`.
+        
+        # Development Log
 
 ## [2026-01-27] - Admin Camping Updates
 **Milestone:** Improved Admin Camping Tool Usability
@@ -1683,14 +1710,4 @@ The "Camping" page for "Festival of Aeromodelling 2026" was displaying "No campg
 *   **Testing:** Full end-to-end regression testing of the checkout flow with multiple ticket types.
 
 
-## [2026-01-28] - Fix 401 on My-Attendees (Completed)
-- **Time**: 06:15 - 06:20
-- **Completed Items**:
-    - **Bug Fix**: Resolved 401 Unauthorized error in `StorePage.jsx` when fetching user attendees.
-    - **Root Cause**: The fetch call was missing the `X-Auth-Token` header required by Azure, and was reading a potential stale token from `localStorage`.
-    - **Fix**:
-        - Updated `StorePage.jsx` to use `useAuth()` hook for token retrieval (reactive state).
-        - Added `X-Auth-Token` header to the API request.
-    - **Documentation**:
-        - Updated `.agent/skills/startup-engineer/SKILL.md` with a "Gotcha" about Azure Auth Headers.
-        - Archived implementation plan to `completed/`.
+

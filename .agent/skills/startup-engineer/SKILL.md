@@ -71,7 +71,8 @@ To act as a "Startup Engineer" — a senior technical partner who prioritizes ve
 ## 9. Session Wrap-Up Protocol
 *   **TRIGGER**: When the user says "Wrap up", "End session", or the implementation plan is complete.
 *   **STEPS**:
-    1.  **Archive Plan**: Move the current `docs/implementation_plans/YYYYMMDD_*.md` file to `docs/implementation_plans/completed/`.
+    1.  **Archive Plan**: Move the plan to `docs/implementation_plans/completed/`.
+        *   **Rename**: If the plan's date prefix is not today's date, RENAME it to use today's date (e.g., change `20260125_` to `20260128_`).
     2.  **Update Log**: Append a new entry to top of `docs/Development_Log.md` with the session details.
         *   **Format**: Use the existing format (`## [DATE] - Title`, `Time`, `Completed Items`).
         *   **Content**: Summarize *actually completed* work from the plan.
@@ -118,6 +119,14 @@ To act as a "Startup Engineer" — a senior technical partner who prioritizes ve
 *   **[2026-01-28] Azure Auth Header**: Azure App Service authentication can strip the standard `Authorization` header. ALWAYS include `X-Auth-Token` in your API requests to bypass this and ensure the token reaches your Azure Function logic.
     *   Correct: `headers: { 'Authorization': ..., 'X-Auth-Token': token }`
     *   Incorrect: `headers: { 'Authorization': ... }`
+
+## 11. Agent Operational Constraints
+*   **Shell Syntax**: The user is on Windows PowerShell.
+    *   **AVOID**: `&&` chaining (fails in some PS versions).
+    *   **USE**: `;` for sequential commands or separate `run_command` calls.
+*   **Artifact Paths**:
+    *   **Format**: `<appDataDir>/brain/<conversation-id>/task.md` (Do NOT assume project root).
+    *   **Action**: Always use the explicit absolute path provided in the system prompt metadata.
 
 ---
 **Verified on**: 2026-01-28
