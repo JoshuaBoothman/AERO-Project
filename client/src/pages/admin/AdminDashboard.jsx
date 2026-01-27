@@ -77,9 +77,7 @@ function AdminDashboard() {
     // Let's use max daily occupancy as a rough proxy for "peak booking" or just show capacity on the card)
     // Actually, let's just show Total Capacity for now on the card, and leave booking detail to the chart.
 
-    // Subevent Calc
-    const totalSubeventCap = subevents.reduce((acc, s) => acc + s.capacity, 0);
-    const totalSubeventReg = subevents.reduce((acc, s) => acc + s.registered, 0);
+
 
     return (
         <div className="json-container max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-8 animate-in fade-in duration-500">
@@ -219,16 +217,7 @@ function AdminDashboard() {
                         Subevents
                     </h3>
 
-                    <div className="flex justify-between mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                        <div className="text-center">
-                            <div className="text-2xl font-bold text-gray-900">{totalSubeventReg}</div>
-                            <div className="text-xs text-gray-500 uppercase tracking-wider">Registrations</div>
-                        </div>
-                        <div className="text-center border-l border-gray-200 pl-6">
-                            <div className="text-2xl font-bold text-gray-600">{totalSubeventCap}</div>
-                            <div className="text-xs text-gray-500 uppercase tracking-wider">Capacity</div>
-                        </div>
-                    </div>
+
 
                     <div className="space-y-5 max-h-[300px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-200">
                         {subevents.map(s => {
