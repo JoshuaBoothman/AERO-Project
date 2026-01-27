@@ -53,7 +53,7 @@ function AdminSubevents() {
                     headers['X-Auth-Token'] = token;
                 }
 
-                const res = await fetch(`/api/events/${selectedEventId}/subevents`, { headers });
+                const res = await fetch(`/api/events/${selectedEventId}/subevents`, { headers, cache: 'no-store' });
                 if (res.ok) {
                     const data = await res.json();
                     setSubevents(data);
@@ -126,7 +126,7 @@ function AdminSubevents() {
                 setIsModalOpen(false);
                 // Refresh list
                 const headers = { 'Authorization': `Bearer ${token}`, 'X-Auth-Token': token };
-                const listRes = await fetch(`/api/events/${selectedEventId}/subevents`, { headers });
+                const listRes = await fetch(`/api/events/${selectedEventId}/subevents`, { headers, cache: 'no-store' });
                 if (listRes.ok) {
                     setSubevents(await listRes.json());
                 }
