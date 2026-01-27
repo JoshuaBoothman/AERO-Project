@@ -19,12 +19,15 @@ function SubeventForm({ isOpen, onClose, onSubmit, initialData }) {
             // HTML datetime-local expects YYYY-MM-DDThh:mm
             const formatDateTime = (dateStr) => {
                 if (!dateStr) return '';
+                // Parse the ISO string and extract the local datetime components
+                // This preserves the "wall clock" time seen in the database
                 const date = new Date(dateStr);
-                // Adjust to local ISO string for input
-                // Basic trick: offset by timezone
-                const tzOffset = date.getTimezoneOffset() * 60000;
-                const localISOTime = (new Date(date - tzOffset)).toISOString().slice(0, 16);
-                return localISOTime;
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                return `${year}-${month}-${day}T${hours}:${minutes}`;
             };
 
             setFormData({
