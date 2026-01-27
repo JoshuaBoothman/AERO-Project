@@ -76,7 +76,11 @@ To act as a "Startup Engineer" — a senior technical partner who prioritizes ve
     2.  **Update Log**: Append a new entry to top of `docs/Development_Log.md` with the session details.
         *   **Format**: Use the existing format (`## [DATE] - Title`, `Time`, `Completed Items`).
         *   **Content**: Summarize *actually completed* work from the plan.
-    3.  **Commit Message**: Generate a conventional commit message (e.g., `feat: ...`, `fix: ...`) for the user.
+    3.  **Reflect & Refine**:
+        *   **Identify Errors**: Review usage errors, linting failures, or assumption traps encountered during the session.
+        *   **Update Skill**: If a repeatable lesson was learned, UPDATE `SKILL.md` (Section 10) immediately with a new "Gotcha".
+        *   **Report**: Briefly report these errors and updates to the user.
+    4.  **Commit Message**: Generate a conventional commit message (e.g., `feat: ...`, `fix: ...`) for the user.
     4.  **STOP**: Do NOT run the git commit command yourself. Just display the message.
 
 # Constraints (Project Specific)
@@ -119,6 +123,13 @@ To act as a "Startup Engineer" — a senior technical partner who prioritizes ve
 *   **[2026-01-28] Azure Auth Header**: Azure App Service authentication can strip the standard `Authorization` header. ALWAYS include `X-Auth-Token` in your API requests to bypass this and ensure the token reaches your Azure Function logic.
     *   Correct: `headers: { 'Authorization': ..., 'X-Auth-Token': token }`
     *   Incorrect: `headers: { 'Authorization': ... }`
+*   **[2026-01-28] React Hook Dependencies Trap**: When linter flags "missing dependency", blindly adding it can cause infinite loops (especially with `setDetails` inside `useEffect`).
+    *   **Action**: If the effect is for initialization/updates from an external source, either use a ref-check or suppress the warning if you know it's safe. DO NOT break the app to satisfy the linter.
+*   **[2026-01-28] PowerShell Encoding**: Storing command output to a file (`> out.txt`) on Windows defaults to UTF-16LE, which breaks tools.
+    *   **Action**: Use `run_command` to print output directly to the console (`type out.txt` if needed) instead of relying on `view_file` for generated artifacts on Windows.
+*   **[2026-01-28] Artifact Paths**:
+    *   **CRITICAL**: Artifacts (`task.md`, `walkthrough.md`) MUST live in the absolute directory provided in `System Prompt > Agentic Mode Overview`.
+    *   **ERROR**: Trying to write `task.md` to the project root (`c:\laragon\www\...`) will fail or be invisible. Always use the `<appDataDir>` path.
 
 ## 11. Agent Operational Constraints
 *   **Shell Syntax**: The user is on Windows PowerShell.
@@ -130,3 +141,8 @@ To act as a "Startup Engineer" — a senior technical partner who prioritizes ve
 
 ---
 **Verified on**: 2026-01-28
+
+## 12. Tech Stack Specific Gotchas
+*   **Azure Functions (Node.js)**
+    *   **Route Prefixes**: Avoid using `admin/` as a route prefix (e.g., `route: 'admin/attendees'`). Azure Functions or the local runtime often reserves or mishandles these, leading to 404s even if the function exists. Use `manage/` or other alternatives instead.
+    *   **Deep Routes**: Azure Functions proxies can struggle with deep routes (e.g., `manage/attendees/{slug}`) during hot reload. A full restart is often required to register these new routes.

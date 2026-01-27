@@ -1,3 +1,26 @@
+## [2026-01-28] - Attendees List Implementation (Completed)
+- **Time**: 09:15 - 09:45
+- **Completed Items**:
+    - **Feature**: Implemented "Attendees List" for Admin Dashboard.
+    - **Backend (API)**:
+        - Created `getAdminAttendees.js` endpoint with filtering (Search, Ticket Type, State, Duties, Heavy Model, Dinner) and sorting.
+        - **Fix**: Renamed route from `admin/attendees` to `manage/attendees` to resolve 404 error caused by Azure Functions proxy conflict with `admin/` prefix.
+        - **Fix**: Corrected invalid column references:
+            - `mobile` -> `phone_number`
+            - `camping_required` -> Derived from `order_items` subquery.
+            - `checked_in_at` -> Removed (unused).
+        - Includes derived fields like `has_heavy_model` and `is_heavy_model_inspector`.
+    - **Frontend (Admin)**:
+        - Created `AttendeesList.jsx` page with comprehensive filtering and sorting table.
+        - Registered route `/manage/attendees/:slug` in `App.jsx`.
+        - Added navigation link "View List" to Admin Dashboard "Attendees" card.
+    - **Verification**:
+        - Debugged schema using `debug-schema` endpoint to identify correct column names.
+        - Verified full end-to-end loading and filtering of 200+ attendees.
+    - **Documentation**:
+        - Archived implementation plan to `completed/`.
+
+
 ## [2026-01-28] - Attendee Details Refinement (Completed)
 - **Time**: 08:30 - 08:45
 - **Completed Items**:

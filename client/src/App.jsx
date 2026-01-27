@@ -30,6 +30,7 @@ import CampingAvailabilityReport from './pages/admin/CampingAvailabilityReport';
 import EventPlanesReport from './pages/admin/EventPlanesReport';
 import FlightLinesSetup from './pages/admin/FlightLinesSetup';
 import FlightLineRoster from './pages/admin/FlightLineRoster';
+import AttendeesList from './pages/admin/AttendeesList';
 
 import OrderDetail from './pages/OrderDetail';
 import Invoice from './pages/Invoice';
@@ -146,6 +147,7 @@ function App() {
                 <Route path="admin/reports/public-registrations/:slug" element={<PublicRegistrationsReport />} />
                 <Route path="admin/reports/event-planes/:eventId" element={<EventPlanesReport />} />
                 <Route path="admin/reports/camping" element={<CampingAvailabilityReport />} />
+                <Route path="admin/attendees/:slug" element={<AttendeesList />} />
 
               </Route>
             </Routes>
