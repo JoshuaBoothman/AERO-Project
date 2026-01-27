@@ -120,7 +120,10 @@ function Checkout() {
                 {item.type === 'SUBEVENT' && (
                     <div className="mt-1">
                         <small className="block text-gray-500">
-                            {new Date(item.startTime).toLocaleString()}
+                            {(() => {
+                                const d = new Date(item.startTime);
+                                return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()} ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+                            })()}
                         </small>
                         {item.variationDetails && (
                             <div className="mt-1 flex flex-wrap gap-2">

@@ -248,7 +248,10 @@ function OrderDetail() {
 
                                         {item.item_type === 'Subevent' && item.subevent_start && (
                                             <div>
-                                                {new Date(item.subevent_start).toLocaleString()}
+                                                {(() => {
+                                                    const d = new Date(item.subevent_start);
+                                                    return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()} ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+                                                })()}
                                             </div>
                                         )}
 

@@ -371,7 +371,12 @@ function StorePage({ orgSettings }) {
                                     <h3 className="font-bold text-xl text-primary">{sub.name}</h3>
                                     <p className="text-gray-600 mb-2">{sub.description}</p>
                                     <div className="text-sm font-medium bg-gray-100 inline-block px-2 py-1 rounded text-gray-700">
-                                        {new Date(sub.startTime).toLocaleString()} - {new Date(sub.endTime).toLocaleTimeString()}
+                                        {(() => {
+                                            const d1 = new Date(sub.startTime);
+                                            const d2 = new Date(sub.endTime);
+                                            const formatTime = (d) => `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+                                            return `${d1.getDate().toString().padStart(2, '0')}/${(d1.getMonth() + 1).toString().padStart(2, '0')}/${d1.getFullYear()} ${formatTime(d1)} - ${formatTime(d2)}`;
+                                        })()}
                                     </div>
                                 </div>
                                 <div className="mt-4 md:mt-0 text-right min-w-[120px]">
