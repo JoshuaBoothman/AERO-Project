@@ -44,7 +44,10 @@ function CampingAvailabilityReport() {
         setLoading(true);
         try {
             const res = await fetch(`/api/reports/camping-availability?eventId=${selectedEventId}&start_date=${dates.start}&end_date=${dates.end}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'x-auth-token': token
+                }
             });
             if (res.ok) {
                 const data = await res.json();
@@ -54,14 +57,11 @@ function CampingAvailabilityReport() {
                 console.error('API responded with error:', res.status, res.statusText);
                 const errText = await res.text();
                 console.error('Error body:', errText);
-                alert(`Failed to fetch report: ${res.status} ${res.statusText}\n${errText}`);
-                // notify('Failed to fetch report', 'error'); // Silent failure or toast is enough
-                addToast('Failed to fetch report: ' + res.statusText, 'error');
+                notify('Failed to fetch report: ' + res.statusText, 'error');
             }
         } catch (e) {
             console.error('Fetch error:', e);
-            // alert(`Error fetching report: ${e.message}`); // Remove alert
-            addToast('Error fetching report', 'error');
+            notify('Error fetching report', 'error');
         } finally {
             setLoading(false);
         }
