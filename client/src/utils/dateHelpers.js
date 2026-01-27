@@ -18,11 +18,12 @@
 export const formatDateTimeForInput = (dateStr) => {
     if (!dateStr) return '';
     const date = new Date(dateStr);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
+    // Use UTC methods to extract the "wall clock" values without timezone conversion
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    const hours = String(date.getUTCHours()).padStart(2, '0');
+    const minutes = String(date.getUTCMinutes()).padStart(2, '0');
     return `${year}-${month}-${day}T${hours}:${minutes}`;
 };
 
@@ -36,7 +37,8 @@ export const formatDateTimeForInput = (dateStr) => {
 export const formatDateTimeForDisplay = (dateStr) => {
     if (!dateStr) return '';
     const d = new Date(dateStr);
-    return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()} ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+    // Use UTC methods to extract the "wall clock" values without timezone conversion
+    return `${d.getUTCDate().toString().padStart(2, '0')}/${(d.getUTCMonth() + 1).toString().padStart(2, '0')}/${d.getUTCFullYear()} ${d.getUTCHours().toString().padStart(2, '0')}:${d.getUTCMinutes().toString().padStart(2, '0')}`;
 };
 
 /**
@@ -48,7 +50,8 @@ export const formatDateTimeForDisplay = (dateStr) => {
 export const formatDateForDisplay = (dateStr) => {
     if (!dateStr) return '';
     const d = new Date(dateStr);
-    return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
+    // Use UTC methods to extract the "wall clock" values without timezone conversion
+    return `${d.getUTCDate().toString().padStart(2, '0')}/${(d.getUTCMonth() + 1).toString().padStart(2, '0')}/${d.getUTCFullYear()}`;
 };
 
 /**
@@ -62,7 +65,8 @@ export const formatTimeRange = (startStr, endStr) => {
     if (!startStr || !endStr) return '';
     const d1 = new Date(startStr);
     const d2 = new Date(endStr);
-    const formatTime = (d) => `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+    // Use UTC methods to extract the "wall clock" values without timezone conversion
+    const formatTime = (d) => `${d.getUTCHours().toString().padStart(2, '0')}:${d.getUTCMinutes().toString().padStart(2, '0')}`;
     return `${formatTime(d1)} - ${formatTime(d2)}`;
 };
 
@@ -77,6 +81,7 @@ export const formatDateTimeRange = (startStr, endStr) => {
     if (!startStr || !endStr) return '';
     const d1 = new Date(startStr);
     const d2 = new Date(endStr);
-    const formatTime = (d) => `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
-    return `${d1.getDate().toString().padStart(2, '0')}/${(d1.getMonth() + 1).toString().padStart(2, '0')}/${d1.getFullYear()} ${formatTime(d1)} - ${formatTime(d2)}`;
+    // Use UTC methods to extract the "wall clock" values without timezone conversion
+    const formatTime = (d) => `${d.getUTCHours().toString().padStart(2, '0')}:${d.getUTCMinutes().toString().padStart(2, '0')}`;
+    return `${d1.getUTCDate().toString().padStart(2, '0')}/${(d1.getUTCMonth() + 1).toString().padStart(2, '0')}/${d1.getUTCFullYear()} ${formatTime(d1)} - ${formatTime(d2)}`;
 };
