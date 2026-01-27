@@ -130,6 +130,9 @@ To act as a "Startup Engineer" — a senior technical partner who prioritizes ve
 *   **[2026-01-28] Artifact Paths**:
     *   **CRITICAL**: Artifacts (`task.md`, `walkthrough.md`) MUST live in the absolute directory provided in `System Prompt > Agentic Mode Overview`.
     *   **ERROR**: Trying to write `task.md` to the project root (`c:\laragon\www\...`) will fail or be invisible. Always use the `<appDataDir>` path.
+*   **[2026-01-28] Custom Confirmation Modal**: The project has a custom `ConfirmationModal` component accessible via the `useNotification` context hook.
+    *   **MANDATORY**: Always use `const { confirm } = useNotification(); confirm(msg, callback);` instead of `window.confirm`.
+    *   **WHY**: Provides a consistent, premium UI experience and prevents browser-native popups that break immersion.
 
 ## 11. Agent Operational Constraints
 *   **Shell Syntax**: The user is on Windows PowerShell.

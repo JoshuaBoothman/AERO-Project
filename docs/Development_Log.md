@@ -1,3 +1,28 @@
+## [2026-01-28] - Order Item Refunds (Completed)
+- **Time**: 10:15 - 10:45
+- **Completed Items**:
+    - **Feature**: Implemented "Order Item Refunds" for Admins.
+    - **Database**:
+        - Verified `refunded_at` column exists in `order_items`.
+    - **Backend (API)**:
+        - Updated `getOrderDetail.js` to return `refunded_at` status.
+        - Created `refundOrderItem.js` endpoint:
+            - Marks item as refunded (sets `refunded_at`).
+            - Automatically restores stock for Merchandise items (+1 stock).
+    - **Frontend (Client)**:
+        - Updated `OrderDetail.jsx`:
+            - Added "Status / Action" column for Admins.
+            - Displays "🚫 REFUNDED" badge if refunded.
+            - Shows "Refund" button if active.
+            - Added confirmation dialog warning about stock restoration.
+            - **Unrefund**: Added "Undo Refund" capability to reverse accidental refunds (restores status, reduces stock).
+            - **Refinement**: Switched to custom confirm modal and fixed UI text.
+    - **Verification**:
+        - Linted `OrderDetail.jsx`.
+        - Verified code logic matches implementation plan.
+    - **Documentation**:
+        - Archived implementation plan to `completed/`.
+
 ## [2026-01-28] - Attendees List Implementation (Completed)
 - **Time**: 09:15 - 09:45
 - **Completed Items**:

@@ -8,7 +8,7 @@ import { formatDateTimeForDisplay } from '../utils/dateHelpers';
 function OrderDetail() {
     const { orderId } = useParams();
     const { user } = useAuth();
-    const { notify } = useNotification();
+    const { notify, confirm } = useNotification();
 
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -107,6 +107,48 @@ function OrderDetail() {
         } finally {
             setSaving(false);
         }
+    };
+
+    const handleRefundAction = (item, action = 'refund') => {
+        const verb = action === 'refund' ? 'refunded' : 'restored';
+        const msg = action === 'refund'
+            ? `Are you sure you want to mark "${item.item_name}" as refunded? \n\nThis will restore stock for merchandise items (1 unit).\nIt does NOT refund the money automatically.`
+            : `Are you sure you want to restore "${item.item_name}"? \n\nThis will remove the refund status and reduce stock by 1.`;
+
+        confirm(msg, async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`/api/orders/${orderId}/items/${item.order_item_id}/refund`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                        'X-Auth-Token': token
+                    },
+                    body: JSON.stringify({ action })
+                });
+
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.body || data.error || 'Action failed');
+                }
+
+                notify(`Item ${verb} successfully`, "success");
+
+                // Refresh order
+                const updatedOrderRes = await fetch(`/api/orders/${orderId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'X-Auth-Token': token
+                    }
+                });
+                const updatedOrder = await updatedOrderRes.json();
+                setOrder(updatedOrder);
+
+            } catch (err) {
+                notify(`Error: ${err.message}`, "error");
+            }
+        });
     };
 
     if (loading) return <div className="container" style={{ padding: '2rem' }}>Loading details...</div>;
@@ -215,6 +257,9 @@ function OrderDetail() {
                         <tr>
                             <th style={{ paddingLeft: '1.5rem' }}>Item</th>
                             <th>Details</th>
+                            {(user?.role === 'admin' || user?.role === 'Operational') && (
+                                <th style={{ textAlign: 'center' }}>Admin</th>
+                            )}
                             <th style={{ textAlign: 'right', paddingRight: '1.5rem' }}>Price</th>
                         </tr>
                     </thead>
@@ -260,6 +305,32 @@ function OrderDetail() {
                                         )}
                                     </div>
                                 </td>
+                                {(user?.role === 'admin' || user?.role === 'Operational') && (
+                                    <td style={{ textAlign: 'center', verticalAlign: 'top', paddingTop: '1rem' }}>
+                                        {item.refunded_at ? (
+                                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                                                <div title={`Refunded on ${new Date(item.refunded_at).toLocaleString()}`}
+                                                    className="status-badge"
+                                                    style={{ backgroundColor: '#fee2e2', color: '#b91c1c', border: '1px solid #fca5a5' }}>
+                                                    🚫 REFUNDED
+                                                </div>
+                                                <button
+                                                    onClick={() => handleRefundAction(item, 'unrefund')}
+                                                    className="text-xs text-blue-600 underline hover:text-blue-800"
+                                                >
+                                                    Undo Refund
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <button
+                                                onClick={() => handleRefundAction(item, 'refund')}
+                                                className="bg-white hover:bg-red-50 text-red-600 border border-red-200 hover:border-red-400 font-bold py-1 px-3 rounded text-xs transition duration-150 uppercase tracking-wide"
+                                            >
+                                                Refund
+                                            </button>
+                                        )}
+                                    </td>
+                                )}
                                 <td style={{ textAlign: 'right', paddingRight: '1.5rem', fontWeight: 'bold', verticalAlign: 'top', paddingTop: '1rem' }}>
                                     ${item.price_at_purchase.toFixed(2)}
                                 </td>

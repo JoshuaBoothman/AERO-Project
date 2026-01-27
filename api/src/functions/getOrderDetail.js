@@ -50,6 +50,7 @@ app.http('getOrderDetail', {
             const itemsQuery = `
                 SELECT 
                     oi.order_item_id,
+                    oi.refunded_at,
                     oi.price_at_purchase,
                     oi.item_type,
                     CASE 
