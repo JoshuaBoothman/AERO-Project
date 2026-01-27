@@ -30,7 +30,7 @@ app.http('getEventDetail', {
                     SELECT TOP 1
                         e.event_id, e.name, e.slug, e.description, e.banner_url,
                         e.start_date, e.end_date, e.status, e.is_purchasing_enabled, e.is_public_viewable, e.venue_id, e.mop_url,
-                        e.dinner_date,
+                        e.dinner_date, e.official_dinner_subevent_id,
                         v.name as venue_name, v.address_line_1, v.city, v.state, v.postcode, v.map_url
                     FROM events e
                     LEFT JOIN venues v ON e.venue_id = v.venue_id
@@ -41,7 +41,7 @@ app.http('getEventDetail', {
                     SELECT TOP 1
                         e.event_id, e.name, e.slug, e.description, e.banner_url,
                         e.start_date, e.end_date, e.status, e.is_purchasing_enabled, e.is_public_viewable, e.venue_id, e.mop_url,
-                        e.dinner_date,
+                        e.dinner_date, e.official_dinner_subevent_id,
                         v.name as venue_name, v.address_line_1, v.city, v.state, v.postcode, v.map_url
                     FROM events e
                     JOIN venues v ON e.venue_id = v.venue_id
@@ -61,7 +61,7 @@ app.http('getEventDetail', {
 
             // 2. Fetch Ticket Types for this Event (Parameterized)
             const ticketQuery = `
-                SELECT ticket_type_id, name, price, system_role, description, includes_merch, price_no_flight_line
+                SELECT ticket_type_id, name, price, system_role, description, includes_merch, price_no_flight_line, includes_official_dinner
                 FROM event_ticket_types 
                 WHERE event_id = @eventId
                 ORDER BY sort_order ASC, price ASC

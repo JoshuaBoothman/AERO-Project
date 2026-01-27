@@ -1,6 +1,11 @@
-# Task: Debug Order Details 500 Error
+# Phase 3: Official Dinner Registrations
 
 ## Status
-- [ ] Inspect `getOrderDetail.js` for SQL errors <!-- id: 0 -->
-- [ ] Fix potential SQL syntax or logic issues <!-- id: 1 -->
-- [ ] Verify fix with user <!-- id: 2 -->
+- [x] Apply DB changes (events, event_ticket_types)
+- [x] Update API (getEventDetail, create/update Event, TicketTypes)
+- [x] Update Client (EventForm, EventPurchase)
+- [x] Verify (lint)
+- [x] Bugfix: Fix subevents fetch URL in client
+- [x] Bugfix: Fix subevent date display in dropdown
+- [x] Bugfix: Fix cart item structure (type, id) for subevents
+- [x] Bugfix: Fix Store Page (Shop) official dinner logic (API & Client) <!-- id: 7 -->

@@ -33,7 +33,7 @@ app.http('getStoreItems', {
             if (slug && !eventId) {
                 const eRes = await pool.request()
                     .input('slug', sql.NVarChar, slug)
-                    .query("SELECT event_id, name, start_date, end_date, mop_url, dinner_date FROM events WHERE slug = @slug");
+                    .query("SELECT event_id, name, start_date, end_date, mop_url, dinner_date, official_dinner_subevent_id FROM events WHERE slug = @slug");
                 if (eRes.recordset.length === 0) return { status: 404, body: JSON.stringify({ error: "Event not found" }) };
                 eventId = eRes.recordset[0].event_id;
                 eventName = eRes.recordset[0].name;
@@ -41,16 +41,18 @@ app.http('getStoreItems', {
                 eventEndDate = eRes.recordset[0].end_date;
                 eventMopUrl = eRes.recordset[0].mop_url;
                 eventDinnerDate = eRes.recordset[0].dinner_date;
+                officialDinnerSubeventId = eRes.recordset[0].official_dinner_subevent_id;
             } else if (eventId) {
                 const eRes = await pool.request()
                     .input('eid', sql.Int, eventId)
-                    .query("SELECT name, start_date, end_date, mop_url, dinner_date FROM events WHERE event_id = @eid");
+                    .query("SELECT name, start_date, end_date, mop_url, dinner_date, official_dinner_subevent_id FROM events WHERE event_id = @eid");
                 if (eRes.recordset.length > 0) {
                     eventName = eRes.recordset[0].name;
                     eventStartDate = eRes.recordset[0].start_date;
                     eventEndDate = eRes.recordset[0].end_date;
                     eventMopUrl = eRes.recordset[0].mop_url;
                     eventDinnerDate = eRes.recordset[0].dinner_date;
+                    officialDinnerSubeventId = eRes.recordset[0].official_dinner_subevent_id;
                 }
             }
 
@@ -238,7 +240,7 @@ app.http('getStoreItems', {
 
             // 6. Fetch Ticket Types (NEW)
             const ticketRes = await pool.request().input('eid', sql.Int, eventId).query(`
-                SELECT ticket_type_id, name, description, price, system_role, includes_merch, price_no_flight_line, is_day_pass
+                SELECT ticket_type_id, name, description, price, system_role, includes_merch, price_no_flight_line, is_day_pass, includes_official_dinner
                 FROM event_ticket_types
                 WHERE event_id = @eid
                 ORDER BY sort_order ASC, price ASC
@@ -254,6 +256,7 @@ app.http('getStoreItems', {
             const linksRes = await pool.request().input('eid', sql.Int, eventId).query(linksQuery);
             const links = linksRes.recordset;
 
+
             const tickets = ticketRes.recordset.map(t => ({
                 id: t.ticket_type_id,
                 ticket_type_id: t.ticket_type_id,
@@ -264,6 +267,7 @@ app.http('getStoreItems', {
                 includes_merch: t.includes_merch,
                 price_no_flight_line: t.price_no_flight_line,
                 is_day_pass: t.is_day_pass,
+                includes_official_dinner: t.includes_official_dinner,
                 linkedProductIds: links.filter(l => l.ticket_type_id === t.ticket_type_id).map(l => l.product_id)
             }));
 
@@ -280,7 +284,8 @@ app.http('getStoreItems', {
                     subevents,
                     tickets, // <--- Added Tickets
                     mop_url: eventMopUrl,
-                    dinner_date: eventDinnerDate
+                    dinner_date: eventDinnerDate,
+                    official_dinner_subevent_id: officialDinnerSubeventId
                 })
             };
 

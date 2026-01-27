@@ -212,6 +212,31 @@ function StorePage({ orgSettings }) {
         };
 
         addToCart(item);
+
+        // [NEW] Add Official Dinner Subevent if applicable
+        if (selectedTicketForModal.includes_official_dinner && data.official_dinner_subevent_id) {
+            // Check if the attendee opted in
+            // Since we only process one ticket/attendee at a time in this modal flow:
+            const attendee = attendees[0];
+            if (attendee && attendee.attendingDinner) {
+                const dinnerSubevent = data.subevents.find(s => s.id === data.official_dinner_subevent_id);
+                if (dinnerSubevent) {
+                    addToCart({
+                        type: 'SUBEVENT',
+                        id: dinnerSubevent.id,
+                        name: dinnerSubevent.name,
+                        price: 0,
+                        quantity: 1,
+                        description: 'Official Dinner Entry (Included with Ticket)',
+                        startTime: dinnerSubevent.startTime,
+                        eventId: data.eventId,
+                        attendeeTempId: attendee.tempId // Link to the new attendee if needed
+                    });
+                    notify("Official Dinner Entry added to cart", "success");
+                }
+            }
+        }
+
         setSelectedTicketForModal(null);
         notify(`${selectedTicketForModal.name} added to cart!`, 'success');
     };

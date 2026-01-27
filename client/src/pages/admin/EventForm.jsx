@@ -51,6 +51,7 @@ function EventForm() {
     const { notify, confirm } = useNotification();
 
     const [venues, setVenues] = useState([]);
+    const [subevents, setSubevents] = useState([]); // [NEW] Subevents
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [saving, setSaving] = useState(false);
@@ -67,7 +68,8 @@ function EventForm() {
         is_purchasing_enabled: false,
         is_public_viewable: false,
         mop_url: '',
-        dinner_date: ''
+        dinner_date: '',
+        official_dinner_subevent_id: '' // [NEW] Official Dinner Link
     });
 
     const isEditMode = !!slug;
@@ -94,7 +96,9 @@ function EventForm() {
         description: '',
         includes_merch: false,
         price_no_flight_line: '',
-        linkedProductIds: [] // [NEW] Link Multiple Products
+        linkedProductIds: [], // [NEW] Link Multiple Products
+        is_day_pass: false,
+        includes_official_dinner: false // [NEW]
     });
 
     // Public Days State
@@ -191,7 +195,8 @@ function EventForm() {
                         is_purchasing_enabled: eventData.is_purchasing_enabled,
                         is_public_viewable: eventData.is_public_viewable,
                         mop_url: eventData.mop_url || '',
-                        dinner_date: formatDateTimeForInput(eventData.dinner_date)
+                        dinner_date: formatDateTimeForInput(eventData.dinner_date),
+                        official_dinner_subevent_id: eventData.official_dinner_subevent_id || ''
                     });
 
                     // Fetch Ticket Types
@@ -206,6 +211,13 @@ function EventForm() {
                     if (publicDaysRes.ok) {
                         const days = await publicDaysRes.json();
                         setPublicDays(days);
+                    }
+
+                    // Fetch Subevents for Official Dinner Selection
+                    const subRes = await fetch(`/api/events/${eventData.event_id}/subevents`, { headers });
+                    if (subRes.ok) {
+                        const subsItems = await subRes.json();
+                        setSubevents(subsItems);
                     }
                 }
 
@@ -409,9 +421,7 @@ function EventForm() {
 
     const openCreateTicket = () => {
         setEditingTicket(null);
-        setEditingTicket(null);
-        setTicketForm({ name: '', price: '', system_role: 'spectator', description: '', includes_merch: false, price_no_flight_line: '', is_day_pass: false, linkedProductIds: [] });
-        setShowTicketModal(true);
+        setTicketForm({ name: '', price: '', system_role: 'spectator', description: '', includes_merch: false, price_no_flight_line: '', is_day_pass: false, linkedProductIds: [], includes_official_dinner: false });
         setShowTicketModal(true);
     };
 
@@ -425,7 +435,8 @@ function EventForm() {
             includes_merch: ticket.includes_merch || false,
             price_no_flight_line: ticket.price_no_flight_line || '',
             is_day_pass: ticket.is_day_pass || false,
-            linkedProductIds: ticket.linkedProductIds || [] // Ensure Array
+            linkedProductIds: ticket.linkedProductIds || [], // Ensure Array
+            includes_official_dinner: ticket.includes_official_dinner || false
         });
         setShowTicketModal(true);
     };
@@ -641,6 +652,29 @@ function EventForm() {
                         </small>
                     )}
                 </div>
+
+                {/* Subevents Dropdown (Official Dinner) */}
+                {isEditMode && subevents.length > 0 && (
+                    <div className="form-group mb-4">
+                        <label>Official Dinner Subevent (Auto-Add)</label>
+                        <select
+                            name="official_dinner_subevent_id"
+                            value={formData.official_dinner_subevent_id}
+                            onChange={handleChange}
+                            className="form-control"
+                        >
+                            <option value="">-- None --</option>
+                            {subevents.map(s => (
+                                <option key={s.subevent_id} value={s.subevent_id}>
+                                    {s.name} ({formatDateDisplay(s.start_time)})
+                                </option>
+                            ))}
+                        </select>
+                        <small style={{ color: '#666', marginTop: '5px', display: 'block' }}>
+                            If selected, ticket types can opt-in to include this dinner entry automatically.
+                        </small>
+                    </div>
+                )}
 
                 {/* 3. Venue */}
                 <div className="form-group mb-4">
@@ -1118,6 +1152,22 @@ function EventForm() {
                                 </label>
                                 <small style={{ color: '#666', display: 'block', marginLeft: '1.5rem' }}>
                                     If enabled, price will be (Daily Rate × Days Selected). For pilots, flight line duties only shown if 3+ days.
+                                </small>
+                            </div>
+
+                            {/* Official Dinner Opt-In */}
+                            <div>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginBottom: '0.5rem' }}>
+                                    <input
+                                        type="checkbox"
+                                        name="includes_official_dinner"
+                                        checked={ticketForm.includes_official_dinner}
+                                        onChange={handleTicketChange}
+                                    />
+                                    <strong>Include Official Dinner Entry?</strong>
+                                </label>
+                                <small style={{ color: '#666', display: 'block', marginLeft: '1.5rem' }}>
+                                    If checked, user will be prompted to add the official dinner to their cart (at $0 cost).
                                 </small>
                             </div>
 

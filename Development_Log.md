@@ -24,3 +24,26 @@
         *   **UI:** Fixed "Remove Plane" button overlap by redesigning the list item layout.
     *   **Order Details:**
         *   Added "Pilot Details" section to Order Items, listing linked aircraft and Heavy Model certificates.
+
+## [2026-01-27] - Official Dinner Registration & Cart Fixes
+**Milestone:** Complete implementation of Official Dinner add-on flow for Tickets and Store.
+
+### Completed Items
+*   **Database**
+    *   **Schema:** Added `official_dinner_subevent_id` to `events` table.
+    *   **Schema:** Added `includes_official_dinner` (bit) to `event_ticket_types` table.
+*   **Backend (API)**
+    *   **Feature:** Updated `getEventDetail` and `getStoreItems` to return official dinner config and ticket flags.
+    *   **Feature:** Updated `createEvent` and `updateEvent` to handle `official_dinner_subevent_id`.
+    *   **Feature:** Updated `createTicketType` and `updateTicketType` to handle `includes_official_dinner`.
+*   **Frontend (Client)**
+    *   **Admin:** Added "Official Dinner Subevent" dropdown to Event Form.
+    *   **Admin:** Added "Include Official Dinner Entry?" checkbox to Ticket Type form.
+    *   **Purchase Flow:** Updated `EventPurchase.jsx` (Ticket Shop) to:
+        *   Prompt user "Will you be attending the official dinner?".
+        *   Automatically add the Dinner Subevent to cart (at $0 cost) if opted-in.
+        *   Fixed Cart Item structure for Subevents to match Checkout requirements (`type: 'SUBEVENT'`, `id`).
+    *   **Store Flow:** Updated `StorePage.jsx` (General Shop) to:
+        *   Replicate the auto-add dinner logic for single ticket purchases via existing `AttendeeModal`.
+        *   Fixed missing API fields in `getStoreItems`.
+    *   **Fix:** Resolved issue where Official Dinner was missing from Cart during Checkout.

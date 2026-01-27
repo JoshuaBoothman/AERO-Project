@@ -27,7 +27,7 @@ app.http('getTicketTypes', {
             }
 
             const q = `
-                SELECT ticket_type_id, event_id, name, price, system_role, description, sort_order, includes_merch, price_no_flight_line, is_day_pass
+                SELECT ticket_type_id, event_id, name, price, system_role, description, sort_order, includes_merch, price_no_flight_line, is_day_pass, includes_official_dinner
                 FROM event_ticket_types 
                 WHERE event_id = @eventId
                 ORDER BY sort_order ASC, price ASC
@@ -69,7 +69,7 @@ app.http('createTicketType', {
                 return { status: 403, body: JSON.stringify({ error: "Unauthorized" }) };
             }
 
-            const { name, price, system_role, description, includes_merch, linkedProductIds, price_no_flight_line, is_day_pass } = await request.json();
+            const { name, price, system_role, description, includes_merch, linkedProductIds, price_no_flight_line, is_day_pass, includes_official_dinner } = await request.json();
 
             if (!name || price === undefined || !system_role) {
                 return { status: 400, body: JSON.stringify({ error: "Missing required fields" }) };
@@ -85,9 +85,9 @@ app.http('createTicketType', {
                     DECLARE @NextOrder INT;
                     SELECT @NextOrder = ISNULL(MAX(sort_order), 0) + 1 FROM event_ticket_types WHERE event_id = @eventId;
 
-                    INSERT INTO event_ticket_types (event_id, name, price, system_role, description, sort_order, includes_merch, price_no_flight_line, is_day_pass)
+                    INSERT INTO event_ticket_types (event_id, name, price, system_role, description, sort_order, includes_merch, price_no_flight_line, is_day_pass, includes_official_dinner)
                     OUTPUT INSERTED.*
-                    VALUES (@eventId, @name, @price, @system_role, @description, @NextOrder, @includesMerch, @priceNoFlightLine, @isDayPass)
+                    VALUES (@eventId, @name, @price, @system_role, @description, @NextOrder, @includesMerch, @priceNoFlightLine, @isDayPass, @includesOfficialDinner)
                 `;
 
                 const req = new sql.Request(transaction);
@@ -100,6 +100,7 @@ app.http('createTicketType', {
                     .input('includesMerch', sql.Bit, includes_merch ? 1 : 0)
                     .input('priceNoFlightLine', sql.Decimal(10, 2), price_no_flight_line || null)
                     .input('isDayPass', sql.Bit, is_day_pass ? 1 : 0)
+                    .input('includesOfficialDinner', sql.Bit, includes_official_dinner ? 1 : 0)
                     .query(insertQ);
 
                 const newTicket = result.recordset[0];
@@ -146,7 +147,7 @@ app.http('updateTicketType', {
                 return { status: 403, body: JSON.stringify({ error: "Unauthorized" }) };
             }
 
-            const { name, price, system_role, description, includes_merch, linkedProductIds, price_no_flight_line, is_day_pass } = await request.json();
+            const { name, price, system_role, description, includes_merch, linkedProductIds, price_no_flight_line, is_day_pass, includes_official_dinner } = await request.json();
 
             const pool = await getPool();
             const transaction = new sql.Transaction(pool);
@@ -157,7 +158,8 @@ app.http('updateTicketType', {
                     UPDATE event_ticket_types
                     SET name = @name, price = @price, system_role = @system_role, 
                         description = @description, includes_merch = @includesMerch,
-                        price_no_flight_line = @priceNoFlightLine, is_day_pass = @isDayPass
+                        price_no_flight_line = @priceNoFlightLine, is_day_pass = @isDayPass,
+                        includes_official_dinner = @includesOfficialDinner
                     OUTPUT INSERTED.*
                     WHERE ticket_type_id = @ticketTypeId
                 `;
@@ -172,6 +174,7 @@ app.http('updateTicketType', {
                     .input('includesMerch', sql.Bit, includes_merch ? 1 : 0)
                     .input('priceNoFlightLine', sql.Decimal(10, 2), price_no_flight_line || null)
                     .input('isDayPass', sql.Bit, is_day_pass ? 1 : 0)
+                    .input('includesOfficialDinner', sql.Bit, includes_official_dinner ? 1 : 0)
                     .query(updateQ);
 
                 if (result.recordset.length === 0) {

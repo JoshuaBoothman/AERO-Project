@@ -4,3 +4,4 @@
 | 2026-01-23 | AERO Project | 1.3 | MOP Compliance (API Fixes, Frontend MOP Link, Form Uploads) | No | | | |
 | 2026-01-23 | AERO Project | 1.5 | Subevent Variations (Backend: API & DB, Frontend: Store & Admin UI) | No | | | |
 | 2026-01-23 | AERO Project | 1.0 | Pit Crew to Pilot Linking (Backend & Frontend) | No | | | |
+| 2026-01-27 | AERO Project | 1.0 | Implemented Official Dinner Registrations (DB, API, Admin & User UI) | No | | | |
