@@ -417,6 +417,34 @@ function AttendeeModal({
                                     </div>
                                 </div>
 
+                                {/* Day Pass Price Preview */}
+                                {(() => {
+                                    if (!ticket.is_day_pass || !data.arrivalDate || !data.departureDate) {
+                                        return null;
+                                    }
+
+                                    const arrival = new Date(data.arrivalDate);
+                                    const departure = new Date(data.departureDate);
+                                    const dayCount = Math.ceil((departure - arrival) / (1000 * 60 * 60 * 24)) + 1;
+                                    const totalPrice = ticket.price * dayCount;
+
+                                    return (
+                                        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded">
+                                            <h5 className="font-bold text-sm mb-1 text-green-900">💰 Day Pass Pricing</h5>
+                                            <div className="text-sm text-green-800">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-medium">{dayCount} {dayCount === 1 ? 'day' : 'days'}</span>
+                                                    <span>×</span>
+                                                    <span className="font-medium">${Number(ticket.price).toFixed(2)}/day</span>
+                                                    <span>=</span>
+                                                    <span className="font-bold text-green-900 text-base">${totalPrice.toFixed(2)}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
+
+
                                 {event?.dinner_date && (
                                     <div className="mb-4 p-3 bg-indigo-50 border border-indigo-100 rounded">
                                         <h5 className="font-bold text-sm mb-2 text-indigo-900">🍽️ Official Dinner</h5>
@@ -553,29 +581,48 @@ function AttendeeModal({
 
                                             {/* Flight Line Duties (New) */}
                                             {/* Flight Line Duties - ONLY FOR PILOTS, NOT JUNIOR PILOTS */}
-                                            {ticket.system_role === 'pilot' && (
-                                                <div className="mb-4">
-                                                    <label className="flex items-center gap-2 cursor-pointer">
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={data.flightLineDuties || false}
-                                                            onChange={e => handleChange(key, 'flightLineDuties', e.target.checked)}
-                                                        />
-                                                        <div>
-                                                            <span className="font-medium text-sm">I agree to perform flight line duties</span>
-                                                            {ticket.price_no_flight_line && (
-                                                                <div className="text-xs mt-1">
-                                                                    {data.flightLineDuties ? (
-                                                                        <span className="text-green-600 font-bold">Price: ${Number(ticket.price).toFixed(2)} (Standard)</span>
-                                                                    ) : (
-                                                                        <span className="text-amber-600 font-bold">Price: ${Number(ticket.price_no_flight_line).toFixed(2)} (No Duties Surcharge)</span>
-                                                                    )}
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </label>
-                                                </div>
-                                            )}
+                                            {/* For Day Pass: only show if duration >= 3 days. For regular tickets: always show. */}
+                                            {ticket.system_role === 'pilot' && (() => {
+                                                // Calculate duration if dates are set
+                                                let showFlightLine = true;
+                                                if (ticket.is_day_pass && data.arrivalDate && data.departureDate) {
+                                                    const arrival = new Date(data.arrivalDate);
+                                                    const departure = new Date(data.departureDate);
+                                                    const daysDiff = Math.ceil((departure - arrival) / (1000 * 60 * 60 * 24)) + 1; // +1 for inclusive
+                                                    showFlightLine = daysDiff >= 3;
+                                                }
+
+                                                if (!showFlightLine) return null;
+
+                                                return (
+                                                    <div className="mb-4">
+                                                        <label className="flex items-center gap-2 cursor-pointer">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={data.flightLineDuties || false}
+                                                                onChange={e => handleChange(key, 'flightLineDuties', e.target.checked)}
+                                                            />
+                                                            <div>
+                                                                <span className="font-medium text-sm">I agree to perform flight line duties</span>
+                                                                {ticket.price_no_flight_line && !ticket.is_day_pass && (
+                                                                    <div className="text-xs mt-1">
+                                                                        {data.flightLineDuties ? (
+                                                                            <span className="text-green-600 font-bold">Price: ${Number(ticket.price).toFixed(2)} (Standard)</span>
+                                                                        ) : (
+                                                                            <span className="text-amber-600 font-bold">Price: ${Number(ticket.price_no_flight_line).toFixed(2)} (No Duties Surcharge)</span>
+                                                                        )}
+                                                                    </div>
+                                                                )}
+                                                                {ticket.is_day_pass && (
+                                                                    <div className="text-xs mt-1 text-gray-600">
+                                                                        Day Pass tickets have fixed per-day pricing regardless of flight line duty selection.
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </label>
+                                                    </div>
+                                                );
+                                            })()}
 
                                             {/* Heavy Models Toggle */}
                                             <div className="mb-4 space-y-3">

@@ -1,5 +1,28 @@
 # Development Log
 
+## [2026-01-27] - Day Pass Tickets Implementation (Completed)
+- **Time**: 15:30 - 16:15
+- **Completed Items**:
+    - **Feature**: Implemented Day Pass ticket functionality with dynamic pricing based on date range selection.
+    - **Database**: 
+        - Added `is_day_pass` column (BIT, NOT NULL, DEFAULT 0) to `event_ticket_types` table (Manual Script applied).
+    - **Backend (API)**:
+        - Updated `ticketTypes.js` (GET, POST, PUT) to handle `is_day_pass` field.
+        - Updated `getStoreItems.js` to include `is_day_pass` in ticket data for the storefront.
+    - **Frontend (Admin)**:
+        - Updated `EventForm.jsx` to add "Day Pass Logic?" checkbox in ticket creation/editing modal.
+        - Added explanatory text for admin users about Day Pass behavior.
+    - **Frontend (Client)**:
+        - Updated `AttendeeModal.jsx` to show flight line duties checkbox only for pilots with 3+ day duration on Day Pass tickets.
+        - Added dynamic price preview showing real-time calculation (X days × $Y/day = $Z) when dates are selected.
+        - Updated `StorePage.jsx` to calculate Day Pass pricing as `daily_rate × days_selected`.
+        - Flight line duties checkbox does not affect Day Pass pricing (fixed per-day rate).
+    - **Bug Fixes**:
+        - Fixed `formatDateTime is not defined` error in `EventForm.jsx` by correcting function name to `formatDateTimeForInput`.
+        - Fixed missing `is_day_pass` field in storefront by updating `getStoreItems.js` SELECT query.
+    - **Verification**:
+        - User manually verified Day Pass ticket creation, pricing calculation, and attendee modal behavior.
+
 ## [2026-01-26] - Subevent Registration Attendee Linking (Completed)
 - **Time**: 14:15 - 15:10
 - **Completed Items**:

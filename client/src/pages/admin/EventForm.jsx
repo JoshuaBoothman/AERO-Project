@@ -183,15 +183,15 @@ function EventForm() {
                         event_id: eventData.event_id,
                         name: eventData.name,
                         description: eventData.description || '',
-                        start_date: formatDateTime(eventData.start_date),
-                        end_date: formatDateTime(eventData.end_date),
+                        start_date: formatDateTimeForInput(eventData.start_date),
+                        end_date: formatDateTimeForInput(eventData.end_date),
                         venue_id: eventData.venue_id || '',
                         banner_url: eventData.banner_url || '',
                         status: eventData.status || 'Draft',
                         is_purchasing_enabled: eventData.is_purchasing_enabled,
                         is_public_viewable: eventData.is_public_viewable,
                         mop_url: eventData.mop_url || '',
-                        dinner_date: formatDateTime(eventData.dinner_date)
+                        dinner_date: formatDateTimeForInput(eventData.dinner_date)
                     });
 
                     // Fetch Ticket Types
@@ -410,7 +410,7 @@ function EventForm() {
     const openCreateTicket = () => {
         setEditingTicket(null);
         setEditingTicket(null);
-        setTicketForm({ name: '', price: '', system_role: 'spectator', description: '', includes_merch: false, price_no_flight_line: '', linkedProductIds: [] });
+        setTicketForm({ name: '', price: '', system_role: 'spectator', description: '', includes_merch: false, price_no_flight_line: '', is_day_pass: false, linkedProductIds: [] });
         setShowTicketModal(true);
         setShowTicketModal(true);
     };
@@ -424,6 +424,7 @@ function EventForm() {
             description: ticket.description || '',
             includes_merch: ticket.includes_merch || false,
             price_no_flight_line: ticket.price_no_flight_line || '',
+            is_day_pass: ticket.is_day_pass || false,
             linkedProductIds: ticket.linkedProductIds || [] // Ensure Array
         });
         setShowTicketModal(true);
@@ -1103,6 +1104,21 @@ function EventForm() {
                                         </p>
                                     </div>
                                 )}
+                            </div>
+
+                            <div>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginBottom: '0.5rem' }}>
+                                    <input
+                                        type="checkbox"
+                                        name="is_day_pass"
+                                        checked={ticketForm.is_day_pass}
+                                        onChange={handleTicketChange}
+                                    />
+                                    <strong>Day Pass Logic?</strong>
+                                </label>
+                                <small style={{ color: '#666', display: 'block', marginLeft: '1.5rem' }}>
+                                    If enabled, price will be (Daily Rate × Days Selected). For pilots, flight line duties only shown if 3+ days.
+                                </small>
                             </div>
 
                             {/* REMOVED CHECKBOXES */}

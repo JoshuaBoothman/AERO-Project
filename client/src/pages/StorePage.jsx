@@ -177,7 +177,20 @@ function StorePage({ orgSettings }) {
         // Calculate price based on first attendee's choice (assuming single ticket flow here)
         // Store Page currently adds 1 qty at a time via modal.
         let finalPrice = selectedTicketForModal.price;
-        if (selectedTicketForModal.system_role === 'pilot' && selectedTicketForModal.price_no_flight_line) {
+
+        // Day Pass Pricing: Calculate based on date range
+        if (selectedTicketForModal.is_day_pass) {
+            const attendee = attendees[0];
+            if (attendee && attendee.arrivalDate && attendee.departureDate) {
+                const arrival = new Date(attendee.arrivalDate);
+                const departure = new Date(attendee.departureDate);
+                const dayCount = Math.ceil((departure - arrival) / (1000 * 60 * 60 * 24)) + 1; // +1 for inclusive
+                finalPrice = selectedTicketForModal.price * dayCount;
+            }
+            // Note: Flight line duties checkbox doesn't affect Day Pass pricing
+        }
+        // Standard Pilot Pricing: Apply flight line surcharge if applicable
+        else if (selectedTicketForModal.system_role === 'pilot' && selectedTicketForModal.price_no_flight_line) {
             const attendee = attendees[0];
             if (attendee && !attendee.flightLineDuties) {
                 finalPrice = selectedTicketForModal.price_no_flight_line;
