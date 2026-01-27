@@ -115,6 +115,9 @@ To act as a "Startup Engineer" — a senior technical partner who prioritizes ve
 
 ## 10. Gotchas (Lessons Learned)
 *   **[2026-01-25] Dead Code Traps**: When fixing a bug in a critical user flow (like purchasing), verify **WHICH** page/component is actually used in production before fixing it. Don't assume code is active just because it exists; look for where the user actually navigates (e.g., `/store` vs `/events`) to avoid wasting time debugging dead legacy code.
+*   **[2026-01-28] Azure Auth Header**: Azure App Service authentication can strip the standard `Authorization` header. ALWAYS include `X-Auth-Token` in your API requests to bypass this and ensure the token reaches your Azure Function logic.
+    *   Correct: `headers: { 'Authorization': ..., 'X-Auth-Token': token }`
+    *   Incorrect: `headers: { 'Authorization': ... }`
 
 ---
-**Verified on**: 2026-01-25
+**Verified on**: 2026-01-28

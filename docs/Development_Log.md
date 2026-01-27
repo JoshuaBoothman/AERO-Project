@@ -1682,3 +1682,15 @@ The "Camping" page for "Festival of Aeromodelling 2026" was displaying "No campg
 ### Next Steps
 *   **Testing:** Full end-to-end regression testing of the checkout flow with multiple ticket types.
 
+
+## [2026-01-28] - Fix 401 on My-Attendees (Completed)
+- **Time**: 06:15 - 06:20
+- **Completed Items**:
+    - **Bug Fix**: Resolved 401 Unauthorized error in `StorePage.jsx` when fetching user attendees.
+    - **Root Cause**: The fetch call was missing the `X-Auth-Token` header required by Azure, and was reading a potential stale token from `localStorage`.
+    - **Fix**:
+        - Updated `StorePage.jsx` to use `useAuth()` hook for token retrieval (reactive state).
+        - Added `X-Auth-Token` header to the API request.
+    - **Documentation**:
+        - Updated `.agent/skills/startup-engineer/SKILL.md` with a "Gotcha" about Azure Auth Headers.
+        - Archived implementation plan to `completed/`.

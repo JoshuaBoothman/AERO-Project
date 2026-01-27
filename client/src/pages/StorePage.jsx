@@ -62,11 +62,17 @@ function StorePage({ orgSettings }) {
 
     // Fetch My Pilots
     useEffect(() => {
-        if (user && slug) {
+        if (user && slug && token) {
             fetch(`/api/events/${slug}/my-attendees`, {
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'X-Auth-Token': token
+                }
             })
-                .then(res => res.json())
+                .then(res => {
+                    if (res.ok) return res.json();
+                    throw new Error('Failed to fetch attendees');
+                })
                 .then(data => {
                     if (Array.isArray(data)) {
                         setMyPilots(data);
@@ -74,7 +80,7 @@ function StorePage({ orgSettings }) {
                 })
                 .catch(err => console.error("Failed to fetch my pilots", err));
         }
-    }, [user, slug]);
+    }, [user, slug, token]);
 
     const hasTicketInCart = cart.some(item => item.type === 'TICKET');
     const isLocked = !isAttendee && !hasTicketInCart;

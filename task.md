@@ -1,11 +1,8 @@
-# Phase 3: Official Dinner Registrations
+# Tasks
 
-## Status
-- [x] Apply DB changes (events, event_ticket_types)
-- [x] Update API (getEventDetail, create/update Event, TicketTypes)
-- [x] Update Client (EventForm, EventPurchase)
-- [x] Verify (lint)
-- [x] Bugfix: Fix subevents fetch URL in client
-- [x] Bugfix: Fix subevent date display in dropdown
-- [x] Bugfix: Fix cart item structure (type, id) for subevents
-- [x] Bugfix: Fix Store Page (Shop) official dinner logic (API & Client) <!-- id: 7 -->
+- [x] Debug 401 error on `my-attendees` endpoint <!-- id: 0 -->
+    - [x] Locate API handler for `my-attendees` <!-- id: 1 -->
+    - [x] Analyze authentication logic in API handler <!-- id: 2 -->
+    - [x] Inspect frontend request construction <!-- id: 3 -->
+    - [x] Fix authentication issue (Added X-Auth-Token header and switched to AuthContext) <!-- id: 4 -->
+    - [x] Verify fix (Applied code as approved) <!-- id: 5 -->
