@@ -13,7 +13,7 @@ app.http('publicRegistration', {
     handler: async (request, context) => {
         try {
             const body = await request.json();
-            const { public_event_day_id, firstName, lastName, email, adults, children } = body;
+            const { public_event_day_id, firstName, lastName, email, adults, children, subscribeToEmails } = body;
 
             // 1. Validate Input
             if (!public_event_day_id || !firstName || !lastName || !email) {
@@ -40,11 +40,12 @@ app.http('publicRegistration', {
             const ticketCode = generateTicketCode();
 
             // 3. Insert Registration
+
             await query(`
                 INSERT INTO public_registrations 
-                (public_event_day_id, first_name, last_name, email, adults_count, children_count, ticket_code)
+                (public_event_day_id, first_name, last_name, email, adults_count, children_count, ticket_code, subscribe_to_emails)
                 VALUES 
-                (@dayId, @fname, @lname, @email, @adults, @children, @code)
+                (@dayId, @fname, @lname, @email, @adults, @children, @code, @sub)
             `, [
                 { name: 'dayId', type: sql.Int, value: public_event_day_id },
                 { name: 'fname', type: sql.NVarChar, value: firstName },
@@ -52,7 +53,8 @@ app.http('publicRegistration', {
                 { name: 'email', type: sql.NVarChar, value: email },
                 { name: 'adults', type: sql.Int, value: adultsCount },
                 { name: 'children', type: sql.Int, value: childrenCount },
-                { name: 'code', type: sql.VarChar, value: ticketCode }
+                { name: 'code', type: sql.VarChar, value: ticketCode },
+                { name: 'sub', type: sql.Bit, value: subscribeToEmails ? 1 : 0 }
             ]);
 
             // 4. Send Email

@@ -7,7 +7,8 @@ const PublicRegistrationModal = ({ isOpen, onClose, publicDay, onRegister }) => 
         lastName: '',
         email: '',
         adults: 1,
-        children: 0
+        children: 0,
+        subscribeToEmails: false
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -169,6 +170,19 @@ const PublicRegistrationModal = ({ isOpen, onClose, publicDay, onRegister }) => 
                                         onChange={e => setFormData({ ...formData, children: parseInt(e.target.value) })}
                                     />
                                 </div>
+                            </div>
+
+                            <div className="flex items-start gap-3 mt-4">
+                                <input
+                                    type="checkbox"
+                                    id="subscribeToEmails"
+                                    className="mt-1 h-4 w-4 text-[#0f172a] border-gray-300 rounded focus:ring-[#0f172a]"
+                                    checked={formData.subscribeToEmails}
+                                    onChange={e => setFormData({ ...formData, subscribeToEmails: e.target.checked })}
+                                />
+                                <label htmlFor="subscribeToEmails" className="text-sm text-gray-700">
+                                    Would you like to be notified of future air shows?
+                                </label>
                             </div>
 
                             <div className="pt-2">

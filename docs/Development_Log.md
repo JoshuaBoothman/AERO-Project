@@ -1,5 +1,20 @@
 # Development Log
 
+## [2026-01-27] - Air Show Registration Updates (Completed)
+- **Time**: 16:45 - 17:00
+- **Completed Items**:
+    - **Feature**: Updated Air Show Registration to include email subscription opt-in.
+    - **Database**:
+        - Confirmed `subscribe_to_emails` column exists in `public_registrations` table.
+    - **Backend (API)**:
+        - Updated `publicRegistration.js` to capture and store `subscribeToEmails` preference.
+    - **Frontend (Client)**:
+        - Updated `EventDetails.jsx` title to "Air Show Registration (Public Attendance)".
+        - Updated `PublicRegistrationModal.jsx` to include "Would you like to be notified of future air shows?" checkbox.
+    - **Verification**:
+        - Reviewed code changes for correctness.
+        - Verified database insertion logic.
+
 ## [2026-01-27] - Pit Crew Tickets (Completed)
 - **Time**: 16:30 - 16:45
 - **Completed Items**:

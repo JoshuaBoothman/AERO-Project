@@ -91,7 +91,7 @@ function EventDetails({ propSlug }) {
                     <div className="mt-12 bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-left">
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                             <div>
-                                <h2 className="text-2xl font-bold text-gray-900 mb-2">Air Show Registration</h2>
+                                <h2 className="text-2xl font-bold text-gray-900 mb-2">Air Show Registration (Public Attendance)</h2>
                                 <p className="text-gray-600">Register your attendance for the public air show days. It's free!</p>
                             </div>
                         </div>
