@@ -250,65 +250,102 @@ function OrderDetail() {
             </div>
 
             {/* ORDER SUMMARY SECTION */}
-            <h2 style={{ borderBottom: '2px solid #eee', paddingBottom: '0.5rem', marginBottom: '1rem' }}>Order Summary</h2>
-            <div className="card" style={{ padding: 0, overflow: 'hidden', marginBottom: '3rem' }}>
-                <table className="admin-table">
-                    <thead>
+            <h2 className="text-xl font-bold border-b border-gray-200 pb-2 mb-4">Order Summary</h2>
+            <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden mb-8">
+                <table className="w-full text-left">
+                    <thead className="bg-gray-50 text-gray-500 uppercase text-xs">
                         <tr>
-                            <th style={{ paddingLeft: '1.5rem' }}>Item</th>
-                            <th>Details</th>
+                            <th className="px-6 py-3 font-semibold">Item</th>
+                            <th className="px-6 py-3 font-semibold">Details</th>
                             {(user?.role === 'admin' || user?.role === 'Operational') && (
-                                <th style={{ textAlign: 'center' }}>Admin</th>
+                                <th className="px-6 py-3 font-semibold text-center">Admin</th>
                             )}
-                            <th style={{ textAlign: 'right', paddingRight: '1.5rem' }}>Price</th>
+                            <th className="px-6 py-3 font-semibold text-right">Price</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-gray-100">
                         {summaryItems.map(item => (
-                            <tr key={item.order_item_id}>
-                                <td style={{ paddingLeft: '1.5rem', verticalAlign: 'top', paddingTop: '1rem', paddingBottom: '1rem' }}>
-                                    <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>{item.item_name}</div>
+                            <tr key={item.order_item_id} className="hover:bg-gray-50/50 transition-colors">
+                                <td className="px-6 py-4 align-top">
+                                    <div className="font-bold text-gray-800 text-lg mb-1">{item.item_name}</div>
                                     <span className={`status-badge`}>
                                         {item.item_type.toUpperCase()}
                                     </span>
                                 </td>
-                                <td style={{ verticalAlign: 'top', paddingTop: '1rem', paddingBottom: '1rem' }}>
-                                    <div style={{ fontSize: '0.9rem', color: '#555', lineHeight: '1.6' }}>
+                                <td className="px-6 py-4 align-top">
+                                    <div className="text-sm text-gray-600 space-y-1">
                                         {/* Dynamic details based on type */}
-                                        {item.item_type === 'Merchandise' && item.sku_code && (
-                                            <div>Option: <strong>{item.sku_code}</strong></div>
+                                        {item.item_type === 'Merchandise' && (
+                                            <>
+                                                {item.variant_string && (
+                                                    <div className="flex gap-2">
+                                                        <span className="font-medium">Option:</span>
+                                                        <span>{item.variant_string}</span>
+                                                    </div>
+                                                )}
+                                                {item.sku_code && (
+                                                    <div className="text-xs text-gray-400 font-mono mt-1">Ref: {item.sku_code}</div>
+                                                )}
+                                            </>
                                         )}
 
                                         {item.item_type === 'Campsite' && item.camp_check_in && (
                                             <div>
+                                                <span className="font-medium">Dates: </span>
                                                 {new Date(item.camp_check_in).toLocaleDateString()} &rarr; {new Date(item.camp_check_out).toLocaleDateString()}
                                             </div>
                                         )}
 
                                         {item.item_type === 'Asset' && item.asset_start && (
                                             <div>
-                                                {new Date(item.asset_start).toLocaleDateString()} &rarr; {new Date(item.asset_end).toLocaleDateString()}
-                                                {item.asset_identifier && <div className="text-xs text-gray-500 font-mono mt-1">ID: {item.asset_identifier}</div>}
+                                                <div>
+                                                    {new Date(item.asset_start).toLocaleDateString()} &rarr; {new Date(item.asset_end).toLocaleDateString()}
+                                                </div>
+                                                {item.asset_identifier && (
+                                                    <div className="text-xs font-mono bg-yellow-50 text-yellow-800 inline-block px-1 rounded mt-1 border border-yellow-100">
+                                                        ID: {item.asset_identifier}
+                                                    </div>
+                                                )}
                                             </div>
                                         )}
 
-                                        {item.item_type === 'Subevent' && item.subevent_start && (
+                                        {item.item_type === 'Subevent' && (
                                             <div>
-                                                {formatDateTimeForDisplay(item.subevent_start)}
+                                                {item.subevent_start && (
+                                                    <div>{formatDateTimeForDisplay(item.subevent_start)}</div>
+                                                )}
+                                                {item.subevent_attendee_name && (
+                                                    <div className="text-xs font-semibold text-gray-700 mt-1">
+                                                        For: {item.subevent_attendee_name}
+                                                    </div>
+                                                )}
+                                                {item.subevent_options && (
+                                                    <div className="mt-1 text-blue-700 bg-blue-50 px-2 py-1 rounded inline-block text-xs font-semibold">
+                                                        {item.subevent_options}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {/* Pit Crew / Pilot Logic */}
+                                        {item.pilot_name && (
+                                            <div className="mt-2 text-indigo-700 bg-indigo-50 px-2 py-1 rounded border border-indigo-100 inline-flex items-center gap-1">
+                                                <span className="text-xs font-bold uppercase tracking-wide">For Pilot:</span>
+                                                <span className="font-medium">{item.pilot_name}</span>
                                             </div>
                                         )}
 
                                         {item.item_type === 'Ticket' && item.ticket_code && (
-                                            <div style={{ fontFamily: 'monospace', color: '#666' }}>
+                                            <div className="text-xs text-gray-400 font-mono mt-1">
                                                 Ref: {item.ticket_code}
                                             </div>
                                         )}
                                     </div>
                                 </td>
                                 {(user?.role === 'admin' || user?.role === 'Operational') && (
-                                    <td style={{ textAlign: 'center', verticalAlign: 'top', paddingTop: '1rem' }}>
+                                    <td className="px-6 py-4 align-top text-center">
                                         {item.refunded_at ? (
-                                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                                            <div className="flex flex-col items-center gap-2">
                                                 <div title={`Refunded on ${new Date(item.refunded_at).toLocaleString()}`}
                                                     className="status-badge"
                                                     style={{ backgroundColor: '#fee2e2', color: '#b91c1c', border: '1px solid #fca5a5' }}>
@@ -331,16 +368,16 @@ function OrderDetail() {
                                         )}
                                     </td>
                                 )}
-                                <td style={{ textAlign: 'right', paddingRight: '1.5rem', fontWeight: 'bold', verticalAlign: 'top', paddingTop: '1rem' }}>
+                                <td className="px-6 py-4 align-top text-right font-bold text-gray-900">
                                     ${item.price_at_purchase.toFixed(2)}
                                 </td>
                             </tr>
                         ))}
                     </tbody>
-                    <tfoot style={{ backgroundColor: '#f9fafb' }}>
+                    <tfoot className="bg-gray-50 border-t border-gray-100">
                         <tr>
-                            <td colSpan="2" style={{ textAlign: 'right', padding: '1rem', fontWeight: 'bold' }}>Total</td>
-                            <td style={{ textAlign: 'right', padding: '1rem', paddingRight: '1.5rem', fontWeight: 'bold', fontSize: '1.2rem' }}>
+                            <td colSpan="2" className="px-6 py-4 text-right font-bold text-gray-600 uppercase tracking-wide">Total</td>
+                            <td className="px-6 py-4 text-right font-bold text-xl text-gray-900 pr-8" colSpan={user?.role === 'admin' || user?.role === 'Operational' ? 2 : 1}>
                                 ${order.total_amount.toFixed(2)}
                             </td>
                         </tr>

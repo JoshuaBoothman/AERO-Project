@@ -30,8 +30,24 @@ Fix duplicate ticket display on invoices and enhance Cart/Invoice UI to show det
     - **Asset**: Show `item.asset_identifier` (e.g., "GOLF-001").
     - **Pit Crew**: Show `item.pilot_name` (Name of the pilot they are crewing for).
 
-#### [MODIFY] client/src/context/CartContext.jsx (or relevant Cart component)
-- Ensure the Cart UI rendering mirrors the details shown in the Invoice.
+#### [MODIFY] client/src/pages/OrderDetail.jsx
+- **UI Cleanup**:
+    - Remove inline styles and replace with Tailwind CSS classes.
+    - Standardize fonts to use the project defaults (remove `fontFamily: 'monospace'` unless strictly necessary for Ticket/Reference codes).
+    - Fix misalignment in "Order Summary" table columns (Item, Details, Admin, Price).
+    - Ensure "Admin" column (Refund buttons) is properly aligned and doesn't clutter the view for non-admins (already conditional).
+    - Use `status-badge` class consistently for tags.
+
+#### [MODIFY] client/src/pages/Checkout.jsx
+- Update `renderItem` to show detailed information for each item type, mirroring the `Invoice` display logic:
+    - **Merchandise**: Show variants (Size/Color) from `item.variantValues` or `item.skuCode`.
+    - **Campsite**: Show Site # and Dates (already partially implemented, ensure consistency).
+    - **Subevent**: Show selected options (already partial, ensure consistency).
+    - **Asset**: Show dates and identifier if available (identifier might not be assigned until after purchase for some flows, but if specific unit selected, show it).
+    - **Pit Crew**: Show Pilot Name if linked.
+
+#### [MODIFY] client/src/context/CartContext.jsx
+- Ensure any necessary metadata is preserved in `addToCart` so `Checkout.jsx` can render it.
 
 ### Backend
 #### [MODIFY] api/src/functions/getOrderDetail.js
@@ -60,3 +76,8 @@ Fix duplicate ticket display on invoices and enhance Cart/Invoice UI to show det
     -   Verify Dates shown under Campsite.
     -   Verify "Vegetarian" under Dinner.
     -   Verify "Pilot: John Doe" under Pit Crew.
+3.  **UI Verification**:
+    -   Check `OrderDetail` page.
+    -   Ensure fonts are consistent.
+    -   Ensure columns are aligned.
+    -   Ensure buttons/badges look "Premium" (as per strict aesthetic rules).
