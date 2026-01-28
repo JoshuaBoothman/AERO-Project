@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotification } from '../../context/NotificationContext';
-import { Loader2, Plus, Trash2, X, Save } from 'lucide-react';
+import { Loader2, Trash2, X, Edit } from 'lucide-react';
 
 export default function VariantTemplates() {
     const { user, token } = useAuth();
@@ -10,6 +10,7 @@ export default function VariantTemplates() {
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [newTemplate, setNewTemplate] = useState({ name: '', options: [] });
+    const [editingId, setEditingId] = useState(null);
 
     // For new option input
     const [newOptionCategory, setNewOptionCategory] = useState('');
@@ -53,9 +54,45 @@ export default function VariantTemplates() {
 
             notify('Template deleted successfully', 'success');
             setTemplates(templates.filter(t => t.template_id !== id));
+            if (editingId === id) {
+                setEditingId(null);
+                setNewTemplate({ name: '', options: [] });
+                setIsModalOpen(false);
+            }
         } catch (error) {
             notify('Error deleting template: ' + error.message, 'error');
         }
+    };
+
+    const handleEdit = async (template) => {
+        try {
+            setLoading(true);
+            const res = await fetch(`/api/manage/variant-templates/${template.template_id}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'X-Auth-Token': token
+                }
+            });
+            if (!res.ok) throw new Error('Failed to load template details');
+            const data = await res.json();
+
+            setNewTemplate({
+                name: data.name,
+                options: data.options || []
+            });
+            setEditingId(template.template_id);
+            setIsModalOpen(true);
+        } catch (error) {
+            notify('Error loading template for edit: ' + error.message, 'error');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const openCreateModal = () => {
+        setEditingId(null);
+        setNewTemplate({ name: '', options: [] });
+        setIsModalOpen(true);
     };
 
     const handleAddOption = () => {
@@ -91,8 +128,14 @@ export default function VariantTemplates() {
         }
 
         try {
-            const res = await fetch('/api/manage/variant-templates', {
-                method: 'POST',
+            const url = editingId
+                ? `/api/manage/variant-templates/${editingId}`
+                : '/api/manage/variant-templates';
+
+            const method = editingId ? 'PUT' : 'POST';
+
+            const res = await fetch(url, {
+                method: method,
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
@@ -100,16 +143,17 @@ export default function VariantTemplates() {
                 },
                 body: JSON.stringify(newTemplate),
             });
-            if (!res.ok) throw new Error('Failed to create template');
+            if (!res.ok) throw new Error(`Failed to ${editingId ? 'update' : 'create'} template`);
 
-            notify('Template created successfully', 'success');
+            notify(`Template ${editingId ? 'updated' : 'created'} successfully`, 'success');
             setIsModalOpen(false);
             setNewTemplate({ name: '', options: [] });
             setNewOptionCategory('');
             setNewOptionValue('');
+            setEditingId(null);
             fetchTemplates();
         } catch (error) {
-            notify('Error creating template: ' + error.message, 'error');
+            notify(`Error ${editingId ? 'updating' : 'creating'} template: ` + error.message, 'error');
         }
     };
 
@@ -118,7 +162,7 @@ export default function VariantTemplates() {
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold">Variant Templates</h1>
                 <button
-                    onClick={() => setIsModalOpen(true)}
+                    onClick={openCreateModal}
                     className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 font-bold"
                 >
                     New Template
@@ -147,6 +191,13 @@ export default function VariantTemplates() {
                                         <td className="p-4">{t.option_count}</td>
                                         <td className="p-4 text-right">
                                             <button
+                                                onClick={() => handleEdit(t)}
+                                                className="text-blue-600 hover:text-blue-800 p-1 mr-2"
+                                                title="Edit Template"
+                                            >
+                                                <Edit size={18} />
+                                            </button>
+                                            <button
                                                 onClick={() => handleDelete(t.template_id)}
                                                 className="text-red-600 hover:text-red-800 p-1"
                                                 title="Delete Template"
@@ -164,10 +215,10 @@ export default function VariantTemplates() {
 
             {/* CREATE MODAL */}
             {isModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
                     <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
                         <div className="p-6 border-b flex justify-between items-center">
-                            <h2 className="text-xl font-bold">Create Variant Template</h2>
+                            <h2 className="text-xl font-bold">{editingId ? 'Edit Variant Template' : 'Create Variant Template'}</h2>
                             <button onClick={() => setIsModalOpen(false)} className="text-gray-500 hover:text-gray-700">
                                 <X size={24} />
                             </button>
@@ -263,7 +314,7 @@ export default function VariantTemplates() {
                                 onClick={handleCreateTemplate}
                                 className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 font-bold"
                             >
-                                Save Template
+                                {editingId ? 'Update Template' : 'Save Template'}
                             </button>
                         </div>
                     </div>

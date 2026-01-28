@@ -138,8 +138,61 @@ app.http('deleteVariantTemplate', {
 
             return { status: 204 };
         } catch (error) {
-            context.error(`Error deleting variant template: ${error.message}`);
             return { status: 500, body: JSON.stringify({ error: "Internal Server Error" }) };
         }
     }
 });
+
+// UPDATE Variant Template
+app.http('updateVariantTemplate', {
+    methods: ['PUT'],
+    authLevel: 'anonymous',
+    route: 'manage/variant-templates/{templateId}',
+    handler: async (request, context) => {
+        try {
+            const { templateId } = request.params;
+            const user = validateToken(request);
+            if (!user || user.role !== 'admin') {
+                return { status: 403, body: JSON.stringify({ error: "Unauthorized" }) };
+            }
+
+            const { name, options } = await request.json();
+
+            if (!name) {
+                return { status: 400, body: JSON.stringify({ error: "Template name is required" }) };
+            }
+
+            // Update Template Name
+            const updateTemplateQ = `UPDATE variant_templates SET name = @name WHERE template_id = @templateId`;
+            await query(updateTemplateQ, [
+                { name: 'name', type: sql.NVarChar, value: name },
+                { name: 'templateId', type: sql.Int, value: templateId }
+            ]);
+
+            // Replace Options (Delete All & Re-insert)
+            const deleteOptionsQ = `DELETE FROM variant_template_options WHERE template_id = @templateId`;
+            await query(deleteOptionsQ, [{ name: 'templateId', type: sql.Int, value: templateId }]);
+
+            if (options && Array.isArray(options) && options.length > 0) {
+                for (const option of options) {
+                    const insertOptionQ = `
+                        INSERT INTO variant_template_options (template_id, category_name, option_name, price_adjustment)
+                        VALUES (@templateId, @categoryName, @optionName, @priceAdjustment)
+                    `;
+                    await query(insertOptionQ, [
+                        { name: 'templateId', type: sql.Int, value: templateId },
+                        { name: 'categoryName', type: sql.NVarChar, value: option.category_name },
+                        { name: 'optionName', type: sql.NVarChar, value: option.option_name },
+                        { name: 'priceAdjustment', type: sql.Decimal(10, 2), value: option.price_adjustment || 0 }
+                    ]);
+                }
+            }
+
+            return { status: 200, jsonBody: { message: "Template updated successfully" } };
+        } catch (error) {
+            context.error(`Error updating variant template: ${error.message}`);
+            return { status: 500, body: JSON.stringify({ error: "Internal Server Error" }) };
+        }
+    }
+});
+

@@ -1,3 +1,20 @@
+## [2026-01-28] - Variant Templates Editing (Completed)
+- **Time**: 14:00 - 14:15
+- **Completed Items**:
+    - **Feature**: Enable editing of existing merchandise variant templates.
+    - **Backend (API)**:
+        - Created `PUT /api/manage/variant-templates/{id}` endpoint.
+        - Implemented replace logic for template options (full sync).
+    - **Frontend (Admin)**:
+        - Updated `VariantTemplates.jsx` with an Edit (Pencil) icon.
+        - Implemented modal pre-filling and update logic.
+    - **Verification**:
+        - Created `walkthrough.md` with manual verification steps.
+    - **Documentation**:
+        - Archived implementation plan `20260128_variant_templates.md` to `completed/`.
+    - **Fixes**:
+        - Fixed modal backdrop styling in `VariantTemplates.jsx` (switched to `bg-black/50` to prevent black screen issue).
+
 ## [2026-01-28] - Asset Sorting Debugging (Completed)
 - **Time**: 13:00 - 13:55
 - **Completed Items**:
