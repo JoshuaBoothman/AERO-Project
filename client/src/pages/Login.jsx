@@ -63,6 +63,9 @@ function Login() {
         <button type="submit" className="primary-button">Log In</button>
       </form>
       <p style={{ marginTop: '1rem' }}>
+        <Link to="/recover-login">Forgot your password?</Link>
+      </p>
+      <p style={{ marginTop: '0.5rem' }}>
         Don't have an account? <Link to="/register">Register here</Link>
       </p>
     </div>

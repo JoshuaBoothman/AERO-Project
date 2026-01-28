@@ -1,3 +1,21 @@
+## [2026-01-28] - Password Recovery (Recover Login) (Completed)
+- **Time**: 15:14 - 15:30
+- **Completed Items**:
+    - **Feature**: Implemented email-based password reset flow for users and admins.
+    - **Backend (API)**:
+        - Added `sendPasswordResetEmail()` to `emailService.js` using existing Resend pattern.
+        - Created `authRecover.js` endpoint (POST /api/authRecover) - generates secure token, stores in DB, sends reset email.
+        - Created `authResetPassword.js` endpoint (POST /api/authResetPassword) - validates token, hashes new password, clears token.
+    - **Frontend (Client)**:
+        - Created `RecoverLogin.jsx` - email form with success message.
+        - Created `ResetPassword.jsx` - password reset form with confirmation.
+        - Updated `Login.jsx` - added "Forgot your password?" link.
+        - Updated `App.jsx` - registered `/recover-login` and `/reset-password` routes.
+    - **Verification**:
+        - Lint check passed for all new files.
+        - API endpoint tested and confirmed working (`authRecover` returns expected response).
+        - Note: Full flow requires API restart to pick up new `authResetPassword` function.
+
 ## [2026-01-28] - Campsite Availability Grid (Completed)
 - **Time**: 14:30 - 15:10
 - **Completed Items**:

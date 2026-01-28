@@ -9,6 +9,8 @@ import { AuthProvider } from './context/AuthContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import VerifyEmail from './pages/VerifyEmail';
+import RecoverLogin from './pages/RecoverLogin';
+import ResetPassword from './pages/ResetPassword';
 import EventPurchase from './pages/EventPurchase';
 
 import MyOrders from './pages/MyOrders';
@@ -120,6 +122,8 @@ function App() {
                 <Route path="login" element={<Login />} />
                 <Route path="register" element={<Register />} />
                 <Route path="verify-email" element={<VerifyEmail />} />
+                <Route path="recover-login" element={<RecoverLogin />} />
+                <Route path="reset-password" element={<ResetPassword />} />
                 <Route path="events/:slug/purchase" element={<EventPurchase />} />
                 <Route path="events/:slug/shop" element={<StorePage />} /> {/* New Store Page */}
                 <Route path="shop" element={<ShopIndex />} />

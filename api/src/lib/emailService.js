@@ -111,7 +111,57 @@ async function sendPublicRegistrationEmail(email, firstName, ticketCode, eventDa
     }
 }
 
+/**
+ * Sends a password reset email.
+ * @param {string} email - The user's email address.
+ * @param {string} token - The password reset token.
+ * @param {string} firstName - The user's first name.
+ * @param {string} siteUrl - The frontend URL.
+ */
+async function sendPasswordResetEmail(email, token, firstName, siteUrl) {
+    if (!process.env.RESEND_API_KEY) {
+        console.error('RESEND_API_KEY is missing. Cannot send password reset email.');
+        return { success: false, error: 'Misconfigured: Missing RESEND_API_KEY' };
+    }
+
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    const baseUrl = siteUrl || process.env.SITE_URL || 'http://localhost:5173';
+    const resetLink = `${baseUrl}/reset-password?token=${token}`;
+    const orgName = 'Aeromodelling';
+
+    try {
+        const data = await resend.emails.send({
+            from: `${orgName} <registrations@meandervalleywebdesign.com.au>`,
+            to: [email],
+            subject: 'Password Reset Request',
+            html: `
+                <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto;">
+                    <h2>Password Reset Request</h2>
+                    <p>Hi ${firstName},</p>
+                    <p>We received a request to reset your password. Click the button below to set a new password.</p>
+                    <a href="${resetLink}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 20px 0;">Reset Password</a>
+                    <p>Or click this link: <a href="${resetLink}">${resetLink}</a></p>
+                    <p>This link will expire in 1 hour.</p>
+                    <p style="color: #666; font-size: 12px; margin-top: 30px;">If you did not request this, please ignore this email. Your password will remain unchanged.</p>
+                </div>
+            `
+        });
+
+        if (data.error) {
+            console.error('Resend API returned error:', data.error);
+            return { success: false, error: data.error };
+        }
+
+        console.log('Password reset email sent:', data);
+        return { success: true, data };
+    } catch (error) {
+        console.error('Error sending password reset email:', error);
+        return { success: false, error };
+    }
+}
+
 module.exports = {
     sendVerificationEmail,
-    sendPublicRegistrationEmail
+    sendPublicRegistrationEmail,
+    sendPasswordResetEmail
 };
