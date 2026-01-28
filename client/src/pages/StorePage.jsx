@@ -386,44 +386,67 @@ function StorePage({ orgSettings }) {
                 {/* ASSETS */}
                 {activeTab === 'hire' && (
                     <div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {data.assets.length === 0 && <p className="text-gray-500 italic">No assets available for hire.</p>}
-                            {data.assets.map(asset => (
-                                <div key={asset.id} className="bg-white border border-gray-100 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
-                                    <div className="mb-4">
-                                        <div className="w-full h-48 bg-gray-50 rounded mb-4 overflow-hidden border border-gray-100">
-                                            {asset.image ? (
-                                                <img src={asset.image} alt={asset.name} className="w-full h-full object-cover" />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-gray-200">No Image</div>
-                                            )}
-                                        </div>
-                                        <h3 className="font-bold text-lg text-gray-800 mb-1">{asset.name}</h3>
-                                        <p className="text-sm text-gray-600">{asset.description}</p>
-                                    </div>
-                                    <div>
-                                        <div className="mb-4">
-                                            {asset.show_daily_cost && asset.show_full_event_cost ? (
-                                                <div>
-                                                    <p className="font-bold text-xl text-primary">${asset.price} <span className="text-sm font-normal text-gray-500">/ day</span></p>
-                                                    <p className="text-sm text-gray-500">or ${asset.full_event_cost} Full Event</p>
+                        {(() => {
+                            if (!data.assets || data.assets.length === 0) {
+                                return <p className="text-gray-500 italic">No assets available for hire.</p>;
+                            }
+
+                            // Group assets
+                            const groups = {};
+                            const groupOrder = []; // To preserve category order from SQL
+
+                            data.assets.forEach(asset => {
+                                const catName = asset.category_name || 'Other';
+                                if (!groups[catName]) {
+                                    groups[catName] = [];
+                                    groupOrder.push(catName);
+                                }
+                                groups[catName].push(asset);
+                            });
+
+                            return groupOrder.map(catName => (
+                                <div key={catName} className="mb-12">
+                                    <h2 className="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">{catName}</h2>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        {groups[catName].map(asset => (
+                                            <div key={asset.id} className="bg-white border border-gray-100 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+                                                <div className="mb-4">
+                                                    <div className="w-full h-48 bg-gray-50 rounded mb-4 overflow-hidden border border-gray-100">
+                                                        {asset.image ? (
+                                                            <img src={asset.image} alt={asset.name} className="w-full h-full object-cover" />
+                                                        ) : (
+                                                            <div className="w-full h-full flex items-center justify-center text-gray-200">No Image</div>
+                                                        )}
+                                                    </div>
+                                                    <h3 className="font-bold text-lg text-gray-800 mb-1">{asset.name}</h3>
+                                                    <p className="text-sm text-gray-600">{asset.description}</p>
                                                 </div>
-                                            ) : asset.show_full_event_cost ? (
-                                                <p className="font-bold text-xl text-primary">${asset.full_event_cost} <span className="text-sm font-normal text-gray-500">Full Event</span></p>
-                                            ) : (
-                                                <p className="font-bold text-xl text-primary">${asset.price} <span className="text-sm font-normal text-gray-500">/ day</span></p>
-                                            )}
-                                        </div>
-                                        <button
-                                            onClick={() => handleOpenAssetModal(asset)}
-                                            className="w-full bg-primary text-secondary py-2 rounded hover:brightness-110 transition-all font-bold"
-                                        >
-                                            View Available Items
-                                        </button>
+                                                <div>
+                                                    <div className="mb-4">
+                                                        {asset.show_daily_cost && asset.show_full_event_cost ? (
+                                                            <div>
+                                                                <p className="font-bold text-xl text-primary">${asset.price} <span className="text-sm font-normal text-gray-500">/ day</span></p>
+                                                                <p className="text-sm text-gray-500">or ${asset.full_event_cost} Full Event</p>
+                                                            </div>
+                                                        ) : asset.show_full_event_cost ? (
+                                                            <p className="font-bold text-xl text-primary">${asset.full_event_cost} <span className="text-sm font-normal text-gray-500">Full Event</span></p>
+                                                        ) : (
+                                                            <p className="font-bold text-xl text-primary">${asset.price} <span className="text-sm font-normal text-gray-500">/ day</span></p>
+                                                        )}
+                                                    </div>
+                                                    <button
+                                                        onClick={() => handleOpenAssetModal(asset)}
+                                                        className="w-full bg-primary text-secondary py-2 rounded hover:brightness-110 transition-all font-bold"
+                                                    >
+                                                        View Available Items
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
-                            ))}
-                        </div>
+                            ));
+                        })()}
                     </div>
                 )}
 

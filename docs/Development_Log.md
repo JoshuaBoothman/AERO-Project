@@ -1,3 +1,20 @@
+## [2026-01-28] - Asset Sorting Debugging (Completed)
+- **Time**: 13:00 - 13:55
+- **Completed Items**:
+    - **Debugging**:
+        - Fixed critical issue where Asset Type reordering was bouncing back due to state not being explicitly sorted during render.
+        - Fixed UI flashing during sorting by implementing silent background data refresh.
+        - Fixed syntax error introduced by a patch script (newline escaping).
+    - **Frontend (Admin)**:
+        - Refactored `AssetTypes.jsx` to correctly handle `sort_order` sorting in the `groupedTypes` function.
+        - Updated `handleDragEnd` to optimistically update state without mutation, fixing the save persistence.
+    - **Verification**:
+        - Verified persistent sorting via drag-and-drop.
+        - Verified silent refresh (no flash).
+    - **Documentation**:
+        - Archived implementation plan `20260127_assets_categories_and_sorting.md` to `completed/`.
+        - Updated `SKILL.md` with new React and Scripting gotchas.
+
 ## [2026-01-28] - Merchandise Suppliers (Completed)
 - **Time**: 12:00 - 12:45
 - **Completed Items**:

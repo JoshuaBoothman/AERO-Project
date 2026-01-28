@@ -20,16 +20,21 @@ app.http('getAssets', {
                     ISNULL(at.show_daily_cost, 1) as show_daily_cost,
                     ISNULL(at.show_full_event_cost, 0) as show_full_event_cost,
                     at.image_url,
+                    at.asset_category_id,
+                    at.sort_order,
+                    ac.name as category_name,
+                    ISNULL(ac.sort_order, 9999) as category_sort_order,
                     (SELECT COUNT(*) FROM asset_items ai WHERE ai.asset_type_id = at.asset_type_id) as total_items,
                     (SELECT COUNT(*) FROM asset_items ai WHERE ai.asset_type_id = at.asset_type_id AND ai.status = 'Active') as active_items
                 FROM asset_types at
+                LEFT JOIN asset_categories ac ON at.asset_category_id = ac.asset_category_id
             `;
 
             if (eventId) {
                 query += ` WHERE at.event_id = @eventId`;
             }
 
-            query += ` ORDER BY at.name ASC`;
+            query += ` ORDER BY category_sort_order ASC, at.sort_order ASC, at.name ASC`;
 
             const requestObj = pool.request();
             if (eventId) requestObj.input('eventId', sql.Int, eventId);

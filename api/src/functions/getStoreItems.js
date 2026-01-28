@@ -163,9 +163,17 @@ app.http('getStoreItems', {
 
             // 4. Fetch Assets
             const assetRes = await pool.request().input('eid', sql.Int, eventId).query(`
-                SELECT asset_type_id, name, description, base_hire_cost, full_event_cost, ISNULL(show_daily_cost, 1) as show_daily_cost, ISNULL(show_full_event_cost, 0) as show_full_event_cost, image_url
-                FROM asset_types
-                WHERE event_id = @eid
+                SELECT 
+                    at.asset_type_id, at.name, at.description, at.base_hire_cost, at.full_event_cost, 
+                    ISNULL(at.show_daily_cost, 1) as show_daily_cost, ISNULL(at.show_full_event_cost, 0) as show_full_event_cost, 
+                    at.image_url,
+                    ac.name as category_name,
+                    ISNULL(ac.sort_order, 9999) as category_sort_order,
+                    at.sort_order
+                FROM asset_types at
+                LEFT JOIN asset_categories ac ON at.asset_category_id = ac.asset_category_id
+                WHERE at.event_id = @eid
+                ORDER BY category_sort_order ASC, at.sort_order ASC, at.name ASC
             `);
             const assets = assetRes.recordset.map(a => ({
                 id: a.asset_type_id,
@@ -176,7 +184,8 @@ app.http('getStoreItems', {
                 full_event_cost: a.full_event_cost,
                 show_daily_cost: a.show_daily_cost,
                 show_full_event_cost: a.show_full_event_cost,
-                image: a.image_url
+                image: a.image_url,
+                category_name: a.category_name || 'Uncategorized' // Default to Uncategorized
             }));
 
             // 5. Fetch Subevents

@@ -133,6 +133,9 @@ To act as a "Startup Engineer" — a senior technical partner who prioritizes ve
 *   **[2026-01-28] Custom Confirmation Modal**: The project has a custom `ConfirmationModal` component accessible via the `useNotification` context hook.
     *   **MANDATORY**: Always use `const { confirm } = useNotification(); confirm(msg, callback);` instead of `window.confirm`.
     *   **WHY**: Provides a consistent, premium UI experience and prevents browser-native popups that break immersion.
+*   **[2026-01-28] React State vs Visual Order**: When rendering lists from state that should be sorted by a property (e.g. `sort_order`), **ALWAYS** explicitly sort the array in the render output/variable. Do NOT rely on the state array being implicitly sorted, especially after complex updates.
+*   **[2026-01-28] Avoid UI Flashing**: For background data refreshes (like re-fetching after a drag-and-drop), implement a `silent` mode in your fetch function (`setLoading(false)`) to avoid triggering global loading spinners that wipe the UI.
+*   **[2026-01-28] Patch Scripts & Newlines**: When writing Node.js scripts to patch files (using `fs.readFileSync`), avoid using literal `\n` characters in string templates if they will be interpreted as code. Use careful escaping or template literals to prevent syntax errors in the target file.
 
 ## 11. Agent Operational Constraints
 *   **Shell Syntax**: The user is on Windows PowerShell.

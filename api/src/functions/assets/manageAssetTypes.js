@@ -4,7 +4,7 @@ const { sql, getPool } = require('../../lib/db');
 app.http('manageAssetTypes', {
     methods: ['POST', 'PUT', 'DELETE'],
     authLevel: 'anonymous',
-    route: 'assets/types/{id?}',
+    route: 'assets/types/{id:int?}',
     handler: async (request, context) => {
         const method = request.method;
         const id = request.params.id;
@@ -13,7 +13,7 @@ app.http('manageAssetTypes', {
         try {
             if (method === 'POST') {
                 const body = await request.json();
-                const { name, description, event_id, base_hire_cost, full_event_cost, show_daily_cost, show_full_event_cost, image_url } = body;
+                const { name, description, event_id, base_hire_cost, full_event_cost, show_daily_cost, show_full_event_cost, image_url, asset_category_id } = body;
 
                 if (!name || !event_id) {
                     return { status: 400, body: JSON.stringify({ error: "Name and Event ID are required" }) };
@@ -28,10 +28,11 @@ app.http('manageAssetTypes', {
                     .input('showDaily', sql.Bit, show_daily_cost !== undefined ? show_daily_cost : 1)
                     .input('showFull', sql.Bit, show_full_event_cost !== undefined ? show_full_event_cost : 0)
                     .input('imageUrl', sql.NVarChar, image_url || null)
+                    .input('catId', sql.Int, asset_category_id || null)
                     .query(`
-                        INSERT INTO asset_types (event_id, name, description, base_hire_cost, full_event_cost, show_daily_cost, show_full_event_cost, image_url)
+                        INSERT INTO asset_types (event_id, name, description, base_hire_cost, full_event_cost, show_daily_cost, show_full_event_cost, image_url, asset_category_id)
                         OUTPUT INSERTED.*
-                        VALUES (@eventId, @name, @description, @cost, @fullEventCost, @showDaily, @showFull, @imageUrl)
+                        VALUES (@eventId, @name, @description, @cost, @fullEventCost, @showDaily, @showFull, @imageUrl, @catId)
                     `);
 
                 return { status: 201, jsonBody: result.recordset[0] };
@@ -52,6 +53,7 @@ app.http('manageAssetTypes', {
                 if (body.show_daily_cost !== undefined) { updates.push("show_daily_cost = @showDaily"); req.input('showDaily', sql.Bit, body.show_daily_cost); }
                 if (body.show_full_event_cost !== undefined) { updates.push("show_full_event_cost = @showFull"); req.input('showFull', sql.Bit, body.show_full_event_cost); }
                 if (body.image_url !== undefined) { updates.push("image_url = @img"); req.input('img', sql.NVarChar, body.image_url); }
+                if (body.asset_category_id !== undefined) { updates.push("asset_category_id = @catId"); req.input('catId', sql.Int, body.asset_category_id); }
 
                 if (updates.length === 0) return { status: 400, body: "No fields to update" };
 
