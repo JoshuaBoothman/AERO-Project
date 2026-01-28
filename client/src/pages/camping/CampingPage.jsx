@@ -114,6 +114,10 @@ function CampingPage({ embedded = false, event = null }) {
             if (res.ok) {
                 const data = await res.json();
                 setCampgrounds(data.campgrounds);
+                // Store the full event period from API (for date grid columns)
+                if (data.event_start && data.event_end) {
+                    setEventBounds({ start: data.event_start, end: data.event_end });
+                }
                 // Set default active tab
                 if (data.campgrounds.length > 0) {
                     setActiveCampgroundId(data.campgrounds[0].campground_id);
@@ -286,10 +290,10 @@ function CampingPage({ embedded = false, event = null }) {
                         </div>
                     )}
 
-                    <div style={{ display: 'flex', gap: '20px' }}>
+                    <div style={{ display: 'flex', flexDirection: viewMode === 'list' ? 'column' : 'row', gap: '20px' }}>
                         {/* Map / Grid View */}
                         {/* Map / List View Container */}
-                        <div style={{ flex: '2 1 0', minWidth: 0 }}>
+                        <div style={{ flex: viewMode === 'list' ? 'none' : '2 1 0', minWidth: 0, width: viewMode === 'list' ? '100%' : 'auto' }}>
                             {/* View Toggle & Legend Header */}
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                                 {/* Legend (Map Mode Only, or simplified for List) */}
@@ -309,7 +313,10 @@ function CampingPage({ embedded = false, event = null }) {
                                         </div>
                                     </div>
                                 ) : (
-                                    <div></div> // Spacer
+                                    <div style={{ display: 'flex', gap: '10px', fontSize: '0.8rem' }}>
+                                        <span><span style={{ color: 'red', fontWeight: 'bold' }}>X</span> = Booked</span>
+                                        <span><span style={{ color: '#ccc' }}>-</span> = Available</span>
+                                    </div>
                                 )}
 
                                 {/* Toggle Buttons */}
@@ -395,6 +402,9 @@ function CampingPage({ embedded = false, event = null }) {
                                             activeCampground={activeCampground}
                                             selectedSite={selectedSite}
                                             onSiteSelect={handleSiteClick}
+                                            eventStartDate={eventBounds.start}
+                                            eventEndDate={eventBounds.end}
+                                            compactMode={true}
                                         />
                                     )}
                                 </div>
@@ -404,8 +414,8 @@ function CampingPage({ embedded = false, event = null }) {
                         </div>
 
                         {/* Sidebar / Info Panel */}
-                        <div style={{ flex: '0 0 350px', minWidth: '300px' }}>
-                            <div style={{ position: 'sticky', top: '20px', padding: '20px', border: '1px solid #eee', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+                        <div style={{ flex: viewMode === 'list' ? 'none' : '0 0 350px', minWidth: viewMode === 'list' ? 'auto' : '300px', width: viewMode === 'list' ? '100%' : 'auto' }}>
+                            <div style={{ position: viewMode === 'list' ? 'static' : 'sticky', top: '20px', padding: '20px', border: '1px solid #eee', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
                                 <h2>Booking Details</h2>
                                 {selectedSite ? (
                                     <div>

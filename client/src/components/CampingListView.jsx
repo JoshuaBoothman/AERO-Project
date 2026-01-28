@@ -1,29 +1,75 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 
-const CampingListView = ({ activeCampground, selectedSite, onSiteSelect }) => {
+const CampingListView = ({ activeCampground, selectedSite, onSiteSelect, eventStartDate, eventEndDate, compactMode = false }) => {
     if (!activeCampground) return null;
 
-    // Filter sites to show list
-    // We assume activeCampground.sites is properly populated
     const sites = activeCampground.sites || [];
 
-    // Simple helper for sorting: Alpha-numeric sort for site numbers (e.g. A1, A2, A10)
+    // Alpha-numeric sort for site numbers (e.g. A1, A2, A10)
     const sortedSites = [...sites].sort((a, b) => {
         return a.site_number.localeCompare(b.site_number, undefined, { numeric: true, sensitivity: 'base' });
     });
 
+    // Generate array of dates from event start to event end (exclusive of end date for nights)
+    const dateColumns = useMemo(() => {
+        if (!eventStartDate || !eventEndDate) return [];
+        const dates = [];
+        const start = new Date(eventStartDate + 'T00:00:00');
+        const end = new Date(eventEndDate + 'T00:00:00');
+        let current = new Date(start);
+        while (current < end) {
+            dates.push(new Date(current));
+            current.setDate(current.getDate() + 1);
+        }
+        return dates;
+    }, [eventStartDate, eventEndDate]);
+
+    // Helper: Format date as YYYY-MM-DD in local time (not UTC)
+    const formatLocalDate = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
+    // Helper: Check if a specific night (date) is booked for a site
+    // Night-based logic: a booking from Jan 1 to Jan 3 occupies nights of Jan 1 and Jan 2
+    // Jan 3 is checkout day, so that night is available
+    const isNightBooked = (site, nightDate) => {
+        if (!site.bookings || site.bookings.length === 0) return false;
+        const nightStr = formatLocalDate(nightDate);
+        for (const booking of site.bookings) {
+            // Booking occupies nights from check_in (inclusive) to check_out (exclusive)
+            if (nightStr >= booking.check_in && nightStr < booking.check_out) {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    const hasDateColumns = dateColumns.length > 0;
+    // In compact mode: Site, Type, Status, Action + date columns (4 base cols)
+    // In full mode: Site, Type, Dimensions, Daily Rate, Full Event, Status, Action + date columns (7 base cols)
+    const baseCols = compactMode ? 4 : 7;
+    const totalCols = baseCols + dateColumns.length;
+
     return (
-        <div style={{ border: '1px solid #ddd', borderRadius: '8px', overflow: 'hidden' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <div style={{ border: '1px solid #ddd', borderRadius: '8px', overflow: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: hasDateColumns ? `${(compactMode ? 300 : 600) + dateColumns.length * 36}px` : (compactMode ? '300px' : '600px') }}>
                 <thead style={{ background: '#f5f5f5', borderBottom: '1px solid #ddd' }}>
                     <tr>
-                        <th style={{ padding: '12px', textAlign: 'left' }}>Site</th>
-                        <th style={{ padding: '12px', textAlign: 'left' }}>Type</th>
-                        <th style={{ padding: '12px', textAlign: 'left' }}>Dimensions</th>
-                        <th style={{ padding: '12px', textAlign: 'right' }}>Daily Rate</th>
-                        <th style={{ padding: '12px', textAlign: 'right' }}>Full Event</th>
-                        <th style={{ padding: '12px', textAlign: 'center' }}>Status</th>
-                        <th style={{ padding: '12px', textAlign: 'center' }}>Action</th>
+                        <th style={{ padding: '10px 12px', textAlign: 'left', position: 'sticky', left: 0, background: '#f5f5f5', zIndex: 2 }}>Site</th>
+                        <th style={{ padding: '10px 12px', textAlign: 'left' }}>Type</th>
+                        {!compactMode && <th style={{ padding: '10px 12px', textAlign: 'left' }}>Dimensions</th>}
+                        {!compactMode && <th style={{ padding: '10px 12px', textAlign: 'right' }}>Daily Rate</th>}
+                        {!compactMode && <th style={{ padding: '10px 12px', textAlign: 'right' }}>Full Event</th>}
+                        <th style={{ padding: '10px 12px', textAlign: 'center' }}>Status</th>
+                        <th style={{ padding: '10px 12px', textAlign: 'center' }}>Action</th>
+                        {dateColumns.map((date, idx) => (
+                            <th key={idx} style={{ padding: '6px 2px', textAlign: 'center', fontSize: '0.75rem', minWidth: '32px', borderLeft: '1px solid #ddd' }}>
+                                {date.getDate()}
+                            </th>
+                        ))}
                     </tr>
                 </thead>
                 <tbody>
@@ -40,14 +86,16 @@ const CampingListView = ({ activeCampground, selectedSite, onSiteSelect }) => {
                                     opacity: isAvailable ? 1 : 0.6
                                 }}
                             >
-                                <td style={{ padding: '12px', fontWeight: 'bold' }}>{site.site_number}</td>
-                                <td style={{ padding: '12px' }}>{site.is_powered ? 'Powered' : 'Unpowered'}</td>
-                                <td style={{ padding: '12px' }}>{site.dimensions || '-'}</td>
-                                <td style={{ padding: '12px', textAlign: 'right' }}>${parseFloat(site.price_per_night || 0).toFixed(2)}</td>
-                                <td style={{ padding: '12px', textAlign: 'right' }}>
-                                    {site.full_event_price ? `$${parseFloat(site.full_event_price).toFixed(2)}` : '-'}
-                                </td>
-                                <td style={{ padding: '12px', textAlign: 'center' }}>
+                                <td style={{ padding: '10px 12px', fontWeight: 'bold', position: 'sticky', left: 0, background: isSelected ? '#e0f7fa' : (isAvailable ? 'white' : '#f9f9f9'), zIndex: 1 }}>{site.site_number}</td>
+                                <td style={{ padding: '10px 12px' }}>{site.is_powered ? 'Powered' : 'Unpowered'}</td>
+                                {!compactMode && <td style={{ padding: '10px 12px' }}>{site.dimensions || '-'}</td>}
+                                {!compactMode && <td style={{ padding: '10px 12px', textAlign: 'right' }}>${parseFloat(site.price_per_night || 0).toFixed(2)}</td>}
+                                {!compactMode && (
+                                    <td style={{ padding: '10px 12px', textAlign: 'right' }}>
+                                        {site.full_event_price ? `$${parseFloat(site.full_event_price).toFixed(2)}` : '-'}
+                                    </td>
+                                )}
+                                <td style={{ padding: '10px 12px', textAlign: 'center' }}>
                                     <span style={{
                                         padding: '4px 8px',
                                         borderRadius: '4px',
@@ -59,7 +107,7 @@ const CampingListView = ({ activeCampground, selectedSite, onSiteSelect }) => {
                                         {isAvailable ? 'Available' : 'Unavailable'}
                                     </span>
                                 </td>
-                                <td style={{ padding: '12px', textAlign: 'center' }}>
+                                <td style={{ padding: '10px 12px', textAlign: 'center' }}>
                                     <button
                                         disabled={!isAvailable}
                                         onClick={() => onSiteSelect(site)}
@@ -76,12 +124,24 @@ const CampingListView = ({ activeCampground, selectedSite, onSiteSelect }) => {
                                         {isSelected ? 'Selected' : (isAvailable ? 'Select' : 'Booked')}
                                     </button>
                                 </td>
+                                {dateColumns.map((date, idx) => {
+                                    const booked = isNightBooked(site, date);
+                                    return (
+                                        <td key={idx} style={{ padding: '4px', textAlign: 'center', borderLeft: '1px solid #ddd', fontSize: '0.85rem' }}>
+                                            {booked ? (
+                                                <span style={{ color: 'red', fontWeight: 'bold' }}>X</span>
+                                            ) : (
+                                                <span style={{ color: '#ccc' }}>-</span>
+                                            )}
+                                        </td>
+                                    );
+                                })}
                             </tr>
                         );
                     })}
                     {sortedSites.length === 0 && (
                         <tr>
-                            <td colSpan="7" style={{ padding: '20px', textAlign: 'center' }}>No campsites found.</td>
+                            <td colSpan={totalCols} style={{ padding: '20px', textAlign: 'center' }}>No campsites found.</td>
                         </tr>
                     )}
                 </tbody>
@@ -91,3 +151,5 @@ const CampingListView = ({ activeCampground, selectedSite, onSiteSelect }) => {
 };
 
 export default CampingListView;
+
+

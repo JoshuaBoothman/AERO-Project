@@ -1,3 +1,23 @@
+## [2026-01-28] - Campsite Availability Grid (Completed)
+- **Time**: 14:30 - 15:10
+- **Completed Items**:
+    - **Feature**: Implemented per-night availability grid in the Camping List View.
+    - **Backend (API)**:
+        - Updated `getCampgroundAvailability.js` to return ALL bookings for the full event period (for grid display).
+        - `is_available` now correctly checks user-selected dates (not just existence of any booking).
+        - API response includes `event_start` and `event_end` for consistent date column generation.
+    - **Frontend (Client)**:
+        - Updated `CampingListView.jsx` with dynamic date columns showing X (booked) or - (available) per night.
+        - Implemented night-based logic: checkout day is available for new bookings.
+        - Fixed timezone issue using local date formatting instead of UTC.
+        - Added `compactMode` prop to hide redundant columns (Dimensions, Daily Rate, Full Event).
+        - Sticky "Site" column for horizontal scrolling.
+    - **Layout**:
+        - Updated `CampingPage.jsx` to stack vertically in list view (table full width, sidebar below).
+        - Added simplified legend for list view (X = Booked, - = Available).
+    - **Verification**:
+        - User verified correct booking display and availability logic.
+
 ## [2026-01-28] - Variant Templates Editing (Completed)
 - **Time**: 14:00 - 14:15
 - **Completed Items**:
