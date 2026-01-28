@@ -111,12 +111,22 @@ app.http('getOrderDetail', {
                     ) as subevent_options,
                     -- Subevent Attendee Name (Explicit lookup via registration)
                     (
-                        SELECT TOP 1 p_sub.first_name + ' ' + p_sub.last_name
+                        SELECT TOP 1 
+                            CASE 
+                                WHEN sr_sub.guest_name IS NOT NULL THEN sr_sub.guest_name
+                                ELSE p_sub.first_name + ' ' + p_sub.last_name
+                            END
                         FROM subevent_registrations sr_sub
-                        JOIN attendees a_sub ON sr_sub.attendee_id = a_sub.attendee_id
-                        JOIN persons p_sub ON a_sub.person_id = p_sub.person_id
+                        LEFT JOIN attendees a_sub ON sr_sub.attendee_id = a_sub.attendee_id
+                        LEFT JOIN persons p_sub ON a_sub.person_id = p_sub.person_id
                         WHERE sr_sub.order_item_id = oi.order_item_id
                     ) as subevent_attendee_name,
+                    -- Is Guest Flag
+                    (
+                         SELECT TOP 1 CASE WHEN sr_sub.guest_name IS NOT NULL THEN 1 ELSE 0 END
+                         FROM subevent_registrations sr_sub
+                         WHERE sr_sub.order_item_id = oi.order_item_id
+                    ) as is_subevent_guest,
                     -- Pilot Name (Linked or Direct)
                     CASE
                         WHEN a.pilot_name IS NOT NULL THEN a.pilot_name

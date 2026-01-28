@@ -1,27 +1,35 @@
-import React, { useState } from 'react';
-import { X, Check } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, Check, Search, User, UserPlus } from 'lucide-react';
 
-export default function SubeventModal({ subevent, onClose, onAddToCart, myPilots = [], cart = [] }) {
+export default function SubeventModal({ subevent, onClose, onAddToCart, myPilots = [], cart = [], onSearchAttendees }) {
     const [selections, setSelections] = useState({});
-    const [selectedAttendeeKey, setSelectedAttendeeKey] = useState("");
 
-    // Aggregate Available Attendees
-    const getAvailableAttendees = () => {
+    // Combobox State
+    const [inputValue, setInputValue] = useState("");
+    const [selectedOption, setSelectedOption] = useState(null);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [searchResults, setSearchResults] = useState([]);
+    const [isSearching, setIsSearching] = useState(false);
+    const dropdownRef = useRef(null);
+
+    // Initial Defaults (My Pilots + Cart)
+    const [defaultOptions, setDefaultOptions] = useState([]);
+
+    useEffect(() => {
         const list = [];
-
         // Existing Attendees
         myPilots.forEach(p => {
             const label = p.pilot_name || `${p.first_name} ${p.last_name}`;
             list.push({
                 key: `existing-${p.attendee_id}`,
-                label: `${label} (Existing)`,
-                value: { attendeeId: p.attendee_id, name: label }
+                label: `${label} (My Attendee)`,
+                value: { attendeeId: p.attendee_id, name: label },
+                type: 'existing'
             });
         });
 
         // Cart Tickets
-        cart.filter(item => item.type === 'TICKET').forEach((ticket, index) => {
-            // Use ticket name or person name if available
+        cart.filter(item => item.type === 'TICKET').forEach((ticket) => {
             let label = ticket.name;
             if (ticket.attendees && ticket.attendees[0]) {
                 const att = ticket.attendees[0];
@@ -29,42 +37,74 @@ export default function SubeventModal({ subevent, onClose, onAddToCart, myPilots
                     label = `${att.firstName} ${att.lastName} (${ticket.name})`;
                 }
             }
-
-            // We need a unique ID. Using tempId if available, else index fallback (risky but handled in StorePage now)
             const tempId = ticket.attendees?.[0]?.tempId;
             if (tempId) {
                 list.push({
                     key: `cart-${tempId}`,
                     label: `New Ticket: ${label}`,
-                    value: { attendeeTempId: tempId, name: label }
+                    value: { attendeeTempId: tempId, name: label },
+                    type: 'cart'
                 });
             }
         });
+        setDefaultOptions(list);
+    }, [myPilots, cart]);
 
-        return list;
+    // Close dropdown on click outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsDropdownOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    // Search Debounce
+    useEffect(() => {
+        const timer = setTimeout(async () => {
+            if (inputValue.length >= 2 && onSearchAttendees) {
+                setIsSearching(true);
+                const results = await onSearchAttendees(inputValue);
+                setSearchResults(results.map(r => ({
+                    key: `search-${r.attendee_id}`,
+                    label: `${r.name} (${r.ticketType})`,
+                    value: { attendeeId: r.attendee_id, name: r.name },
+                    type: 'search'
+                })));
+                setIsSearching(false);
+            } else {
+                setSearchResults([]);
+            }
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [inputValue, onSearchAttendees]);
+
+    const handleSelectOption = (opt) => {
+        setSelectedOption(opt);
+        setInputValue(opt.label); // Or just name?
+        setIsDropdownOpen(false);
     };
 
-    const attendees = getAvailableAttendees();
-
-    // Auto-select if only one option?
-    // useEffect(() => {
-    //     if (attendees.length === 1 && !selectedAttendeeKey) {
-    //         setSelectedAttendeeKey(attendees[0].key);
-    //     }
-    // }, [attendees]);
-
-    const handleSelectionChange = (variationId, optionId) => {
-        setSelections(prev => ({
-            ...prev,
-            [variationId]: optionId
-        }));
+    const handleGuestNameSelect = () => {
+        const guestName = inputValue.trim();
+        if (!guestName) return;
+        const opt = {
+            key: `guest-${Date.now()}`,
+            label: `${guestName} (Guest Name)`,
+            value: { guestName: guestName, name: `${guestName} (Guest)` },
+            type: 'guest'
+        };
+        setSelectedOption(opt);
+        setIsDropdownOpen(false);
     };
 
+    // Calculate variations price
     const calculateTotal = () => {
         let total = subevent.price;
-        // Iterate over selections
         Object.values(selections).forEach(optId => {
-            // Find option across all variations
             if (subevent.variations) {
                 for (const v of subevent.variations) {
                     const opt = v.options.find(o => o.id === optId);
@@ -78,9 +118,12 @@ export default function SubeventModal({ subevent, onClose, onAddToCart, myPilots
         return total;
     };
 
-    const isValid = () => {
-        if (!selectedAttendeeKey) return false;
+    const handleSelectionChange = (variationId, optionId) => {
+        setSelections(prev => ({ ...prev, [variationId]: optionId }));
+    };
 
+    const isValid = () => {
+        if (!selectedOption) return false;
         if (!subevent.variations) return true;
         return subevent.variations.every(v => {
             if (!v.isRequired) return true;
@@ -90,8 +133,7 @@ export default function SubeventModal({ subevent, onClose, onAddToCart, myPilots
 
     const handleSubmit = () => {
         if (isValid()) {
-            const selectedAtt = attendees.find(a => a.key === selectedAttendeeKey)?.value;
-            onAddToCart(subevent, selections, calculateTotal(), selectedAtt);
+            onAddToCart(subevent, selections, calculateTotal(), selectedOption.value);
         }
     };
 
@@ -113,37 +155,101 @@ export default function SubeventModal({ subevent, onClose, onAddToCart, myPilots
                     </button>
                 </div>
 
-                {/* Scrollable Content */}
-                <div className="p-6 overflow-y-auto">
+                {/* Content */}
+                <div className="p-6 overflow-y-auto min-h-[300px]">
                     <div className="space-y-6">
 
-                        {/* Attendee Selection */}
-                        <div className="space-y-3">
+                        {/* Custom Combobox */}
+                        <div className="space-y-3 relative" ref={dropdownRef}>
                             <label className="block text-sm font-semibold text-gray-700">
                                 Who is this for? <span className="text-red-500 ml-1">*</span>
                             </label>
+
                             <div className="relative">
-                                <select
-                                    value={selectedAttendeeKey}
-                                    onChange={(e) => setSelectedAttendeeKey(e.target.value)}
-                                    className="w-full p-3 border border-gray-200 rounded-lg appearance-none bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
-                                >
-                                    <option value="">-- Select Attendee --</option>
-                                    {attendees.map(att => (
-                                        <option key={att.key} value={att.key}>{att.label}</option>
-                                    ))}
-                                </select>
-                                <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-500">
-                                    <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" /></svg>
-                                </div>
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                <input
+                                    type="text"
+                                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                    placeholder="Search attendees or enter Guest Name..."
+                                    value={inputValue}
+                                    onChange={(e) => {
+                                        setInputValue(e.target.value);
+                                        setSelectedOption(null); // Clear selection on edit
+                                        setIsDropdownOpen(true);
+                                    }}
+                                    onFocus={() => setIsDropdownOpen(true)}
+                                />
                             </div>
-                            {attendees.length === 0 && (
-                                <p className="text-sm text-red-500">No attendees found. Please add a ticket to your cart first.</p>
+
+                            {/* Dropdown Menu */}
+                            {isDropdownOpen && (
+                                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-xl border border-gray-100 max-h-60 overflow-y-auto z-10">
+                                    {/* Default Options (My Pilots + Cart) */}
+                                    {defaultOptions.length > 0 && searchResults.length === 0 && inputValue.length < 2 && (
+                                        <div className="py-2">
+                                            <div className="px-3 py-1 text-xs font-bold text-gray-400 uppercase tracking-wider">My Attendees / Cart</div>
+                                            {defaultOptions.map(opt => (
+                                                <button
+                                                    key={opt.key}
+                                                    onClick={() => handleSelectOption(opt)}
+                                                    className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-2"
+                                                >
+                                                    <User size={16} className="text-primary" />
+                                                    <span className="truncate">{opt.label}</span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {/* Search Results */}
+                                    {searchResults.length > 0 && (
+                                        <div className="py-2 border-t border-gray-50">
+                                            <div className="px-3 py-1 text-xs font-bold text-gray-400 uppercase tracking-wider">Search Results</div>
+                                            {searchResults.map(opt => (
+                                                <button
+                                                    key={opt.key}
+                                                    onClick={() => handleSelectOption(opt)}
+                                                    className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-2"
+                                                >
+                                                    <User size={16} className="text-blue-500" />
+                                                    <span className="truncate">{opt.label}</span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {/* Guest Option */}
+                                    {inputValue.length > 0 && (
+                                        <div className="py-2 border-t border-gray-50">
+                                            <button
+                                                onClick={handleGuestNameSelect}
+                                                className="w-full text-left px-4 py-3 hover:bg-amber-50 flex items-center gap-2 text-amber-700 font-medium"
+                                            >
+                                                <UserPlus size={16} />
+                                                <span>Use "{inputValue}" as Guest Name</span>
+                                            </button>
+                                        </div>
+                                    )}
+
+                                    {/* Loading State */}
+                                    {isSearching && (
+                                        <div className="p-4 text-center text-gray-400 text-sm">Searching...</div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Selected Indicator */}
+                            {selectedOption && (
+                                <div className="mt-2 text-sm text-green-600 flex items-center gap-1 font-medium bg-green-50 px-3 py-2 rounded">
+                                    <Check size={16} />
+                                    Selected: {selectedOption.label}
+                                </div>
                             )}
                         </div>
 
                         {subevent.variations && subevent.variations.length > 0 && <hr className="border-gray-100" />}
 
+                        {/* Variations Logic (Preserved) */}
                         {subevent.variations && subevent.variations.map(variation => (
                             <div key={variation.id} className="space-y-3">
                                 <label className="block text-sm font-semibold text-gray-700">
@@ -178,10 +284,6 @@ export default function SubeventModal({ subevent, onClose, onAddToCart, myPilots
                                 </div>
                             </div>
                         ))}
-
-                        {(!subevent.variations || subevent.variations.length === 0) && attendees.length > 0 && (
-                            <p className="text-gray-500 text-sm italic">This item has no additional options to configure.</p>
-                        )}
                     </div>
                 </div>
 

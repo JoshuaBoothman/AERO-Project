@@ -66,7 +66,10 @@ function Checkout() {
                 subevents: subevents.map(s => ({
                     subeventId: s.id,
                     price: s.price,
-                    selectedOptions: s.selectedOptions || {}
+                    selectedOptions: s.selectedOptions || {},
+                    attendeeId: s.attendeeId,
+                    attendeeTempId: s.attendeeTempId,
+                    guestName: s.guestName
                 }))
             };
 
@@ -142,6 +145,9 @@ function Checkout() {
             }
             if (item.variationDetails) {
                 item.variationDetails.forEach(d => badges.push({ text: d, color: 'blue' }));
+            }
+            if (item.attendeeName) {
+                badges.push({ text: item.attendeeName, color: 'purple' });
             }
         }
         else if (item.type === 'TICKET') {

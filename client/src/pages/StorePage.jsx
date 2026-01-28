@@ -58,7 +58,7 @@ function StorePage({ orgSettings }) {
                 }
             })
             .finally(() => setLoading(false));
-    }, [slug]);
+    }, [slug, token]);
 
     // Fetch My Pilots
     useEffect(() => {
@@ -154,6 +154,26 @@ function StorePage({ orgSettings }) {
         setSelectedSubevent(subevent);
     };
 
+    const searchAttendees = async (query) => {
+        if (!query || query.length < 2) return [];
+        try {
+            const headers = {};
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+                headers['X-Auth-Token'] = token;
+            }
+            const res = await fetch(`/api/events/${slug}/attendees/search?q=${encodeURIComponent(query)}`, { headers });
+            if (res.ok) {
+                const data = await res.json();
+                return data.attendees || [];
+            }
+            return [];
+        } catch (err) {
+            console.error("Search failed", err);
+            return [];
+        }
+    };
+
     const handleConfirmSubevent = (subevent, selections, totalPrice, attendeeLink) => {
         addToCart({
             ...subevent,
@@ -163,6 +183,7 @@ function StorePage({ orgSettings }) {
             selectedOptions: selections,
             attendeeId: attendeeLink.attendeeId, // Existing
             attendeeTempId: attendeeLink.attendeeTempId, // New (Cart)
+            guestName: attendeeLink.guestName, // [NEW] Guest Name
             attendeeName: attendeeLink.name // For display in cart if needed
         });
         setSelectedSubevent(null);
@@ -462,6 +483,7 @@ function StorePage({ orgSettings }) {
                     onAddToCart={handleConfirmSubevent}
                     myPilots={myPilots}
                     cart={cart}
+                    onSearchAttendees={searchAttendees}
                 />
             )}
 

@@ -130,7 +130,16 @@ function Invoice() {
                                 <td className="py-3">
                                     <div className="font-medium">{item.item_name}</div>
                                     <div className="text-xs text-gray-500">
-                                        {item.item_type} &bull; {item.first_name} {item.last_name}
+                                        {item.item_type} &bull; {
+                                            item.item_type === 'Subevent' && item.subevent_attendee_name
+                                                ? (
+                                                    <span>
+                                                        {item.is_subevent_guest === 1 && <span className="font-semibold text-amber-600 mr-1">Guest:</span>}
+                                                        {item.subevent_attendee_name}
+                                                    </span>
+                                                )
+                                                : `${item.first_name} ${item.last_name}`
+                                        }
                                         {item.ticket_code && ` (${item.ticket_code})`}
                                     </div>
                                 </td>

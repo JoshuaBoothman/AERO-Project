@@ -625,27 +625,33 @@ app.http('createOrder', {
                         const finalPrice = sub.price + priceAdjustment;
                         totalAmount += finalPrice;
 
-                        let subeventAttendeeId = null;
+                        let subeventAttendeeId = null; // For Order Item (Who 'owns' it / is paying or generic link)
+                        let registrationAttendeeId = null; // For Registration (Who is going)
+                        let registrationGuestName = null; // For Guest Name
 
                         // Resolve Attendee
                         if (sub.attendeeId) {
                             // Existing Attendee
-                            // Validate ownership? For MVP, assume provided ID is valid context from frontend (filtered by my-attendees).
-                            // A robust check would filter against `SELECT 1 FROM attendees WHERE attendee_id = @id AND person_id IN (SELECT person_id FROM persons WHERE user_id = @uid UNION ...)`
-                            // For speed: assume valid if from authenticated frontend.
                             subeventAttendeeId = sub.attendeeId;
+                            registrationAttendeeId = sub.attendeeId;
                         } else if (sub.attendeeTempId) {
                             // New Attendee in Cart
-                            subeventAttendeeId = tempIdMap[sub.attendeeTempId];
-                            if (!subeventAttendeeId) {
+                            const resolvedId = tempIdMap[sub.attendeeTempId];
+                            if (!resolvedId) {
                                 throw new Error(`Could not link subevent '${sub.name}' to new attendee. ID map missing.`);
                             }
-                        } else {
-                            // Fallback to Main (or legacy behavior), but we prefer explicit.
-                            // If we implement the plan, we SHOULD error if missing, but for backward compat during dev, maybe fallback?
-                            // Plan says: "Update validation logic... Ensure valid attendeeId or tempId"
-                            // So let's fallback to mainAttendeeId if missing, but we expect frontend to send it.
+                            subeventAttendeeId = resolvedId;
+                            registrationAttendeeId = resolvedId;
+                        } else if (sub.guestName) {
+                            // [NEW] Guest Name Logic
+                            // Order Item linked to Main User (Buyer)
                             subeventAttendeeId = mainAttendeeId;
+                            registrationAttendeeId = null; // Not a registered attendee
+                            registrationGuestName = sub.guestName;
+                        } else {
+                            // Fallback to Main (or legacy behavior)
+                            subeventAttendeeId = mainAttendeeId;
+                            registrationAttendeeId = mainAttendeeId;
                         }
 
                         const itemReq = new sql.Request(transaction);
@@ -658,13 +664,13 @@ app.http('createOrder', {
                         const orderItemId = itemRes.recordset[0].id;
 
                         // Insert Registration and return ID
-                        // Note: Previous schema check confirmed subevent_registrations has an identity PK 'subevent_registration_id'
                         const regReq = new sql.Request(transaction);
                         const regRes = await regReq
                             .input('sid', sql.Int, sub.subeventId)
                             .input('oiid', sql.Int, orderItemId)
-                            .input('aid', sql.Int, subeventAttendeeId)
-                            .query(`INSERT INTO subevent_registrations (subevent_id, order_item_id, attendee_id) VALUES (@sid, @oiid, @aid); SELECT SCOPE_IDENTITY() AS id`);
+                            .input('aid', sql.Int, registrationAttendeeId) // Can be NULL now
+                            .input('gn', sql.NVarChar, registrationGuestName) // [NEW]
+                            .query(`INSERT INTO subevent_registrations (subevent_id, order_item_id, attendee_id, guest_name) VALUES (@sid, @oiid, @aid, @gn); SELECT SCOPE_IDENTITY() AS id`);
 
                         const registrationId = regRes.recordset[0].id;
 
