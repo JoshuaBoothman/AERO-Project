@@ -17,7 +17,7 @@ function ProductEditor() {
     const [isArchived, setIsArchived] = useState(false);
 
     // Edit State
-    const [formData, setFormData] = useState({ name: '', description: '', base_image_url: '' });
+    const [formData, setFormData] = useState({ name: '', description: '', base_image_url: '', supplier_id: '' });
 
     // Option State
     const [newCatName, setNewCatName] = useState('');
@@ -36,10 +36,25 @@ function ProductEditor() {
     // Rename State
     const [renameState, setRenameState] = useState({ open: false, variantId: null, name: '', existingId: null });
 
+    // Supplier State
+    const [suppliers, setSuppliers] = useState([]);
+    const [isSupplierModalOpen, setIsSupplierModalOpen] = useState(false);
+    const [newSupplierName, setNewSupplierName] = useState('');
+
     // Initial Fetch
     useEffect(() => {
         fetchDetails();
+        fetchSuppliers();
     }, [id]);
+
+    const fetchSuppliers = async () => {
+        try {
+            const res = await fetch('/api/suppliers', {
+                headers: { 'Authorization': `Bearer ${token}`, 'X-Auth-Token': token }
+            });
+            if (res.ok) setSuppliers(await res.json());
+        } catch (e) { console.error(e); }
+    };
 
     const fetchDetails = async () => {
         setLoading(true);
@@ -54,7 +69,8 @@ function ProductEditor() {
                 setFormData({
                     name: data.product.name,
                     description: data.product.description || '',
-                    base_image_url: data.product.base_image_url || ''
+                    base_image_url: data.product.base_image_url || '',
+                    supplier_id: data.product.supplier_id || ''
                 });
             } else {
                 notify('Failed to load product', 'error');
@@ -77,6 +93,27 @@ function ProductEditor() {
             });
             if (res.ok) notify('Saved Details successfully!', 'success');
         } catch (e) { notify('Error saving details', 'error'); }
+    };
+
+    const handleCreateSupplier = async (e) => {
+        e.preventDefault();
+        try {
+            const res = await fetch('/api/suppliers', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'X-Auth-Token': token },
+                body: JSON.stringify({ name: newSupplierName })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                notify('Supplier created', 'success');
+                setIsSupplierModalOpen(false);
+                setNewSupplierName('');
+                await fetchSuppliers(); // Refresh list
+                setFormData(prev => ({ ...prev, supplier_id: data.id })); // Select new supplier
+            } else {
+                notify('Failed to create supplier', 'error');
+            }
+        } catch (e) { notify('Error creating supplier', 'error'); }
     };
 
     // --- Tab 2: Options Handlers ---
@@ -437,6 +474,26 @@ function ProductEditor() {
 
     return (
         <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
+            {/* Quick Add Supplier Modal */}
+            {isSupplierModalOpen && (
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1200 }}>
+                    <form onSubmit={handleCreateSupplier} style={{ background: 'white', padding: '20px', borderRadius: '8px', width: '300px' }}>
+                        <h3 style={{ marginTop: 0 }}>Add Supplier</h3>
+                        <input
+                            autoFocus
+                            placeholder="Supplier Name"
+                            value={newSupplierName}
+                            onChange={e => setNewSupplierName(e.target.value)}
+                            style={{ width: '100%', padding: '8px', marginBottom: '10px', border: '1px solid #ddd', borderRadius: '4px' }}
+                            required
+                        />
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                            <button type="button" onClick={() => setIsSupplierModalOpen(false)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid #ddd', borderRadius: '4px', cursor: 'pointer' }}>Cancel</button>
+                            <button type="submit" style={{ padding: '6px 12px', background: 'black', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Add</button>
+                        </div>
+                    </form>
+                </div>
+            )}
             <Link to="/admin/merchandise">← Back to List</Link>
             <h1 style={{ marginTop: '10px' }}>Editing: {product.name}</h1>
 
@@ -476,6 +533,28 @@ function ProductEditor() {
                             value={formData.description}
                             onChange={e => setFormData({ ...formData, description: e.target.value })}
                         />
+                    </div>
+                    <div style={{ marginBottom: '15px' }}>
+                        <label style={{ display: 'block', fontWeight: 'bold' }}>Supplier</label>
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                            <select
+                                style={{ flex: 1, padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                                value={formData.supplier_id}
+                                onChange={e => setFormData({ ...formData, supplier_id: e.target.value })}
+                            >
+                                <option value="">-- Select Supplier --</option>
+                                {suppliers.map(s => (
+                                    <option key={s.supplier_id} value={s.supplier_id}>{s.name}</option>
+                                ))}
+                            </select>
+                            <button
+                                onClick={() => setIsSupplierModalOpen(true)}
+                                style={{ padding: '8px 12px', background: '#eee', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
+                                title="Add New Supplier"
+                            >
+                                +
+                            </button>
+                        </div>
                     </div>
                     <div style={{ marginBottom: '15px' }}>
                         <label style={{ display: 'block', fontWeight: 'bold' }}>Base Image</label>
@@ -754,7 +833,7 @@ function ProductEditor() {
                             </tr>
                         </thead>
                         <tbody>
-                            {skus.map((sku, idx) => (
+                            {skus.map((sku) => (
                                 <tr key={sku.id} style={{ borderBottom: '1px solid #eee' }}>
                                     <td style={{ padding: '10px', textAlign: 'center' }}>
                                         <input

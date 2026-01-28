@@ -1,3 +1,23 @@
+## [2026-01-28] - Merchandise Suppliers (Completed)
+- **Time**: 12:00 - 12:45
+- **Completed Items**:
+    - **Feature**: Implemented "Merchandise Suppliers" system to link products to specific suppliers.
+    - **Database**:
+        - Created `merchandise_suppliers` table (Manual Script applied).
+        - Added `supplier_id` column to `products` table.
+    - **Backend (API)**:
+        - Created `suppliers.js` endpoint (CRUD) for managing suppliers.
+        - Updated `products.js`, `createProduct.js`, `updateProduct.js`, `getProductDetails.js` to handle `supplier_id`.
+    - **Frontend (Admin)**:
+        - Created `SupplierList.jsx` for managing supplier records.
+        - Updated `MerchandiseList.jsx` to link to the new management page.
+        - Updated `ProductEditor.jsx` with a Supplier dropdown and "Quick Add" functionality.
+    - **Verification**:
+        - Linted and fixed code issues (`useCallback` dependency).
+        - Verified API endpoint reachability.
+    - **Documentation**:
+        - Archived `20260128_merchandise_suppliers.md` to `completed/`.
+
 ## [2026-01-28] - Subevent Registrations (Completed)
 - **Time**: 11:00 - 12:20
 - **Completed Items**:

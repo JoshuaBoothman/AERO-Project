@@ -137,6 +137,9 @@ function MerchandiseList() {
                         />
                         Show Archived
                     </label>
+                    <Link to="/admin/suppliers" style={{ background: '#2196F3', color: 'white', padding: '10px 20px', borderRadius: '4px', textDecoration: 'none', display: 'inline-block' }}>
+                        Suppliers
+                    </Link>
                     <button
                         onClick={() => setShowCreateModal(true)}
                         style={{ background: 'black', color: 'white', padding: '10px 20px', borderRadius: '4px', cursor: 'pointer', border: 'none' }}

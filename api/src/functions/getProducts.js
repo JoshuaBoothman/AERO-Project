@@ -16,10 +16,13 @@ app.http('getProducts', {
                     p.name, 
                     p.base_image_url, 
                     p.is_active,
+                    p.supplier_id,
+                    ms.name as supplier_name,
                     (SELECT COUNT(*) FROM variants v WHERE v.product_id = p.product_id) as variant_count,
                     (SELECT COUNT(*) FROM product_skus s WHERE s.product_id = p.product_id AND s.is_active = 1) as sku_count,
                     (SELECT SUM(current_stock) FROM product_skus s WHERE s.product_id = p.product_id AND s.is_active = 1) as total_stock
                 FROM products p
+                LEFT JOIN merchandise_suppliers ms ON p.supplier_id = ms.supplier_id
                 -- WHERE p.is_active = 1 (Removed to allow fetching archived products for admin)
 
                 ORDER BY p.sort_order ASC, p.name ASC

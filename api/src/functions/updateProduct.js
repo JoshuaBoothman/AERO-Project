@@ -13,7 +13,7 @@ app.http('updateProduct', {
         }
 
         const productId = request.params.id;
-        const { name, description, base_image_url, is_active } = await request.json();
+        const { name, description, base_image_url, is_active, supplier_id } = await request.json();
 
         try {
             const pool = await getPool();
@@ -35,6 +35,10 @@ app.http('updateProduct', {
             if (is_active !== undefined) {
                 updates.push("is_active = @active");
                 req.input('active', sql.Bit, is_active);
+            }
+            if (supplier_id !== undefined) {
+                updates.push("supplier_id = @supplier");
+                req.input('supplier', sql.Int, supplier_id);
             }
 
             if (updates.length > 0) {

@@ -14,7 +14,7 @@ app.http('createProduct', {
         }
 
         try {
-            const { name, description, base_image_url } = await request.json();
+            const { name, description, base_image_url, supplier_id } = await request.json();
 
             if (!name) {
                 return { status: 400, body: JSON.stringify({ error: "Name is required" }) };
@@ -27,10 +27,11 @@ app.http('createProduct', {
                 .input('name', sql.NVarChar, name)
                 .input('desc', sql.NVarChar, description || '')
                 .input('img', sql.NVarChar, base_image_url || '')
+                .input('supplier', sql.Int, supplier_id || null)
                 .query(`
-                    INSERT INTO products (name, description, base_image_url, is_active)
+                    INSERT INTO products (name, description, base_image_url, is_active, supplier_id)
                     OUTPUT inserted.product_id
-                    VALUES (@name, @desc, @img, 1)
+                    VALUES (@name, @desc, @img, 1, @supplier)
                 `);
 
             const newProductId = result.recordset[0].product_id;

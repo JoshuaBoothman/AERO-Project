@@ -14,7 +14,12 @@ app.http('getProductDetails', {
             // 1. Basic Info
             const productRes = await pool.request()
                 .input('id', sql.Int, productId)
-                .query("SELECT * FROM products WHERE product_id = @id");
+                .query(`
+                    SELECT p.*, s.name as supplier_name 
+                    FROM products p
+                    LEFT JOIN merchandise_suppliers s ON p.supplier_id = s.supplier_id
+                    WHERE p.product_id = @id
+                `);
 
             if (productRes.recordset.length === 0) {
                 return { status: 404, body: JSON.stringify({ error: "Product not found" }) };

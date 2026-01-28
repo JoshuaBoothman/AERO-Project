@@ -31,6 +31,7 @@ import EventPlanesReport from './pages/admin/EventPlanesReport';
 import FlightLinesSetup from './pages/admin/FlightLinesSetup';
 import FlightLineRoster from './pages/admin/FlightLineRoster';
 import AttendeesList from './pages/admin/AttendeesList';
+import SupplierList from './pages/admin/SupplierList';
 
 import OrderDetail from './pages/OrderDetail';
 import Invoice from './pages/Invoice';
@@ -138,7 +139,9 @@ function App() {
                 <Route path="admin" element={<AdminDashboard />} />
                 <Route path="admin/map" element={<AdminMapTool />} />
                 <Route path="admin/orders" element={<AdminOrders />} />
+                <Route path="admin/orders" element={<AdminOrders />} />
                 <Route path="admin/merchandise" element={<MerchandiseList />} />
+                <Route path="admin/suppliers" element={<SupplierList />} />
                 <Route path="admin/merchandise/:id" element={<ProductEditor />} />
                 <Route path="admin/assets" element={<AssetDashboard />} />
                 <Route path="admin/subevents" element={<AdminSubevents />} />

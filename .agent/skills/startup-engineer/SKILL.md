@@ -142,6 +142,9 @@ To act as a "Startup Engineer" — a senior technical partner who prioritizes ve
     *   **Format**: `<appDataDir>/brain/<conversation-id>/task.md` (Do NOT assume project root).
     *   **Action**: Always use the explicit absolute path provided in the system prompt metadata.
 
+*   **[2026-01-28] Component Duplication Cleanliness**: When duplicating components (e.g., creating `SupplierList` from `MerchandiseList`), aggressively prune unused imports and variables *before* running lint verification to save cycles.
+    *   **Action**: Scan for `useEffect` dependencies and unused state/variables immediately after copying.
+
 ---
 **Verified on**: 2026-01-28
 
