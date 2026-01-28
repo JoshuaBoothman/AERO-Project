@@ -1,3 +1,28 @@
+## [2026-01-28] - Subevent Registrations (Completed)
+- **Time**: 11:00 - 12:20
+- **Completed Items**:
+    - **Feature**: Implemented Guest Name support and Attendee Search for Subevent Registrations.
+    - **Database**:
+        - Verified `guest_name` column in `subevent_registrations`.
+        - Verified `attendee_id` is nullable.
+    - **Backend (API)**:
+        - Created `searchEventAttendees.js` (GET /api/events/:slug/attendees/search).
+        - Updated `createOrder.js` to handle guest names (create registration with NULL attendee_id).
+        - Updated `getOrderDetail.js` to return `guest_name` and `is_subevent_guest` flag.
+    - **Frontend (Client)**:
+        - **Store**: Updated `StorePage.jsx` to support attendee search.
+        - **UI**: Refactored `SubeventModal.jsx` to use a Combobox for selecting existing attendees (My Pilots / Cart) or entering a new Guest Name.
+        - **Checkout**: Fixed payload to ensure guest details are transmitted to backend.
+        - **Invoice**: Updated logic to explicitly label "Guest: [Name]" for clarity.
+    - **Verification**:
+        - Validated API endpoints.
+        - Verified end-to-end checkout flow with Guest methodology.
+        - Verified Invoice display.
+        - Confirmed linting (with minor hook suppression for intended behavior).
+    - **Documentation**:
+        - Updated `walkthrough.md`.
+        - Archived `20260127_subevent_registrations.md` to `completed/`.
+
 ## [2026-01-28] - Order Item Refunds (Completed)
 - **Time**: 10:15 - 10:45
 - **Completed Items**:
