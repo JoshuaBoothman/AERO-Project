@@ -1,3 +1,13 @@
+## [2026-01-30] - Admin Campgrounds Fix (Completed)
+- **Time**: 06:14 - 06:17
+- **Completed Items**:
+    - **Bug Fix**: Resolved issue where the "+" button in Admin Campgrounds was not working when no campgrounds existed.
+    - **Root Cause**: The "Add Campground" modal was nested inside a conditional block that required a selected campground to render.
+    - **Fix**: Moved the modal rendering outside of the conditional block in `AdminMapTool.jsx`, ensuring it is always accessible.
+    - **Verification**: Verified fix by ensuring modals render correctly in the component structure.
+    - **Documentation**: 
+        - Created `walkthrough.md` detailing the fix.
+
 ## [2026-01-28] - Password Recovery (Recover Login) (Completed)
 - **Time**: 15:14 - 15:30
 - **Completed Items**:

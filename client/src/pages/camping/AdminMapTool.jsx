@@ -879,81 +879,83 @@ function AdminMapTool() {
                     </div>
 
 
-                    {/* Create Campground Modal */}
-                    {
-                        showCreateModal && (
-                            <div style={{
-                                position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                                background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
-                            }}>
-                                <div style={{ background: 'white', padding: '20px', borderRadius: '8px', width: '400px' }}>
-                                    <h3>Add Campground</h3>
-                                    <div style={{ marginBottom: '10px' }}>
-                                        <label>Name:</label>
-                                        <input
-                                            style={{ width: '100%', padding: '5px' }}
-                                            value={newCampName}
-                                            onChange={e => setNewCampName(e.target.value)}
-                                            placeholder="e.g. North Field"
-                                        />
-                                    </div>
-                                    <div style={{ marginBottom: '10px' }}>
-                                        <label>Map Image:</label>
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={e => setSelectedFile(e.target.files[0])}
-                                            style={{ width: '100%', padding: '5px' }}
-                                        />
-                                    </div>
-                                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
-                                        <button onClick={() => setShowCreateModal(false)} disabled={uploading} style={{ padding: '8px 16px' }}>Cancel</button>
-                                        <button onClick={handleCreateCampground} disabled={uploading} style={{ padding: '8px 16px', background: 'var(--primary-color, black)', color: 'white', border: 'none' }}>
-                                            {uploading ? 'Uploading...' : 'Create'}
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        )
-                    }
-                    {/* Edit Campground Modal */}
-                    {
-                        showEditModal && (
-                            <div style={{
-                                position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                                background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
-                            }}>
-                                <div style={{ background: 'white', padding: '20px', borderRadius: '8px', width: '400px' }}>
-                                    <h3>Edit Campground</h3>
-                                    <div style={{ marginBottom: '10px' }}>
-                                        <label>Name:</label>
-                                        <input
-                                            style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
-                                            value={editData.name}
-                                            onChange={e => setEditData({ ...editData, name: e.target.value })}
-                                        />
-                                    </div>
-                                    <div style={{ marginBottom: '10px' }}>
-                                        <label>Update Map Image (Optional):</label>
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={e => setEditFile(e.target.files[0])}
-                                            style={{ width: '100%', padding: '5px' }}
-                                        />
-                                    </div>
-                                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
-                                        <button onClick={() => setShowEditModal(false)} disabled={uploading} style={{ padding: '8px 16px' }}>Cancel</button>
-                                        <button onClick={submitEdit} disabled={uploading} style={{ padding: '8px 16px', background: 'var(--primary-color, black)', color: 'white', border: 'none' }}>
-                                            {uploading ? 'Saving...' : 'Save'}
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        )
-                    }
                 </div>
             )}
+
+            {/* Create Campground Modal */}
+            {
+                showCreateModal && (
+                    <div style={{
+                        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                        background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
+                    }}>
+                        <div style={{ background: 'white', padding: '20px', borderRadius: '8px', width: '400px' }}>
+                            <h3>Add Campground</h3>
+                            <div style={{ marginBottom: '10px' }}>
+                                <label>Name:</label>
+                                <input
+                                    style={{ width: '100%', padding: '5px' }}
+                                    value={newCampName}
+                                    onChange={e => setNewCampName(e.target.value)}
+                                    placeholder="e.g. North Field"
+                                />
+                            </div>
+                            <div style={{ marginBottom: '10px' }}>
+                                <label>Map Image:</label>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={e => setSelectedFile(e.target.files[0])}
+                                    style={{ width: '100%', padding: '5px' }}
+                                />
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
+                                <button onClick={() => setShowCreateModal(false)} disabled={uploading} style={{ padding: '8px 16px' }}>Cancel</button>
+                                <button onClick={handleCreateCampground} disabled={uploading} style={{ padding: '8px 16px', background: 'var(--primary-color, black)', color: 'white', border: 'none' }}>
+                                    {uploading ? 'Uploading...' : 'Create'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+            {/* Edit Campground Modal */}
+            {
+                showEditModal && (
+                    <div style={{
+                        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                        background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
+                    }}>
+                        <div style={{ background: 'white', padding: '20px', borderRadius: '8px', width: '400px' }}>
+                            <h3>Edit Campground</h3>
+                            <div style={{ marginBottom: '10px' }}>
+                                <label>Name:</label>
+                                <input
+                                    style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
+                                    value={editData.name}
+                                    onChange={e => setEditData({ ...editData, name: e.target.value })}
+                                />
+                            </div>
+                            <div style={{ marginBottom: '10px' }}>
+                                <label>Update Map Image (Optional):</label>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={e => setEditFile(e.target.files[0])}
+                                    style={{ width: '100%', padding: '5px' }}
+                                />
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
+                                <button onClick={() => setShowEditModal(false)} disabled={uploading} style={{ padding: '8px 16px' }}>Cancel</button>
+                                <button onClick={submitEdit} disabled={uploading} style={{ padding: '8px 16px', background: 'var(--primary-color, black)', color: 'white', border: 'none' }}>
+                                    {uploading ? 'Saving...' : 'Save'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+
         </div>
     );
 }
