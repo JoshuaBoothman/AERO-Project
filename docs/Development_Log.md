@@ -1,3 +1,25 @@
+## [2026-01-30] - Campsite Sorting & Bulk Create (Completed)
+- **Time**: 11:42 - 12:00
+- **Completed Items**:
+    - **Feature**: Implemented numerical sorting for campsites and improved "Bulk Create" logic.
+    - **Database**:
+        - Added computed column `site_sort_index` to `campsites` table (via Manual Script).
+        - Logic extracts leading numbers for natural sorting (e.g., 44A -> 44), ensuring site "10" comes after "2".
+    - **Backend (API)**:
+        - Updated `getCampsites` to sort by the new index and return `next_site_number`.
+        - Updated `createCampsites` to use smart `MAX(index)` logic instead of `COUNT` for determining the next number.
+        - Supports user-defined `start_number` override.
+    - **Frontend (Admin)**:
+        - Updated `AdminMapTool.jsx` "Bulk Create" section.
+        - Added "Start #" input that auto-fills with the next logical number, allowing full control over sequences (handling gaps and custom sections).
+        - Retained "Prefix" option.
+    - **Verification**:
+        - Verified sorting of mixed alphanumeric sites (1, 2, 4A, 10).
+        - Verified bulk creation sequences with and without start number overrides.
+    - **Documentation**:
+        - Archived implementation plan to `completed/`.
+        - Created `walkthroughs/20260130_campsite_sorting_walkthrough.md`.
+
 ## [2026-01-30] - UI Cleanup Jobs (Login & Attendee Modal) (Completed)
 - **Time**: 11:20 - 11:35
 - **Completed Items**:

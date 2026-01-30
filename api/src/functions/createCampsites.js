@@ -15,13 +15,13 @@ app.http('createCampsites', {
 
         const campgroundId = request.params.id;
         const body = await request.json();
-        const { count, prefix, price, full_event_price } = body;
+        const { count, prefix, price, full_event_price, start_number } = body;
 
         if (!count || count < 1) {
             return { status: 400, body: JSON.stringify({ error: "Invalid count" }) };
         }
 
-        const sitePrefix = prefix || 'Site ';
+        const sitePrefix = prefix || '';
         const sitePrice = parseFloat(price) || 0;
         const siteFullPrice = full_event_price ? parseFloat(full_event_price) : null;
         const extraAdultDaily = body.extra_adult_price_per_night ? parseFloat(body.extra_adult_price_per_night) : 0;
@@ -54,12 +54,17 @@ app.http('createCampsites', {
                     }
                 } else {
                     // Bulk Create Mode
-                    // Get count of existing sites for this campground to start numbering
-                    const countResult = await transaction.request()
-                        .input('id', sql.Int, campgroundId)
-                        .query("SELECT COUNT(*) as count FROM campsites WHERE campground_id = @id");
+                    let startNum;
 
-                    let startNum = countResult.recordset[0].count + 1;
+                    if (start_number !== undefined && start_number !== null && start_number !== '') {
+                        startNum = parseInt(start_number);
+                    } else {
+                        // Fallback: Smart Auto-Increment
+                        const maxResult = await transaction.request()
+                            .input('id', sql.Int, campgroundId)
+                            .query("SELECT ISNULL(MAX(site_sort_index), 0) + 1 as next_num FROM campsites WHERE campground_id = @id");
+                        startNum = maxResult.recordset[0].next_num;
+                    }
 
                     for (let i = 0; i < count; i++) {
                         const siteName = `${sitePrefix}${startNum + i}`;

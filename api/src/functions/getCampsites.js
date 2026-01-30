@@ -32,6 +32,13 @@ app.http('getCampsites', {
                 return { status: 404, body: JSON.stringify({ error: "Campground not found" }) };
             }
 
+            // Fetch Next Site Number
+            const nextSiteResult = await query(
+                "SELECT ISNULL(MAX(site_sort_index), 0) + 1 as next_num FROM campsites WHERE campground_id = @id",
+                [{ name: 'id', type: sql.Int, value: campgroundId }]
+            );
+            const nextSiteNumber = nextSiteResult[0] ? nextSiteResult[0].next_num : 1;
+
             let sitesQuery = `
                 SELECT 
                     c.campsite_id, 
@@ -46,6 +53,7 @@ app.http('getCampsites', {
                     0 as is_booked
                 FROM campsites c 
                 WHERE c.campground_id = @id
+                ORDER BY c.site_sort_index ASC, c.site_number ASC
             `;
 
             const params = [{ name: 'id', type: sql.Int, value: campgroundId }];
@@ -70,6 +78,7 @@ app.http('getCampsites', {
                         ) THEN 1 ELSE 0 END AS is_booked
                     FROM campsites c 
                     WHERE c.campground_id = @id
+                    ORDER BY c.site_sort_index ASC, c.site_number ASC
                 `;
                 params.push({ name: 'start', type: sql.Date, value: startDate });
                 params.push({ name: 'end', type: sql.Date, value: endDate });
@@ -81,7 +90,8 @@ app.http('getCampsites', {
                 status: 200,
                 jsonBody: {
                     campground: campground[0],
-                    sites: sites
+                    sites: sites,
+                    next_site_number: nextSiteNumber
                 }
             };
 

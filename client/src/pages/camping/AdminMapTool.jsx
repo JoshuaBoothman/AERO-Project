@@ -31,6 +31,7 @@ function AdminMapTool() {
     const [selectedSiteId, setSelectedSiteId] = useState(null);
     const [tempCoords, setTempCoords] = useState(null);
     const [orgSettings, setOrgSettings] = useState(null);
+    const [nextSiteNumber, setNextSiteNumber] = useState(1);
 
     // Create Campground Modal State
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -148,7 +149,9 @@ function AdminMapTool() {
             if (res.ok) {
                 const data = await res.json();
                 setCampground(data.campground);
+
                 setSites(data.sites);
+                if (data.next_site_number) setNextSiteNumber(data.next_site_number);
             } else {
                 const err = await res.json().catch(() => ({}));
                 setError(err.error || `Failed to load data (Status: ${res.status})`);
@@ -319,7 +322,7 @@ function AdminMapTool() {
 
     // --- Editor Handlers (Same as before) ---
 
-    const handleBulkAdd = async (qty, prefix) => {
+    const handleBulkAdd = async (qty, prefix, startNum) => {
         if (!selectedCampgroundId) return;
         try {
             const res = await fetch(`/api/campgrounds/${selectedCampgroundId}/sites`, {
@@ -332,6 +335,7 @@ function AdminMapTool() {
                 body: JSON.stringify({
                     count: parseInt(qty),
                     prefix,
+                    start_number: startNum,
                     price: parseFloat(document.getElementById('addPrice').value) || 0,
                     full_event_price: parseFloat(document.getElementById('addFullPrice').value) || 0,
                     extra_adult_price_per_night: parseFloat(document.getElementById('addExtraDaily').value) || 0,
@@ -618,7 +622,7 @@ function AdminMapTool() {
                         <div style={{ padding: '15px', borderBottom: '1px solid #ddd', background: '#fff' }}>
                             {/* Bulk Create Section */}
                             <h4 style={{ marginTop: 0, marginBottom: '10px', color: '#333' }}>Bulk Create</h4>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '10px', marginBottom: '10px' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '10px' }}>
                                 <div>
                                     <label style={{ fontSize: '0.75rem', fontWeight: 'bold', display: 'block', marginBottom: '4px' }}>Qty</label>
                                     <input id="addQty" type="number" defaultValue="1" style={{ width: '100%', padding: '6px', border: '1px solid #ccc', borderRadius: '4px' }} />
@@ -626,6 +630,10 @@ function AdminMapTool() {
                                 <div>
                                     <label style={{ fontSize: '0.75rem', fontWeight: 'bold', display: 'block', marginBottom: '4px' }}>Prefix (Opt)</label>
                                     <input id="addPrefix" type="text" style={{ width: '100%', padding: '6px', border: '1px solid #ccc', borderRadius: '4px' }} />
+                                </div>
+                                <div>
+                                    <label style={{ fontSize: '0.75rem', fontWeight: 'bold', display: 'block', marginBottom: '4px' }}>Start #</label>
+                                    <input id="addStartNum" type="number" defaultValue={nextSiteNumber} key={nextSiteNumber} style={{ width: '100%', padding: '6px', border: '1px solid #ccc', borderRadius: '4px' }} />
                                 </div>
                             </div>
 
@@ -664,7 +672,8 @@ function AdminMapTool() {
                             <button
                                 onClick={() => handleBulkAdd(
                                     document.getElementById('addQty').value,
-                                    document.getElementById('addPrefix').value
+                                    document.getElementById('addPrefix').value,
+                                    document.getElementById('addStartNum').value
                                 )}
                                 style={{ width: '100%', background: '#333', color: 'white', border: 'none', padding: '8px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
                             >
