@@ -40,6 +40,13 @@ function Login() {
 
   return (
     <div className="auth-container" style={{ maxWidth: '400px', margin: '2rem auto', padding: '2rem' }}>
+      <div style={{ marginBottom: '2rem', borderBottom: '1px solid #eee', paddingBottom: '1.5rem', textAlign: 'center' }}>
+        <p style={{ marginBottom: '1rem', color: '#666' }}>Don't have an account?</p>
+        <Link to="/register" className="primary-button" style={{ display: 'block', width: '100%', boxSizing: 'border-box', textDecoration: 'none', backgroundColor: 'var(--accent-color)', color: 'var(--primary-color)' }}>
+          Create an Account
+        </Link>
+      </div>
+
       <h1>Login</h1>
       {error && <p style={{ color: 'red' }}>{error}</p>}
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -64,9 +71,6 @@ function Login() {
       </form>
       <p style={{ marginTop: '1rem' }}>
         <Link to="/recover-login">Forgot your password?</Link>
-      </p>
-      <p style={{ marginTop: '0.5rem' }}>
-        Don't have an account? <Link to="/register">Register here</Link>
       </p>
     </div>
   );

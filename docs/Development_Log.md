@@ -1,3 +1,20 @@
+## [2026-01-30] - UI Cleanup Jobs (Login & Attendee Modal) (Completed)
+- **Time**: 11:20 - 11:35
+- **Completed Items**:
+    - **Login Screen**:
+        - **Visibility**: Moved "Create an Account" link to the top of the login box for better visibility.
+        - **Styling**: Styled the registration button with the Accent Color (Gold) to make it prominent.
+    - **Attendee Modal Refinements**:
+        - **Text**: Added "(free with this ticket)" to Official Dinner and Included Merchandise labels.
+        - **Text**: Changed "Are you bringing heavy models?" to "I am bringing Heavy Models".
+        - **Logic**: Hidden Dietary Requirements field entirely when "Attending Dinner" is unchecked.
+        - **Bug Fix**: Resolved validation issue where Heavy Model Inspectors were blocked by certificate requirements despite being exempt (and fields being hidden).
+    - **Verification**:
+        - Verified Login UI hierarchy.
+        - Verified Modal visibility toggles and Inspector validation bypass.
+    - **Documentation**:
+        - Archived plan to `completed/20260130_cleanup_jobs.md`.
+
 ## [2026-01-30] - Admin Campgrounds Fix (Completed)
 - **Time**: 06:14 - 06:17
 - **Completed Items**:

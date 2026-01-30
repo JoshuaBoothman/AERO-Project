@@ -215,7 +215,7 @@ function AttendeeModal({
                         return;
                     }
 
-                    if (d.bringingHeavyModels) {
+                    if (d.bringingHeavyModels && !d.isHeavyModelInspector) {
                         const planes = d.planes || [{}];
                         for (const p of planes) {
                             if (!p.heavyCertNumber) {
@@ -412,20 +412,19 @@ function AttendeeModal({
                                                 checked={data.attendingDinner || false}
                                                 onChange={e => handleChange(key, 'attendingDinner', e.target.checked)}
                                             />
-                                            I will be attending (tick if yes) - Official Dinner on {new Date(event.dinner_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                                            I will be attending (tick if yes) - Official Dinner on {new Date(event.dinner_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })} (free with this ticket)
                                         </label>
                                     </div>
                                 )}
 
-                                {!ticket.is_day_pass && (
+                                {!ticket.is_day_pass && data.attendingDinner && (
                                     <div className="mb-4">
                                         <h5 className="font-bold text-sm mb-2 text-gray-700">Dietary Requirements</h5>
                                         <textarea
                                             placeholder="e.g. Vegetarian, Gluten Free, Nut Allergy..."
                                             value={data.dietaryRequirements || ''}
                                             onChange={e => handleChange(key, 'dietaryRequirements', e.target.value)}
-                                            disabled={!data.attendingDinner}
-                                            style={{ ...inputStyle, height: '80px', backgroundColor: !data.attendingDinner ? '#f3f4f6' : 'white', cursor: !data.attendingDinner ? 'not-allowed' : 'text' }}
+                                            style={{ ...inputStyle, height: '80px' }}
                                         />
                                     </div>
                                 )}
@@ -446,7 +445,7 @@ function AttendeeModal({
 
                                         return (
                                             <div className="mb-6 p-4 bg-purple-50 border border-purple-200 rounded">
-                                                <h5 className="font-bold text-sm mb-2 text-purple-900">🎁 Included Merchandise</h5>
+                                                <h5 className="font-bold text-sm mb-2 text-purple-900">🎁 Included Merchandise (free with this ticket)</h5>
 
                                                 {/* Product Selection (Radio) */}
                                                 {linkedProducts.length > 1 && (
@@ -601,7 +600,7 @@ function AttendeeModal({
                                                                 }
                                                             }}
                                                         />
-                                                        Are you bringing any Heavy Models?
+                                                        I am bringing Heavy Models
                                                     </label>
                                                 </div>
 
