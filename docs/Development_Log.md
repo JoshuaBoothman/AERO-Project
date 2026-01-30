@@ -1,3 +1,12 @@
+## [2026-01-31] - Delete Unpaid Orders
+- **Time**: 10:45 - 11:15
+- **Completed Items**:
+    - **Feature**: Implemented `deleteOrder` API to allow users to remove 'Pending' orders.
+    - **Logic**: A destructive action that restores merchandise stock, releases campsites/assets, and cancels attendees.
+    - **UI**: Added a "Delete" button (trash icon) to the My Orders page for pending orders, with a confirmation modal.
+    - **Verification**: Verified via linting and manual walkthrough plan.
+    - **Documentation**: Archived plan to `completed/` and created `walkthrough.md`.
+
 ## [2026-01-31] - Pooled Asset Inventory & Post-Launch Fixes
 - **Time**: 08:00 - 09:15
 - **Completed Items**:
