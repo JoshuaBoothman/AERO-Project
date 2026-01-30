@@ -21,6 +21,7 @@ app.http('getAssets', {
                     ISNULL(at.show_full_event_cost, 0) as show_full_event_cost,
                     at.image_url,
                     at.asset_category_id,
+                    at.stock_quantity,
                     at.sort_order,
                     ac.name as category_name,
                     ISNULL(ac.sort_order, 9999) as category_sort_order,

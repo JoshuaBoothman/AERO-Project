@@ -557,46 +557,70 @@ app.http('createOrder', {
                 // 6. Process ASSET Items
                 if (assets && assets.length > 0) {
                     for (const asset of assets) {
-                        // Check availability? (Assets have `total_quantity`? Schema: `asset_items` are individual items. `asset_types` is the group.)
-                        // Complex asset management: Allocating specific `asset_item_id`.
-                        // MVP: Just book it conceptually. We need an `asset_item_id` for `asset_hires`.
-                        // Find an available asset item of this type.
-                        // Specific Asset Booking Logic
-                        // Input 'assetId' is the specific asset_item_id from the frontend
-                        const assetItemId = asset.assetId;
+                        // POOLED INVENTORY LOGIC
+                        // Input 'assetTypeId' is expected from the frontend now (was assetId as generic ID).
+                        // If frontend sends 'assetTypeId', use it. If 'assetId' maps to type, handle that.
+                        // Standardize on use of 'assetTypeId' for the Pooled System.
 
-                        const itemFindReq = new sql.Request(transaction);
-                        const itemFindRes = await itemFindReq
-                            .input('aiid', sql.Int, assetItemId)
+                        // Fallback: If `asset.assetTypeId` exists, use it.
+                        // If only `asset.assetId` exists (legacy/transition), assume it might be type ID if generic, OR item ID?
+                        // Let's rely on `assetTypeId` being passed correctly by updated frontend.
+
+                        const assetTypeId = asset.assetTypeId || asset.assetId; // Fallback for transition
+
+                        // Check Availability (Stock Level)
+                        const stockCheckReq = new sql.Request(transaction);
+                        const stockCheckRes = await stockCheckReq
+                            .input('atid', sql.Int, assetTypeId)
                             .input('start', sql.Date, asset.checkIn)
                             .input('end', sql.Date, asset.checkOut)
                             .query(`
-                                SELECT 1 
-                                FROM asset_items ai
-                                WHERE ai.asset_item_id = @aiid
-                                AND ai.asset_item_id NOT IN (
-                                    SELECT asset_item_id FROM asset_hires 
-                                    WHERE hire_start_date < @end AND hire_end_date > @start
+                                WITH AssetStock AS (
+                                    SELECT stock_quantity
+                                    FROM asset_types
+                                    WHERE asset_type_id = @atid
+                                ),
+                                BookedCount AS (
+                                    SELECT COUNT(*) as booked_count
+                                    FROM asset_hires ah
+                                    WHERE ah.asset_type_id = @atid
+                                    AND (
+                                        ah.hire_start_date <= @end 
+                                        AND ah.hire_end_date >= @start
+                                    )
                                 )
+                                SELECT 
+                                    s.stock_quantity,
+                                    b.booked_count
+                                FROM AssetStock s, BookedCount b
                             `);
 
-                        if (itemFindRes.recordset.length === 0) throw new Error(`Asset ${assetItemId} is not available for the specified dates.`);
-                        // const assetItemId = asset.assetId; // Already have it
+                        if (stockCheckRes.recordset.length === 0) throw new Error(`Asset Type ${assetTypeId} not found.`);
+
+                        const { stock_quantity, booked_count } = stockCheckRes.recordset[0];
+
+                        if (booked_count >= stock_quantity) {
+                            throw new Error(`Asset Type ${assetTypeId} is fully booked for these dates (Stock: ${stock_quantity}).`);
+                        }
 
                         totalAmount += asset.price;
 
                         const itemReq = new sql.Request(transaction);
                         const itemRes = await itemReq
                             .input('oid', sql.Int, orderId).input('aid', sql.Int, mainAttendeeId).input('itype', sql.VarChar, 'Asset')
-                            .input('refid', sql.Int, assetItemId) // Storing specific Asset Item ID
+                            .input('refid', sql.Int, assetTypeId) // UPDATED: Storing Asset TYPE ID here now
                             .input('price', sql.Decimal(10, 2), asset.price)
                             .query(`INSERT INTO order_items (order_id, attendee_id, item_type, item_reference_id, price_at_purchase) VALUES (@oid, @aid, @itype, @refid, @price); SELECT SCOPE_IDENTITY() AS id`);
 
                         const orderItemId = itemRes.recordset[0].id;
 
+                        // Insert Asset Hire Record (Pooled = asset_item_id is NULL)
                         await new sql.Request(transaction)
-                            .input('aiid', sql.Int, assetItemId).input('oiid', sql.Int, orderItemId).input('start', sql.Date, asset.checkIn).input('end', sql.Date, asset.checkOut)
-                            .query(`INSERT INTO asset_hires (asset_item_id, order_item_id, hire_start_date, hire_end_date) VALUES (@aiid, @oiid, @start, @end)`);
+                            .input('atid', sql.Int, assetTypeId)
+                            .input('oiid', sql.Int, orderItemId)
+                            .input('start', sql.Date, asset.checkIn)
+                            .input('end', sql.Date, asset.checkOut)
+                            .query(`INSERT INTO asset_hires (asset_type_id, asset_item_id, order_item_id, hire_start_date, hire_end_date) VALUES (@atid, NULL, @oiid, @start, @end)`);
                     }
                 }
 

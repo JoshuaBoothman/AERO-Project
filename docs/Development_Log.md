@@ -1,3 +1,29 @@
+## [2026-01-31] - Pooled Asset Inventory & Post-Launch Fixes
+- **Time**: 08:00 - 09:15
+- **Completed Items**:
+    - **Feature**: Implemented "Pooled Inventory" system for Asset Hire, replacing strict serialized item booking with a Stock Quantity model.
+    - **Database**:
+        - Added `stock_quantity` to `asset_types` table.
+        - Migrated existing data to use the new field.
+        - Made `site_number` nullable in `assets` table (optional tracking).
+    - **Backend (API)**:
+        - Updated `manageAssetTypes.js` to persist `stock_quantity`.
+        - Updated `getAssetAvailability.js` to calculate availability based on `stock_quantity - active_bookings`.
+        - Updated `createOrder.js` to validate against pool size instead of specific items.
+        - **Fix**: `manageAssetCategories.js` now allows fetching without `eventId` (resolving 400 error).
+    - **Frontend (Client)**:
+        - **AssetTypes (Admin)**: Added `Stock Quantity` input field; Fixed image upload property mismatch (`image` vs `image_url`).
+        - **StorePage**: Updated to use "Virtual" items for pooled booking; Fixed `formatDateForDisplay` ReferenceError.
+        - **AssetSelectionModal**:
+            - Updated to show "Available count".
+            - Fixed hydration error (`div` inside `p`).
+            - Fixed null input warnings.
+        - **Invoice**: Updated to display Asset Type and Dates correctly.
+    - **Documentation**:
+        - Archived plan to `completed/`.
+        - Created `walkthroughs/20260130_pooled_inventory.md`.
+        - Drafted explanation email for client.
+
 ## [2026-01-30] - Campsite Sorting & Bulk Create (Completed)
 - **Time**: 11:42 - 12:00
 - **Completed Items**:

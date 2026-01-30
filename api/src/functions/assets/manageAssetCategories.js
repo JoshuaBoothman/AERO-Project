@@ -13,13 +13,18 @@ app.http('manageAssetCategories', {
         try {
             if (method === 'GET') {
                 const eventId = request.query.get('eventId');
-                if (!eventId) {
-                    return { status: 400, body: JSON.stringify({ error: "Event ID required" }) };
+
+                let query = "SELECT * FROM asset_categories";
+                const req = pool.request();
+
+                if (eventId) {
+                    query += " WHERE event_id = @eid";
+                    req.input('eid', sql.Int, eventId);
                 }
 
-                const result = await pool.request()
-                    .input('eid', sql.Int, eventId)
-                    .query("SELECT * FROM asset_categories WHERE event_id = @eid ORDER BY sort_order ASC, name ASC");
+                query += " ORDER BY sort_order ASC, name ASC";
+
+                const result = await req.query(query);
 
                 return { status: 200, jsonBody: result.recordset };
             }

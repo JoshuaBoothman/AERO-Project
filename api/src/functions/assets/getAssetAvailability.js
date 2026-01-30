@@ -17,31 +17,33 @@ app.http('getAssetAvailability', {
         try {
             const pool = await getPool();
 
-            // Logic: Select items of this Type that are Active,
-            // AND are NOT in the list of hired items that overlap with the requested dates.
-            // Overlap logic: (StartA <= EndB) and (EndA >= StartB)
+            // Logic: 
+            // 1. Get Stock Quantity for this Asset Type
+            // 2. Count number of ACTIVE hires for this Type that overlap the requested dates.
+            // 3. Available = Stock - Booked
+
+            // Overlap: (StartA <= EndB) and (EndA >= StartB)
 
             const query = `
-                SELECT 
-                    ai.asset_item_id, 
-                    ai.identifier, 
-                    ai.serial_number, 
-                    ai.notes, 
-                    ai.image_url,
-                    ai.status
-                FROM asset_items ai
-                WHERE ai.asset_type_id = @typeId 
-                AND ai.status = 'Active'
-                AND ai.asset_item_id NOT IN (
-                    SELECT ah.asset_item_id
+                WITH AssetStock AS (
+                    SELECT stock_quantity
+                    FROM asset_types
+                    WHERE asset_type_id = @typeId
+                ),
+                BookedCount AS (
+                    SELECT COUNT(*) as booked_count
                     FROM asset_hires ah
-                    WHERE 
-                    (
+                    WHERE ah.asset_type_id = @typeId
+                    AND (
                         ah.hire_start_date <= @end 
                         AND ah.hire_end_date >= @start
                     )
-                    -- Assuming all hire records found here are valid bookings
                 )
+                SELECT 
+                    s.stock_quantity,
+                    b.booked_count,
+                    (s.stock_quantity - b.booked_count) as available_count
+                FROM AssetStock s, BookedCount b
             `;
 
             const result = await pool.request()
@@ -50,7 +52,36 @@ app.http('getAssetAvailability', {
                 .input('end', sql.Date, end)
                 .query(query);
 
-            return { status: 200, jsonBody: result.recordset };
+            if (result.recordset.length === 0) {
+                return { status: 404, body: JSON.stringify({ error: "Asset Type not found" }) };
+            }
+
+            const { stock_quantity, booked_count, available_count } = result.recordset[0];
+            const isAvailable = available_count > 0;
+
+            // Return array of "Ghost" items if available, or empty?
+            // Frontend expects an array of items to pick from?
+            // Re-factor Frontend to just see "Available Count".
+            // But for backward compatibility or easy modal switch, 
+            // let's return a "Virtual Item" if available, or simple status.
+
+            // New Frontend Logic expects: { available: true, count: 5 }
+            // BUT Old Frontend expected [item1, item2].
+            // To ensure safety, we return a structured response.
+
+            return {
+                status: 200,
+                jsonBody: [{
+                    asset_type_id: typeId,
+                    available_count: Math.max(0, available_count),
+                    stock_quantity,
+                    booked_count,
+                    // Mock fields for legacy frontend compatibility (until updated)
+                    asset_item_id: -1,
+                    identifier: `Available: ${Math.max(0, available_count)}`,
+                    status: 'Active'
+                }]
+            };
 
         } catch (error) {
             context.error('Error checking availability:', error);

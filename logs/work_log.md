@@ -6,3 +6,4 @@
 | 2026-01-23 | AERO Project | 1.0 | Pit Crew to Pilot Linking (Backend & Frontend) | No | | | |
 | 2026-01-27 | AERO Project | 1.0 | Implemented Official Dinner Registrations (DB, API, Admin & User UI) | No | | | |
 | 2026-01-27 | AERO Project | 1.0 | Subevent Registrations (Attendees Search, Guest Names, Invoice Display) | No | | | |
+| 2026-01-30 | AERO Project | 2.0 | Pooled Asset Inventory (DB Migration, Backend API Refactor, Frontend: Modal, Store, Admin, Invoice) | No | | | |

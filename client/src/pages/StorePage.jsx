@@ -9,7 +9,7 @@ import ProductModal from '../components/ProductModal';
 import AssetSelectionModal from '../components/AssetSelectionModal';
 import AttendeeModal from '../components/AttendeeModal';
 import SubeventModal from '../components/SubeventModal';
-import { formatDateTimeRange } from '../utils/dateHelpers';
+import { formatDateTimeRange, formatDateForDisplay } from '../utils/dateHelpers';
 
 function StorePage({ orgSettings }) {
     const { slug } = useParams();
@@ -132,21 +132,27 @@ function StorePage({ orgSettings }) {
     };
 
     const handleAddAssetToCart = (asset, specificItem, dates) => {
+        // specificItem is now the "Virtual" item containing asset_type_id and basic stats.
+        // It does NOT have a specific asset_item_id (or it is -1).
+
         const item = {
-            ...specificItem,
-            id: specificItem.asset_item_id, // Use specific unit ID
-            assetTypeId: asset.id,
-            name: asset.name, // Ensure name is preserved
-            identifier: specificItem.identifier,
+            uniqueId: Date.now(), // Front-end unique ID
+            type: 'ASSET',
+            name: asset.name, // Use Type Name (e.g. "Golf Cart")
+            price: specificItem.price || asset.price, // Fallback to category price
+            details: `Dates: ${formatDateForDisplay(dates.start)} - ${formatDateForDisplay(dates.end)}`,
             checkIn: dates.start,
             checkOut: dates.end,
-            eventId: data.eventId,
-            type: 'ASSET',
-            price: asset.price // Ensure calculated price passed from modal is used (attached to asset in modal)
+            // Key Change: Store Type ID.
+            assetTypeId: asset.id,
+            assetId: asset.id, // Legacy/Fallback compatibility
+            // We don't store specificItem.asset_item_id (it's -1)
+            item_reference_id: asset.id // For uniform handling
         };
+
         addToCart(item);
         setSelectedAssetType(null);
-        notify(`${asset.name} (${specificItem.identifier}) added to cart!`, 'success');
+        notify(`${asset.name} added to cart!`, 'success');
     };
 
     const handleAddSubevent = (subevent) => {

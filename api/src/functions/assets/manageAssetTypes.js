@@ -29,10 +29,11 @@ app.http('manageAssetTypes', {
                     .input('showFull', sql.Bit, show_full_event_cost !== undefined ? show_full_event_cost : 0)
                     .input('imageUrl', sql.NVarChar, image_url || null)
                     .input('catId', sql.Int, asset_category_id || null)
+                    .input('stock', sql.Int, body.stock_quantity || 0)
                     .query(`
-                        INSERT INTO asset_types (event_id, name, description, base_hire_cost, full_event_cost, show_daily_cost, show_full_event_cost, image_url, asset_category_id)
+                        INSERT INTO asset_types (event_id, name, description, base_hire_cost, full_event_cost, show_daily_cost, show_full_event_cost, image_url, asset_category_id, stock_quantity)
                         OUTPUT INSERTED.*
-                        VALUES (@eventId, @name, @description, @cost, @fullEventCost, @showDaily, @showFull, @imageUrl, @catId)
+                        VALUES (@eventId, @name, @description, @cost, @fullEventCost, @showDaily, @showFull, @imageUrl, @catId, @stock)
                     `);
 
                 return { status: 201, jsonBody: result.recordset[0] };
@@ -54,6 +55,7 @@ app.http('manageAssetTypes', {
                 if (body.show_full_event_cost !== undefined) { updates.push("show_full_event_cost = @showFull"); req.input('showFull', sql.Bit, body.show_full_event_cost); }
                 if (body.image_url !== undefined) { updates.push("image_url = @img"); req.input('img', sql.NVarChar, body.image_url); }
                 if (body.asset_category_id !== undefined) { updates.push("asset_category_id = @catId"); req.input('catId', sql.Int, body.asset_category_id); }
+                if (body.stock_quantity !== undefined) { updates.push("stock_quantity = @stock"); req.input('stock', sql.Int, body.stock_quantity); }
 
                 if (updates.length === 0) return { status: 400, body: "No fields to update" };
 

@@ -130,16 +130,24 @@ function Invoice() {
                                 <td className="py-3">
                                     <div className="font-medium">{item.item_name}</div>
                                     <div className="text-xs text-gray-500">
-                                        {item.item_type} &bull; {
-                                            item.item_type === 'Subevent' && item.subevent_attendee_name
-                                                ? (
-                                                    <span>
-                                                        {item.is_subevent_guest === 1 && <span className="font-semibold text-amber-600 mr-1">Guest:</span>}
-                                                        {item.subevent_attendee_name}
+                                        {item.item_type === 'Asset' ? (
+                                            <div>
+                                                {item.first_name} {item.last_name}
+                                                {item.asset_start && item.asset_end && (
+                                                    <span className="ml-2">
+                                                        ({new Date(item.asset_start).toLocaleDateString()} - {new Date(item.asset_end).toLocaleDateString()})
                                                     </span>
-                                                )
-                                                : `${item.first_name} ${item.last_name}`
-                                        }
+                                                )}
+                                                {item.asset_identifier && <span className="ml-2 font-mono">[{item.asset_identifier}]</span>}
+                                            </div>
+                                        ) : item.item_type === 'Subevent' && item.subevent_attendee_name ? (
+                                            <span>
+                                                {item.is_subevent_guest === 1 && <span className="font-semibold text-amber-600 mr-1">Guest:</span>}
+                                                {item.subevent_attendee_name}
+                                            </span>
+                                        ) : (
+                                            `${item.first_name} ${item.last_name}`
+                                        )}
                                         {item.ticket_code && ` (${item.ticket_code})`}
                                     </div>
                                 </td>

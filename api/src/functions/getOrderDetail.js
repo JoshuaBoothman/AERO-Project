@@ -148,9 +148,9 @@ app.http('getOrderDetail', {
                 LEFT JOIN campsites c ON oi.item_reference_id = c.campsite_id AND oi.item_type = 'Campsite'
                 LEFT JOIN campsite_bookings cb ON cb.order_item_id = oi.order_item_id
                 LEFT JOIN subevents se ON oi.item_reference_id = se.subevent_id AND oi.item_type = 'Subevent'
-                LEFT JOIN asset_items ai ON oi.item_reference_id = ai.asset_item_id AND oi.item_type = 'Asset'
-                LEFT JOIN asset_types at ON ai.asset_type_id = at.asset_type_id
+                LEFT JOIN asset_types at ON oi.item_reference_id = at.asset_type_id AND oi.item_type = 'Asset'
                 LEFT JOIN asset_hires ah ON ah.order_item_id = oi.order_item_id
+                LEFT JOIN asset_items ai ON ah.asset_item_id = ai.asset_item_id -- Optional: Specific item if assigned
                 WHERE oi.order_id = @orderId
             `;
 

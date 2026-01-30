@@ -50,7 +50,7 @@ function AssetSelectionModal({ asset, hireDates, setHireDates, eventDates, onClo
             } else {
                 setError("Failed to check availability.");
             }
-        } catch (e) {
+        } catch {
             setError("Error checking availability.");
         } finally {
             setLoading(false);
@@ -138,7 +138,7 @@ function AssetSelectionModal({ asset, hireDates, setHireDates, eventDates, onClo
                             )}
 
                             <div className="flex items-center gap-2 text-gray-500 text-sm">
-                                <p>
+                                <div>
                                     <span className="font-semibold text-gray-700">
                                         {pricingMode === 'full' && eventDates && eventDates.start ? (
                                             <>
@@ -150,7 +150,7 @@ function AssetSelectionModal({ asset, hireDates, setHireDates, eventDates, onClo
                                                 <input
                                                     type="date"
                                                     className="p-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-primary outline-none"
-                                                    value={hireDates.start}
+                                                    value={hireDates.start || ''}
                                                     min={eventDates?.start ? new Date(eventDates.start).toISOString().split('T')[0] : undefined}
                                                     max={eventDates?.end ? new Date(eventDates.end).toISOString().split('T')[0] : undefined}
                                                     onChange={e => setHireDates ? setHireDates({ ...hireDates, start: e.target.value }) : null}
@@ -159,7 +159,7 @@ function AssetSelectionModal({ asset, hireDates, setHireDates, eventDates, onClo
                                                 <input
                                                     type="date"
                                                     className="p-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-primary outline-none"
-                                                    value={hireDates.end}
+                                                    value={hireDates.end || ''}
                                                     min={eventDates?.start ? new Date(eventDates.start).toISOString().split('T')[0] : undefined}
                                                     max={eventDates?.end ? new Date(eventDates.end).toISOString().split('T')[0] : undefined}
                                                     onChange={e => setHireDates ? setHireDates({ ...hireDates, end: e.target.value }) : null}
@@ -167,11 +167,11 @@ function AssetSelectionModal({ asset, hireDates, setHireDates, eventDates, onClo
                                             </div>
                                         )}
                                     </span>
-                                </p>
+                                </div>
                                 <span>|</span>
-                                <p className="font-medium text-primary bg-primary/5 px-2 py-0.5 rounded">
+                                <div className="font-medium text-primary bg-primary/5 px-2 py-0.5 rounded">
                                     {label} {detail} = <span className="font-bold text-xl text-black">${total}</span>
-                                </p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -186,57 +186,28 @@ function AssetSelectionModal({ asset, hireDates, setHireDates, eventDates, onClo
                         <div className="flex justify-center py-20 text-gray-500">Checking availability...</div>
                     ) : error ? (
                         <div className="text-red-500 text-center py-10">{error}</div>
-                    ) : availableItems.length === 0 ? (
+                    ) : availableItems.length === 0 || availableItems[0].available_count <= 0 ? (
                         <div className="text-center py-20">
                             <p className="text-xl font-bold text-gray-400 mb-2">Unavailable</p>
-                            <p className="text-gray-500">No items of this type are available for the selected dates.</p>
+                            <p className="text-gray-500">No stock available for the selected dates.</p>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {availableItems.map(item => (
-                                <div key={item.asset_item_id} className="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col h-full overflow-hidden group">
-                                    {/* Image Area */}
-                                    <div className="w-full h-48 bg-gray-100 relative overflow-hidden">
-                                        {(item.image_url || asset.image) ? (
-                                            <img
-                                                src={item.image_url || asset.image}
-                                                alt={item.identifier}
-                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full flex flex-col items-center justify-center text-gray-300">
-                                                <span>No Image</span>
-                                            </div>
-                                        )}
-                                        <div className="absolute top-2 right-2 bg-white/90 backdrop-blur px-2 py-1 rounded text-xs font-bold shadow-sm">
-                                            {item.identifier}
-                                        </div>
-                                    </div>
+                        <div className="text-center py-10">
+                            <div className="mb-8">
+                                <h3 className="text-2xl font-bold text-gray-800 mb-2">{asset.name}</h3>
+                                <p className="text-gray-600">
+                                    <span className="font-bold text-green-600">{availableItems[0].available_count}</span> available for your dates.
+                                </p>
+                            </div>
 
-                                    {/* Details */}
-                                    <div className="p-4 flex-1 flex flex-col">
-                                        <div className="flex-1">
-                                            {item.notes ? (
-                                                <p className="text-sm text-gray-600 mb-3">{item.notes}</p>
-                                            ) : (
-                                                <p className="text-sm text-gray-400 italic mb-3">No specific notes.</p>
-                                            )}
-                                            {item.serial_number && (
-                                                <div className="text-xs text-gray-400 font-mono mb-4">
-                                                    SN: {item.serial_number}
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        <button
-                                            onClick={() => handleSelect(item)}
-                                            className="w-full mt-auto bg-black text-white py-3 rounded-lg font-bold hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
-                                        >
-                                            <span>Select for ${total}</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
+                            <div className="flex justify-center gap-4">
+                                <button
+                                    onClick={() => handleSelect(availableItems[0])} // Pass the "virtual" item (contains typeId)
+                                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition-transform transform hover:scale-105"
+                                >
+                                    Add to Cart for ${total}
+                                </button>
+                            </div>
                         </div>
                     )}
                 </div>
