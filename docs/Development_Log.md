@@ -24,6 +24,16 @@
         - Created `walkthroughs/20260130_pooled_inventory.md`.
         - Drafted explanation email for client.
 
+    - **Partial Bookings Display**:
+        - **Feature**: Implemented visual indicators for "Partially Booked" campsites.
+        - **Logic**:
+            - **Fully Booked** (Red): Site booked for all nights of event.
+            - **Partially Booked** (Pink): Site has *some* bookings but is not fully booked.
+            - **Available** (Gold/Green): Site has NO bookings.
+        - **Frontend (Client)**:
+            - Updated `CampingPage.jsx` map pin logic and legend.
+            - Updated `CampingListView.jsx` status column to badge sites as "Booked", "Partial", or "Available".
+
 ## [2026-01-30] - Campsite Sorting & Bulk Create (Completed)
 - **Time**: 11:42 - 12:00
 - **Completed Items**:

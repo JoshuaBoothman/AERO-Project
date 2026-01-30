@@ -1,15 +1,6 @@
 import React, { useMemo } from 'react';
 
 const CampingListView = ({ activeCampground, selectedSite, onSiteSelect, eventStartDate, eventEndDate, compactMode = false }) => {
-    if (!activeCampground) return null;
-
-    const sites = activeCampground.sites || [];
-
-    // Alpha-numeric sort for site numbers (e.g. A1, A2, A10)
-    const sortedSites = [...sites].sort((a, b) => {
-        return a.site_number.localeCompare(b.site_number, undefined, { numeric: true, sensitivity: 'base' });
-    });
-
     // Generate array of dates from event start to event end (exclusive of end date for nights)
     const dateColumns = useMemo(() => {
         if (!eventStartDate || !eventEndDate) return [];
@@ -23,6 +14,15 @@ const CampingListView = ({ activeCampground, selectedSite, onSiteSelect, eventSt
         }
         return dates;
     }, [eventStartDate, eventEndDate]);
+
+    if (!activeCampground) return null;
+
+    const sites = activeCampground.sites || [];
+
+    // Alpha-numeric sort for site numbers (e.g. A1, A2, A10)
+    const sortedSites = [...sites].sort((a, b) => {
+        return a.site_number.localeCompare(b.site_number, undefined, { numeric: true, sensitivity: 'base' });
+    });
 
     // Helper: Format date as YYYY-MM-DD in local time (not UTC)
     const formatLocalDate = (date) => {
@@ -96,16 +96,69 @@ const CampingListView = ({ activeCampground, selectedSite, onSiteSelect, eventSt
                                     </td>
                                 )}
                                 <td style={{ padding: '10px 12px', textAlign: 'center' }}>
-                                    <span style={{
-                                        padding: '4px 8px',
-                                        borderRadius: '4px',
-                                        fontSize: '0.85rem',
-                                        background: isAvailable ? '#e6ffe6' : '#ffe6e6',
-                                        color: isAvailable ? 'green' : 'red',
-                                        fontWeight: 'bold'
-                                    }}>
-                                        {isAvailable ? 'Available' : 'Unavailable'}
-                                    </span>
+                                    {(() => {
+                                        // Calculate total nights in event
+                                        const eStart = new Date(eventStartDate);
+                                        const eEnd = new Date(eventEndDate);
+                                        const totalEventNights = Math.max(1, Math.ceil((eEnd - eStart) / (1000 * 60 * 60 * 24)));
+
+                                        // Calculate booked nights
+                                        let bookedNights = 0;
+                                        if (site.bookings && site.bookings.length > 0) {
+                                            site.bookings.forEach(b => {
+                                                const bStart = new Date(b.check_in);
+                                                const bEnd = new Date(b.check_out);
+                                                const effectiveStart = bStart < eStart ? eStart : bStart;
+                                                const effectiveEnd = bEnd > eEnd ? eEnd : bEnd;
+                                                if (effectiveEnd > effectiveStart) {
+                                                    bookedNights += Math.ceil((effectiveEnd - effectiveStart) / (1000 * 60 * 60 * 24));
+                                                }
+                                            });
+                                        }
+
+                                        const isFullyBooked = bookedNights >= totalEventNights;
+                                        const isPartiallyBooked = bookedNights > 0 && bookedNights < totalEventNights;
+
+                                        // Status Display:
+                                        // 1. Fully Booked -> Red
+                                        // 2. Partial -> Pink (Even if unavailable for selected dates)
+                                        // 3. Available -> Green
+                                        // 4. Unavailable (but empty) -> Red
+                                        let label = 'Available';
+                                        let bg = '#e6ffe6';
+                                        let color = 'green';
+                                        let border = 'none';
+
+                                        if (isFullyBooked) {
+                                            label = 'Booked';
+                                            bg = '#ffe6e6';
+                                            color = 'red';
+                                        } else if (isPartiallyBooked) {
+                                            label = 'Partial';
+                                            bg = '#fff0f5';
+                                            color = '#d63384';
+                                            border = '1px solid #ff69b4';
+                                        } else if (!isAvailable) {
+                                            label = 'Unavailable';
+                                            bg = '#ffe6e6';
+                                            color = 'red';
+                                        }
+
+                                        return (
+                                            <span style={{
+                                                padding: '4px 8px',
+                                                borderRadius: '4px',
+                                                fontSize: '0.85rem',
+                                                background: bg,
+                                                color: color,
+                                                fontWeight: 'bold',
+                                                border: border,
+                                                opacity: !isAvailable ? 0.7 : 1
+                                            }}>
+                                                {label}
+                                            </span>
+                                        );
+                                    })()}
                                 </td>
                                 <td style={{ padding: '10px 12px', textAlign: 'center' }}>
                                     <button

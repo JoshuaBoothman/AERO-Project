@@ -304,6 +304,10 @@ function CampingPage({ embedded = false, event = null }) {
                                             <span>Available</span>
                                         </div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                            <div style={{ width: '15px', height: '15px', borderRadius: '50%', background: '#ff69b4', border: '1px solid #ccc' }}></div>
+                                            <span>Partial</span>
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                                             <div style={{ width: '15px', height: '15px', borderRadius: '50%', background: 'var(--primary-color, blue)', border: '2px solid white', outline: '1px solid #ccc' }}></div>
                                             <span>Selected</span>
                                         </div>
@@ -369,8 +373,47 @@ function CampingPage({ embedded = false, event = null }) {
                                                     try { c = JSON.parse(site.map_coordinates); } catch (e) { return null; }
 
                                                     const isSelected = selectedSite?.campsite_id === site.campsite_id;
-                                                    // Use Theme Variables
-                                                    const color = !site.is_available ? 'red' : (isSelected ? 'var(--primary-color, blue)' : 'var(--accent-color, gold)');
+
+                                                    // Calculate Booking Status
+                                                    // 1. Calculate total nights in event
+                                                    const eStart = new Date(eventBounds.start);
+                                                    const eEnd = new Date(eventBounds.end);
+                                                    const totalEventNights = Math.max(1, Math.ceil((eEnd - eStart) / (1000 * 60 * 60 * 24)));
+
+                                                    // 2. Calculate total nights booked for this site
+                                                    let bookedNights = 0;
+                                                    if (site.bookings && site.bookings.length > 0) {
+                                                        site.bookings.forEach(b => {
+                                                            const bStart = new Date(b.check_in);
+                                                            const bEnd = new Date(b.check_out);
+                                                            // Clamp booking to event bounds to avoid over-counting (though DB shouldn't allow it)
+                                                            const effectiveStart = bStart < eStart ? eStart : bStart;
+                                                            const effectiveEnd = bEnd > eEnd ? eEnd : bEnd;
+                                                            if (effectiveEnd > effectiveStart) {
+                                                                bookedNights += Math.ceil((effectiveEnd - effectiveStart) / (1000 * 60 * 60 * 24));
+                                                            }
+                                                        });
+                                                    }
+
+                                                    const isFullyBooked = bookedNights >= totalEventNights;
+                                                    const isPartiallyBooked = bookedNights > 0 && bookedNights < totalEventNights;
+
+                                                    // Map Pin Color Logic:
+                                                    // 1. Selected -> Blue
+                                                    // 2. Fully Booked -> Red
+                                                    // 3. Partially Booked -> Pink
+                                                    // 4. Empty (Available) -> Gold
+                                                    let color = 'var(--accent-color, gold)'; // Default Empty/Available
+                                                    if (isSelected) {
+                                                        color = 'var(--primary-color, blue)';
+                                                    } else if (isFullyBooked) {
+                                                        color = 'red';
+                                                    } else if (isPartiallyBooked) {
+                                                        color = '#ff69b4'; // Hot Pink
+                                                    }
+
+                                                    // Availability indicated by opacity/cursor
+                                                    // If site is completely unavailable (e.g. fully booked or conflicts), opacity is lower
                                                     const zIndex = isSelected ? 10 : 1;
 
                                                     return (
@@ -391,7 +434,7 @@ function CampingPage({ embedded = false, event = null }) {
                                                                 zIndex: zIndex,
                                                                 opacity: site.is_available ? 1 : 0.6
                                                             }}
-                                                            title={`Site ${site.site_number} - ${site.is_available ? 'Available' : 'Booked'}`}
+                                                            title={`Site ${site.site_number} - ${isFullyBooked ? 'Booked' : (isPartiallyBooked ? 'Partially Booked' : 'Available')}`}
                                                         />
                                                     );
                                                 })}
@@ -479,13 +522,13 @@ function CampingPage({ embedded = false, event = null }) {
                                             if (useFullEventPrice && selectedSite.full_event_price) {
                                                 const base = parseFloat(selectedSite.full_event_price);
                                                 const extra = parseFloat(selectedSite.extra_adult_full_event_price || 0);
-                                                const info = `(Includes $${extra} per extra adult)`;
+                                                // const info = `(Includes $${extra} per extra adult)`;
                                                 total = base + (extraAdults * extra);
                                                 if (extraAdults > 0 && extra > 0) feeConfig = { count: extraAdults, rate: extra, total: extraAdults * extra, label: 'Full Event Extra Adult' };
                                             } else {
                                                 const base = (selectedSite.price_per_night || 0);
                                                 const extra = parseFloat(selectedSite.extra_adult_price_per_night || 0);
-                                                const info = `(+$${extra}/night per extra adult)`;
+                                                // const info = `(+$${extra}/night per extra adult)`; // Unused
                                                 total = (base * nights) + (extraAdults * extra * nights);
                                                 if (extraAdults > 0 && extra > 0) feeConfig = { count: extraAdults, rate: extra, total: extraAdults * extra * nights, label: 'Extra Adult Fees' };
                                             }
