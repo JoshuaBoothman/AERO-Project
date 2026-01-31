@@ -1,8 +1,32 @@
+## [2026-01-31] - Admin Campground Grid Partials
+- **Time**: 16:56 - 17:15
+- **Completed Items**:
+    - **Feature**: Implemented "Grid View" for Admin Camping Availability Report.
+    - **Logic**:
+        - Replicated "Partial Booking" logic from user map (Counts unique nights vs total event nights).
+        - **Full** (Red): Unique booked nights >= Event duration.
+        - **Partial** (Pink): Booked nights > 0 but < Event duration.
+        - **Available** (Green): 0 Booked nights.
+    - **UI**: 
+        - Replaced simple list with a Scrollable Grid Table.
+        - Dynamic date columns based on selected date range.
+        - Hover tooltips showing "Booked By" and "Order #".
+    - **Optimization**: Used `useMemo` for heavy processing to prevent re-renders.
+    - **Refinement**: 
+        - Removed Date Filters (Auto-shows full event).
+        - Fixed logic to exclude Event End Date (Checkout Day) from grid columns.
+        - **Status Logic Fix**: Standardized "Full" vs "Partial" logic to match Store's `CampingPage.jsx`.
+            - Now uses strict YYYY-MM-DD parsing to avoid time-of-day inflation of "Total Event Nights".
+            - Calculates booking duration by summing clamped date ranges instead of counting unique dates.
+        - **Sorting Fix**: Implemented natural sorting (e.g., 1, 2, 10 instead of 1, 10, 2) using `localeCompare` with `numeric: true`.
+    - **Verification**: Verified via linting and manual verification plan logic.
+    - **Documentation**: Archived plan to `completed/`.
+
 ## [2026-01-31] - Delete Unpaid Orders
 - **Time**: 10:45 - 11:15
 - **Completed Items**:
     - **Feature**: Implemented `deleteOrder` API to allow users to remove 'Pending' orders.
-    - **Logic**: A destructive action that restores merchandise stock, releases campsites/assets, and cancels attendees.
+    - **Logic**: Performs a HARD DELETE on the Order and Order Items to release resources, but a SOFT DELETE (Status: 'Cancelled') on linked Attendees to preserve personal data.
     - **UI**: Added a "Delete" button (trash icon) to the My Orders page for pending orders, with a confirmation modal.
     - **Verification**: Verified via linting and manual walkthrough plan.
     - **Documentation**: Archived plan to `completed/` and created `walkthrough.md`.

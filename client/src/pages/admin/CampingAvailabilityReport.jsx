@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotification } from '../../context/NotificationContext';
 import { Link } from 'react-router-dom';
@@ -10,8 +10,8 @@ function CampingAvailabilityReport() {
     // State
     const [events, setEvents] = useState([]);
     const [selectedEventId, setSelectedEventId] = useState('');
-    const [dates, setDates] = useState({ start: '', end: '' });
-    const [reportData, setReportData] = useState([]); // Array of rows
+    // Removed manual date state, will derive from selectedEvent
+    const [reportData, setReportData] = useState([]);
     const [loading, setLoading] = useState(false);
     const [hasSearched, setHasSearched] = useState(false);
 
@@ -28,25 +28,31 @@ function CampingAvailabilityReport() {
                     // Default to first active/future event
                     const active = sorted.find(e => new Date(e.end_date) >= new Date()) || sorted[sorted.length - 1];
                     setSelectedEventId(active.event_id);
-                    // Default dates: Event dates
-                    setDates({
-                        start: active.start_date.split('T')[0],
-                        end: active.end_date.split('T')[0]
-                    });
                 }
             })
             .catch(err => console.error(err));
     }, []);
 
-    const handleSearch = async () => {
-        if (!selectedEventId || !dates.start || !dates.end) {
-            notify('Please select event and dates', 'error');
-            return;
+    // Auto-fetch when event changes
+    useEffect(() => {
+        if (selectedEventId) {
+            handleSearch();
         }
+    }, [selectedEventId]);
+
+    const handleSearch = async () => {
+        if (!selectedEventId) return;
+
+        const event = events.find(e => e.event_id == selectedEventId);
+        if (!event) return;
+
+        // Use Event Dates directly
+        const startDate = event.start_date.split('T')[0];
+        const endDate = event.end_date.split('T')[0];
 
         setLoading(true);
         try {
-            const res = await fetch(`/api/reports/camping-availability?eventId=${selectedEventId}&start_date=${dates.start}&end_date=${dates.end}`, {
+            const res = await fetch(`/api/reports/camping-availability?eventId=${selectedEventId}&start_date=${startDate}&end_date=${endDate}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'x-auth-token': token
@@ -58,8 +64,6 @@ function CampingAvailabilityReport() {
                 setHasSearched(true);
             } else {
                 console.error('API responded with error:', res.status, res.statusText);
-                const errText = await res.text();
-                console.error('Error body:', errText);
                 notify('Failed to fetch report: ' + res.statusText, 'error');
             }
         } catch (e) {
@@ -70,140 +74,223 @@ function CampingAvailabilityReport() {
         }
     };
 
-    // Helper: Group by Campground for display
-    const groupedData = reportData.reduce((acc, row) => {
-        const cg = row.campground_name;
-        if (!acc[cg]) acc[cg] = [];
-        acc[cg].push(row);
-        return acc;
-    }, {});
+    const selectedEvent = useMemo(() => events.find(e => e.event_id == selectedEventId), [events, selectedEventId]);
+
+    // Process Data for Grid
+    const processedData = useMemo(() => {
+        if (!hasSearched || !selectedEvent || !reportData.length) return [];
+
+        // 1. Calculate Total Event Nights
+        // Use YYYY-MM-DD to avoid time issues, matching CampingPage logic
+        const sStr = selectedEvent.start_date.split('T')[0];
+        const eStr = selectedEvent.end_date.split('T')[0];
+        const eventStart = new Date(sStr);
+        const eventEnd = new Date(eStr);
+        const totalEventNights = Math.max(1, Math.ceil((eventEnd - eventStart) / (1000 * 60 * 60 * 24)));
+
+        // 2. Group by Campsite
+        const sites = {};
+        reportData.forEach(row => {
+            if (!sites[row.campsite_id]) {
+                sites[row.campsite_id] = {
+                    campsite_id: row.campsite_id,
+                    site_number: row.site_number,
+                    is_powered: row.is_powered,
+                    bookings: []
+                };
+            }
+            if (row.booking_id) {
+                sites[row.campsite_id].bookings.push({
+                    booking_id: row.booking_id,
+                    check_in_date: row.check_in_date,
+                    check_out_date: row.check_out_date,
+                    first_name: row.first_name,
+                    last_name: row.last_name,
+                    order_id: row.order_id
+                });
+            }
+        });
+
+        // 3. Status Determination
+        const siteArray = Object.values(sites).map(site => {
+            let bookedNights = 0;
+
+            if (site.bookings && site.bookings.length > 0) {
+                site.bookings.forEach(b => {
+                    // Parse as dates (booking dates from API might be ISO with time, strict YYYY-MM-DD is safer)
+                    const bStart = new Date(b.check_in_date.split('T')[0]);
+                    const bEnd = new Date(b.check_out_date.split('T')[0]);
+
+                    // Clamp booking to event bounds
+                    const effectiveStart = bStart < eventStart ? eventStart : bStart;
+                    const effectiveEnd = bEnd > eventEnd ? eventEnd : bEnd;
+
+                    if (effectiveEnd > effectiveStart) {
+                        const nights = Math.ceil((effectiveEnd - effectiveStart) / (1000 * 60 * 60 * 24));
+                        bookedNights += nights;
+                    }
+                });
+            }
+
+            let status = 'Available';
+            // Allow for tiny floating point errors or overlaps by checking >= total
+            if (bookedNights >= totalEventNights) status = 'Full';
+            else if (bookedNights > 0) status = 'Partial';
+
+            return {
+                ...site,
+                status,
+                bookedNightsCount: bookedNights
+            };
+        });
+
+        // 4. Sort Naturally (e.g. 1, 2, 10 instead of 1, 10, 2)
+        return siteArray.sort((a, b) => {
+            return a.site_number.localeCompare(b.site_number, undefined, { numeric: true, sensitivity: 'base' });
+        });
+    }, [reportData, selectedEvent, hasSearched]);
+
+    // Grid Columns (Dates)
+    const gridDates = useMemo(() => {
+        if (!selectedEvent) return [];
+        // Generate array of dates for the header
+        const d = [];
+        // Use string splitting for safety
+        const sStr = selectedEvent.start_date.split('T')[0];
+        const eStr = selectedEvent.end_date.split('T')[0];
+
+        let curr = new Date(sStr);
+        const end = new Date(eStr);
+
+        // Logic "Booking cannot start on last day". 
+        // We only show columns for "Nights". The night of the End Date is NOT part of the event.
+        while (curr < end) {
+            d.push(new Date(curr)); // Clone
+            curr.setDate(curr.getDate() + 1);
+        }
+        return d;
+    }, [selectedEvent]);
+
+    // Helper: Check if a date is booked for a specific site
+    const getBookingForDate = (site, dateObj) => {
+        // A night is booked if dateObj is >= checkIn AND dateObj < checkOut
+        // (Checkout day is not occupied)
+        return site.bookings.find(b => {
+            const checkIn = new Date(b.check_in_date.split('T')[0]);
+            const checkOut = new Date(b.check_out_date.split('T')[0]);
+
+            // Normalized comparison using timestamps of strict dates
+            const t = dateObj.getTime();
+            const ci = checkIn.getTime();
+            const co = checkOut.getTime();
+
+            return t >= ci && t < co;
+        });
+    };
 
     return (
-        <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
+        <div style={{ padding: '20px', maxWidth: '100%', margin: '0 20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
                 <h1>Camping Availability Report</h1>
                 <Link to="/admin" style={{ color: '#666', textDecoration: 'none' }}>← Back to Dashboard</Link>
             </div>
 
-            {/* Filters */}
-            <div style={{ background: '#f5f5f5', padding: '20px', borderRadius: '8px', marginBottom: '30px', display: 'flex', gap: '20px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
-                <div>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Event</label>
+            {/* Simpler Toolbar */}
+            <div style={{ background: '#f5f5f5', padding: '20px', borderRadius: '8px', marginBottom: '30px', display: 'flex', gap: '20px', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <label style={{ fontWeight: 'bold' }}>Event:</label>
                     <select
                         value={selectedEventId}
-                        onChange={e => {
-                            const eid = e.target.value;
-                            setSelectedEventId(eid);
-                            // Update dates to event defaults if verified
-                            const ev = events.find(x => x.event_id == eid);
-                            if (ev) {
-                                setDates({
-                                    start: ev.start_date.split('T')[0],
-                                    end: ev.end_date.split('T')[0]
-                                });
-                            }
-                        }}
-                        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ddd', minWidth: '200px' }}
+                        onChange={e => setSelectedEventId(e.target.value)}
+                        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ddd', minWidth: '250px' }}
                     >
                         {events.map(e => (
                             <option key={e.event_id} value={e.event_id}>{e.name}</option>
                         ))}
                     </select>
                 </div>
-                <div>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Start Date</label>
-                    <input
-                        type="date"
-                        value={dates.start}
-                        onChange={e => setDates({ ...dates, start: e.target.value })}
-                        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
-                    />
-                </div>
-                <div>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>End Date</label>
-                    <input
-                        type="date"
-                        value={dates.end}
-                        onChange={e => setDates({ ...dates, end: e.target.value })}
-                        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
-                    />
-                </div>
-                <button
-                    onClick={handleSearch}
-                    disabled={loading}
-                    style={{ padding: '10px 25px', background: 'var(--primary-color, black)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
-                >
-                    {loading ? 'Loading...' : 'Generate Report'}
-                </button>
+                {loading && <span style={{ color: '#666', fontStyle: 'italic' }}>Loading grid...</span>}
             </div>
 
-            {/* Results */}
+            {/* Key/Legend */}
+            <div style={{ marginBottom: '15px', display: 'flex', gap: '15px', fontSize: '0.9rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <span style={{ width: '15px', height: '15px', background: 'red', display: 'inline-block', borderRadius: '3px' }}></span> Full
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <span style={{ width: '15px', height: '15px', background: '#ff69b4', display: 'inline-block', borderRadius: '3px' }}></span> Partial
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <span style={{ width: '15px', height: '15px', background: 'green', display: 'inline-block', borderRadius: '3px' }}></span> Available
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <span style={{ width: '15px', height: '15px', background: '#e2e8f0', display: 'inline-block', borderRadius: '3px' }}></span> Booked Night
+                </div>
+            </div>
+
+            {/* Results Grid */}
             {hasSearched && (
-                <div>
-                    {Object.keys(groupedData).length === 0 ? (
-                        <p>No campsites found.</p>
+                <div style={{ overflowX: 'auto', border: '1px solid #ddd', borderRadius: '4px' }}>
+                    {processedData.length === 0 ? (
+                        <p style={{ padding: '20px' }}>No data found.</p>
                     ) : (
-                        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '1000px' }}>
                             <thead>
                                 <tr style={{ background: '#f9f9f9', borderBottom: '2px solid #ddd' }}>
-                                    <th style={{ textAlign: 'left', padding: '12px', width: '10%' }}>Site</th>
-                                    <th style={{ textAlign: 'left', padding: '12px', width: '15%' }}>Type</th>
-                                    <th style={{ textAlign: 'center', padding: '12px', width: '10%' }}>Status</th>
-                                    <th style={{ textAlign: 'left', padding: '12px', width: '25%' }}>Booked By</th>
-                                    <th style={{ textAlign: 'left', padding: '12px', width: '25%' }}>Dates</th>
-                                    <th style={{ textAlign: 'center', padding: '12px', width: '15%' }}>Order</th>
+                                    <th style={{ textAlign: 'left', padding: '12px', width: '80px', position: 'sticky', left: 0, background: '#f9f9f9', zIndex: 10 }}>Site</th>
+                                    <th style={{ textAlign: 'left', padding: '12px', width: '100px' }}>Type</th>
+                                    <th style={{ textAlign: 'center', padding: '12px', width: '100px' }}>Status</th>
+                                    {gridDates.map((d, i) => (
+                                        <th key={i} style={{ textAlign: 'center', padding: '8px', minWidth: '40px', fontSize: '0.8rem' }}>
+                                            {d.getDate()}/{d.getMonth() + 1}
+                                        </th>
+                                    ))}
                                 </tr>
                             </thead>
                             <tbody>
-                                {Object.keys(groupedData).map(cgName => (
-                                    <React.Fragment key={cgName}>
-                                        {/* Campground Header Row */}
-                                        <tr style={{ background: '#eef2f7', borderTop: '1px solid #ddd', borderBottom: '1px solid #ddd' }}>
-                                            <td colSpan="6" style={{ padding: '10px 15px', fontWeight: 'bold', fontSize: '1.1rem', color: '#444' }}>
-                                                {cgName}
-                                            </td>
-                                        </tr>
-                                        {groupedData[cgName].map((row, idx) => {
-                                            const isBooked = !!row.booking_id;
+                                {processedData.map((site) => (
+                                    <tr key={site.campsite_id} style={{ borderBottom: '1px solid #eee' }}>
+                                        <td style={{ padding: '8px 12px', fontWeight: 'bold', position: 'sticky', left: 0, background: 'white', zIndex: 5, borderRight: '1px solid #eee' }}>
+                                            {site.site_number}
+                                        </td>
+                                        <td style={{ padding: '8px 12px', fontSize: '0.9rem' }}>
+                                            {site.is_powered ? 'Powered' : 'Unpowered'}
+                                        </td>
+                                        <td style={{ padding: '8px 12px', textAlign: 'center' }}>
+                                            <span style={{
+                                                padding: '4px 8px',
+                                                borderRadius: '4px',
+                                                fontSize: '0.75rem',
+                                                fontWeight: 'bold',
+                                                color: 'white',
+                                                background: site.status === 'Full' ? 'red' : site.status === 'Partial' ? '#ff69b4' : 'green',
+                                                display: 'block',
+                                                textAlign: 'center'
+                                            }}>
+                                                {site.status}
+                                            </span>
+                                        </td>
+                                        {gridDates.map((d, i) => {
+                                            const booking = getBookingForDate(site, d);
                                             return (
-                                                <tr key={`${row.campsite_id}-${idx}`} style={{ borderBottom: '1px solid #eee' }}>
-                                                    <td style={{ padding: '10px 12px', fontWeight: 'bold' }}>{row.site_number}</td>
-                                                    <td style={{ padding: '10px 12px' }}>{row.is_powered ? 'Powered' : 'Unpowered'}</td>
-                                                    <td style={{ padding: '10px 12px', textAlign: 'center' }}>
-                                                        <span style={{
-                                                            padding: '4px 8px',
-                                                            borderRadius: '4px',
-                                                            fontSize: '0.85rem',
-                                                            background: isBooked ? '#ffe6e6' : '#e6ffe6',
-                                                            color: isBooked ? 'red' : 'green',
-                                                            fontWeight: 'bold',
-                                                            display: 'inline-block',
-                                                            minWidth: '80px'
-                                                        }}>
-                                                            {isBooked ? 'Booked' : 'Available'}
-                                                        </span>
-                                                    </td>
-                                                    <td style={{ padding: '10px 12px' }}>
-                                                        {isBooked ? (
-                                                            <span>{row.first_name} {row.last_name}</span>
-                                                        ) : <span style={{ color: '#ccc' }}>-</span>}
-                                                    </td>
-                                                    <td style={{ padding: '10px 12px', fontSize: '0.9rem' }}>
-                                                        {isBooked ? (
-                                                            `${new Date(row.check_in_date).toLocaleDateString()} - ${new Date(row.check_out_date).toLocaleDateString()}`
-                                                        ) : <span style={{ color: '#ccc' }}>-</span>}
-                                                    </td>
-                                                    <td style={{ padding: '10px 12px', textAlign: 'center' }}>
-                                                        {isBooked ? (
-                                                            <Link to={`/orders/${row.order_id}`} style={{ color: '#3b82f6', fontWeight: 'bold' }}>
-                                                                #{row.order_id}
-                                                            </Link>
-                                                        ) : <span style={{ color: '#ccc' }}>-</span>}
-                                                    </td>
-                                                </tr>
+                                                <td key={i}
+                                                    title={booking ? `Booked by: ${booking.first_name} ${booking.last_name} (Order #${booking.order_id})` : 'Available'}
+                                                    style={{
+                                                        textAlign: 'center',
+                                                        padding: '2px',
+                                                        background: booking ? '#e2e8f0' : 'transparent',
+                                                        borderLeft: '1px solid #f0f0f0'
+                                                    }}
+                                                >
+                                                    {booking ? (
+                                                        <div style={{ width: '100%', height: '100%', minHeight: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                            <span style={{ fontSize: '0.7rem', color: '#64748b' }}>x</span>
+                                                        </div>
+                                                    ) : null}
+                                                </td>
                                             );
                                         })}
-                                    </React.Fragment>
+                                    </tr>
                                 ))}
                             </tbody>
                         </table>
