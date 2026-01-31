@@ -1,3 +1,19 @@
+
+## [2026-01-31] - Campsite Booking UI
+**Milestone:** Improved Camping Availability & User Interface
+
+### Completed Items
+*   **Documentation**
+    *   **Workflow:** Moved implementation plan to `completed/`.
+*   **Camping Interface Refactor** [Completed]
+    *   **Layout:** Moved "Check In / Check Out / Check Availability" controls from the main content area to the **Booking Details Sidebar**.
+    *   **UX Improvement:** Refactored the loading state logic. Previously, the entire page would hide during an availability check. Now, only the Map/List view updates with a loader, keeping the sidebar controls visible and interactive.
+    *   **Visuals:** Ensured the date inputs and button stack correctly within the narrower sidebar container.
+
+### Verification
+*   **Manual Testing:** User to verify functionality via `walkthroughs/20260131_campsite_ui.md`.
+
+
 ## [2026-01-31] - Admin Campground Grid Partials
 - **Time**: 16:56 - 17:15
 - **Completed Items**:
