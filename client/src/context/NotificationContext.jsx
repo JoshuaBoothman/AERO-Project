@@ -29,6 +29,10 @@ export const NotificationProvider = ({ children }) => {
     }, []);
 
     // --- Confirm Logic ---
+    const closeConfirm = useCallback(() => {
+        setConfirmState(prev => ({ ...prev, isOpen: false }));
+    }, []);
+
     const confirm = useCallback((message, onConfirm) => {
         setConfirmState({
             isOpen: true,
@@ -41,11 +45,7 @@ export const NotificationProvider = ({ children }) => {
                 closeConfirm();
             }
         });
-    }, []);
-
-    const closeConfirm = () => {
-        setConfirmState(prev => ({ ...prev, isOpen: false }));
-    };
+    }, [closeConfirm]);
 
     return (
         <NotificationContext.Provider value={{ notify, confirm }}>

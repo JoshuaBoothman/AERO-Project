@@ -1,0 +1,1384 @@
+﻿
+> client@0.0.0 lint
+> eslint .
+
+
+C:\laragon\www\AERO-Project\client\scripts\create_real_admin.js
+  1:24  error  'require' is not defined  no-undef
+  2:16  error  'require' is not defined  no-undef
+
+C:\laragon\www\AERO-Project\client\scripts\create_test_users.js
+  1:15  error  'require' is not defined  no-undef
+
+C:\laragon\www\AERO-Project\client\src\components\AssetSelectionModal.jsx
+  35:8  warning  React Hook useEffect has a missing dependency: 'fetchAvailability'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\laragon\www\AERO-Project\client\src\components\AttendeeModal.jsx
+  57:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  55 |                 }
+  56 |             });
+> 57 |             setDetails(initial);
+     |             ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  58 |         }
+  59 |         // eslint-disable-next-line
+  60 |     }, [cart, user]); // Run once when cart changes  react-hooks/set-state-in-effect
+
+C:\laragon\www\AERO-Project\client\src\components\CampsiteModal.jsx
+   59:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  57 |     useEffect(() => {
+  58 |         if (campgrounds.length > 0 && !selectedCampgroundId) {
+> 59 |             setSelectedCampgroundId(campgrounds[0].campground_id);
+     |             ^^^^^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  60 |         }
+  61 |     }, [campgrounds, selectedCampgroundId]);
+  62 |                                                                             react-hooks/set-state-in-effect
+   66:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  64 |     useEffect(() => {
+  65 |         if (selectedCampgroundId && startDate && endDate) {
+> 66 |             setLoading(true);
+     |             ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  67 |             fetch(`/api/campgrounds/${selectedCampgroundId}/sites?startDate=${startDate}&endDate=${endDate}`)
+  68 |                 .then(res => res.json())
+  69 |                 .then(data => {  react-hooks/set-state-in-effect
+  250:90  error  'e' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         no-unused-vars
+
+C:\laragon\www\AERO-Project\client\src\components\Layout.jsx
+   13:10  error  'hasPlanes' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  no-unused-vars
+   13:21  error  'setHasPlanes' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               no-unused-vars
+   32:5   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  30 |   // Close mobile menu when route changes
+  31 |   useEffect(() => {
+> 32 |     setIsMobileMenuOpen(false);
+     |     ^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  33 |   }, [location.pathname]);
+  34 |
+  35 |   // Check if user has planes (for My Planes menu) - REMOVED: Always show for authenticated users                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  react-hooks/set-state-in-effect
+  105:18  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  103 |               /* ================= ADMIN NAVIGATION ================= */
+  104 |               <div className="flex items-center gap-4">
+> 105 |                 <NavLink to="/admin">Home</NavLink>
+      |                  ^^^^^^^ This component is created during render
+  106 |                 <NavLink to="/events">Events</NavLink>
+  107 |                 <NavLink to="/admin/merchandise">Merchandise</NavLink>
+  108 |                 <NavLink to="/admin/assets">Assets</NavLink>
+
+  39 |   if (error) return <div>Error: {error}</div>;
+  40 |
+> 41 |   const NavLink = ({ to, children, className = "" }) => (
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 42 |     <Link
+     | ^^^^^^^^^
+> 43 |       to={to}
+     | ^^^^^^^^^
+> 44 |       className={`hover:text-accent transition-colors font-medium ${className} ${location.pathname === to ? 'text-accent' : ''}`}
+     | ^^^^^^^^^
+> 45 |       onClick={() => setIsMobileMenuOpen(false)}
+     | ^^^^^^^^^
+> 46 |     >
+     | ^^^^^^^^^
+> 47 |       {children}
+     | ^^^^^^^^^
+> 48 |     </Link>
+     | ^^^^^^^^^
+> 49 |   );
+     | ^^^^ The component is created during render here
+  50 |
+  51 |   return (
+  52 |     <div className="min-h-screen bg-gray-50 flex flex-col">                                                                                                                                                                   react-hooks/static-components
+  106:18  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  104 |               <div className="flex items-center gap-4">
+  105 |                 <NavLink to="/admin">Home</NavLink>
+> 106 |                 <NavLink to="/events">Events</NavLink>
+      |                  ^^^^^^^ This component is created during render
+  107 |                 <NavLink to="/admin/merchandise">Merchandise</NavLink>
+  108 |                 <NavLink to="/admin/assets">Assets</NavLink>
+  109 |                 <NavLink to="/admin/subevents">Subevents</NavLink>
+
+  39 |   if (error) return <div>Error: {error}</div>;
+  40 |
+> 41 |   const NavLink = ({ to, children, className = "" }) => (
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 42 |     <Link
+     | ^^^^^^^^^
+> 43 |       to={to}
+     | ^^^^^^^^^
+> 44 |       className={`hover:text-accent transition-colors font-medium ${className} ${location.pathname === to ? 'text-accent' : ''}`}
+     | ^^^^^^^^^
+> 45 |       onClick={() => setIsMobileMenuOpen(false)}
+     | ^^^^^^^^^
+> 46 |     >
+     | ^^^^^^^^^
+> 47 |       {children}
+     | ^^^^^^^^^
+> 48 |     </Link>
+     | ^^^^^^^^^
+> 49 |   );
+     | ^^^^ The component is created during render here
+  50 |
+  51 |   return (
+  52 |     <div className="min-h-screen bg-gray-50 flex flex-col">                                                                                                                                                                         react-hooks/static-components
+  107:18  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  105 |                 <NavLink to="/admin">Home</NavLink>
+  106 |                 <NavLink to="/events">Events</NavLink>
+> 107 |                 <NavLink to="/admin/merchandise">Merchandise</NavLink>
+      |                  ^^^^^^^ This component is created during render
+  108 |                 <NavLink to="/admin/assets">Assets</NavLink>
+  109 |                 <NavLink to="/admin/subevents">Subevents</NavLink>
+  110 |                 <NavLink to="/admin/map">Camping</NavLink>
+
+  39 |   if (error) return <div>Error: {error}</div>;
+  40 |
+> 41 |   const NavLink = ({ to, children, className = "" }) => (
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 42 |     <Link
+     | ^^^^^^^^^
+> 43 |       to={to}
+     | ^^^^^^^^^
+> 44 |       className={`hover:text-accent transition-colors font-medium ${className} ${location.pathname === to ? 'text-accent' : ''}`}
+     | ^^^^^^^^^
+> 45 |       onClick={() => setIsMobileMenuOpen(false)}
+     | ^^^^^^^^^
+> 46 |     >
+     | ^^^^^^^^^
+> 47 |       {children}
+     | ^^^^^^^^^
+> 48 |     </Link>
+     | ^^^^^^^^^
+> 49 |   );
+     | ^^^^ The component is created during render here
+  50 |
+  51 |   return (
+  52 |     <div className="min-h-screen bg-gray-50 flex flex-col">                                                                                                                                                                      react-hooks/static-components
+  108:18  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  106 |                 <NavLink to="/events">Events</NavLink>
+  107 |                 <NavLink to="/admin/merchandise">Merchandise</NavLink>
+> 108 |                 <NavLink to="/admin/assets">Assets</NavLink>
+      |                  ^^^^^^^ This component is created during render
+  109 |                 <NavLink to="/admin/subevents">Subevents</NavLink>
+  110 |                 <NavLink to="/admin/map">Camping</NavLink>
+  111 |                 <NavLink to="/admin/orders">Orders</NavLink>
+
+  39 |   if (error) return <div>Error: {error}</div>;
+  40 |
+> 41 |   const NavLink = ({ to, children, className = "" }) => (
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 42 |     <Link
+     | ^^^^^^^^^
+> 43 |       to={to}
+     | ^^^^^^^^^
+> 44 |       className={`hover:text-accent transition-colors font-medium ${className} ${location.pathname === to ? 'text-accent' : ''}`}
+     | ^^^^^^^^^
+> 45 |       onClick={() => setIsMobileMenuOpen(false)}
+     | ^^^^^^^^^
+> 46 |     >
+     | ^^^^^^^^^
+> 47 |       {children}
+     | ^^^^^^^^^
+> 48 |     </Link>
+     | ^^^^^^^^^
+> 49 |   );
+     | ^^^^ The component is created during render here
+  50 |
+  51 |   return (
+  52 |     <div className="min-h-screen bg-gray-50 flex flex-col">                                                                                                                                                             react-hooks/static-components
+  109:18  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  107 |                 <NavLink to="/admin/merchandise">Merchandise</NavLink>
+  108 |                 <NavLink to="/admin/assets">Assets</NavLink>
+> 109 |                 <NavLink to="/admin/subevents">Subevents</NavLink>
+      |                  ^^^^^^^ This component is created during render
+  110 |                 <NavLink to="/admin/map">Camping</NavLink>
+  111 |                 <NavLink to="/admin/orders">Orders</NavLink>
+  112 |                 <NavLink to="/admin/settings">Settings</NavLink>
+
+  39 |   if (error) return <div>Error: {error}</div>;
+  40 |
+> 41 |   const NavLink = ({ to, children, className = "" }) => (
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 42 |     <Link
+     | ^^^^^^^^^
+> 43 |       to={to}
+     | ^^^^^^^^^
+> 44 |       className={`hover:text-accent transition-colors font-medium ${className} ${location.pathname === to ? 'text-accent' : ''}`}
+     | ^^^^^^^^^
+> 45 |       onClick={() => setIsMobileMenuOpen(false)}
+     | ^^^^^^^^^
+> 46 |     >
+     | ^^^^^^^^^
+> 47 |       {children}
+     | ^^^^^^^^^
+> 48 |     </Link>
+     | ^^^^^^^^^
+> 49 |   );
+     | ^^^^ The component is created during render here
+  50 |
+  51 |   return (
+  52 |     <div className="min-h-screen bg-gray-50 flex flex-col">                                                                                                                                                   react-hooks/static-components
+  110:18  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  108 |                 <NavLink to="/admin/assets">Assets</NavLink>
+  109 |                 <NavLink to="/admin/subevents">Subevents</NavLink>
+> 110 |                 <NavLink to="/admin/map">Camping</NavLink>
+      |                  ^^^^^^^ This component is created during render
+  111 |                 <NavLink to="/admin/orders">Orders</NavLink>
+  112 |                 <NavLink to="/admin/settings">Settings</NavLink>
+  113 |
+
+  39 |   if (error) return <div>Error: {error}</div>;
+  40 |
+> 41 |   const NavLink = ({ to, children, className = "" }) => (
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 42 |     <Link
+     | ^^^^^^^^^
+> 43 |       to={to}
+     | ^^^^^^^^^
+> 44 |       className={`hover:text-accent transition-colors font-medium ${className} ${location.pathname === to ? 'text-accent' : ''}`}
+     | ^^^^^^^^^
+> 45 |       onClick={() => setIsMobileMenuOpen(false)}
+     | ^^^^^^^^^
+> 46 |     >
+     | ^^^^^^^^^
+> 47 |       {children}
+     | ^^^^^^^^^
+> 48 |     </Link>
+     | ^^^^^^^^^
+> 49 |   );
+     | ^^^^ The component is created during render here
+  50 |
+  51 |   return (
+  52 |     <div className="min-h-screen bg-gray-50 flex flex-col">                                                                                                                                                                                                                          react-hooks/static-components
+  111:18  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  109 |                 <NavLink to="/admin/subevents">Subevents</NavLink>
+  110 |                 <NavLink to="/admin/map">Camping</NavLink>
+> 111 |                 <NavLink to="/admin/orders">Orders</NavLink>
+      |                  ^^^^^^^ This component is created during render
+  112 |                 <NavLink to="/admin/settings">Settings</NavLink>
+  113 |
+  114 |                 <button
+
+  39 |   if (error) return <div>Error: {error}</div>;
+  40 |
+> 41 |   const NavLink = ({ to, children, className = "" }) => (
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 42 |     <Link
+     | ^^^^^^^^^
+> 43 |       to={to}
+     | ^^^^^^^^^
+> 44 |       className={`hover:text-accent transition-colors font-medium ${className} ${location.pathname === to ? 'text-accent' : ''}`}
+     | ^^^^^^^^^
+> 45 |       onClick={() => setIsMobileMenuOpen(false)}
+     | ^^^^^^^^^
+> 46 |     >
+     | ^^^^^^^^^
+> 47 |       {children}
+     | ^^^^^^^^^
+> 48 |     </Link>
+     | ^^^^^^^^^
+> 49 |   );
+     | ^^^^ The component is created during render here
+  50 |
+  51 |   return (
+  52 |     <div className="min-h-screen bg-gray-50 flex flex-col">                                                                                                                                                                                                                                                               react-hooks/static-components
+  112:18  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  110 |                 <NavLink to="/admin/map">Camping</NavLink>
+  111 |                 <NavLink to="/admin/orders">Orders</NavLink>
+> 112 |                 <NavLink to="/admin/settings">Settings</NavLink>
+      |                  ^^^^^^^ This component is created during render
+  113 |
+  114 |                 <button
+  115 |                   onClick={handleLogout}
+
+  39 |   if (error) return <div>Error: {error}</div>;
+  40 |
+> 41 |   const NavLink = ({ to, children, className = "" }) => (
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 42 |     <Link
+     | ^^^^^^^^^
+> 43 |       to={to}
+     | ^^^^^^^^^
+> 44 |       className={`hover:text-accent transition-colors font-medium ${className} ${location.pathname === to ? 'text-accent' : ''}`}
+     | ^^^^^^^^^
+> 45 |       onClick={() => setIsMobileMenuOpen(false)}
+     | ^^^^^^^^^
+> 46 |     >
+     | ^^^^^^^^^
+> 47 |       {children}
+     | ^^^^^^^^^
+> 48 |     </Link>
+     | ^^^^^^^^^
+> 49 |   );
+     | ^^^^ The component is created during render here
+  50 |
+  51 |   return (
+  52 |     <div className="min-h-screen bg-gray-50 flex flex-col">                                                                                                                                                                                                                                                                                         react-hooks/static-components
+  125:18  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  123 |               <>
+  124 |                 {/* Public Nav - Only show Home/Events if not logged in. Show rest if User. */}
+> 125 |                 <NavLink to="/">Home</NavLink>
+      |                  ^^^^^^^ This component is created during render
+  126 |                 <NavLink to="/events">Events</NavLink>
+  127 |
+  128 |
+
+  39 |   if (error) return <div>Error: {error}</div>;
+  40 |
+> 41 |   const NavLink = ({ to, children, className = "" }) => (
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 42 |     <Link
+     | ^^^^^^^^^
+> 43 |       to={to}
+     | ^^^^^^^^^
+> 44 |       className={`hover:text-accent transition-colors font-medium ${className} ${location.pathname === to ? 'text-accent' : ''}`}
+     | ^^^^^^^^^
+> 45 |       onClick={() => setIsMobileMenuOpen(false)}
+     | ^^^^^^^^^
+> 46 |     >
+     | ^^^^^^^^^
+> 47 |       {children}
+     | ^^^^^^^^^
+> 48 |     </Link>
+     | ^^^^^^^^^
+> 49 |   );
+     | ^^^^ The component is created during render here
+  50 |
+  51 |   return (
+  52 |     <div className="min-h-screen bg-gray-50 flex flex-col">                                                                                                                                                                                                                                                                                                                            react-hooks/static-components
+  126:18  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  124 |                 {/* Public Nav - Only show Home/Events if not logged in. Show rest if User. */}
+  125 |                 <NavLink to="/">Home</NavLink>
+> 126 |                 <NavLink to="/events">Events</NavLink>
+      |                  ^^^^^^^ This component is created during render
+  127 |
+  128 |
+  129 |                 {/* Protected Menus */}
+
+  39 |   if (error) return <div>Error: {error}</div>;
+  40 |
+> 41 |   const NavLink = ({ to, children, className = "" }) => (
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 42 |     <Link
+     | ^^^^^^^^^
+> 43 |       to={to}
+     | ^^^^^^^^^
+> 44 |       className={`hover:text-accent transition-colors font-medium ${className} ${location.pathname === to ? 'text-accent' : ''}`}
+     | ^^^^^^^^^
+> 45 |       onClick={() => setIsMobileMenuOpen(false)}
+     | ^^^^^^^^^
+> 46 |     >
+     | ^^^^^^^^^
+> 47 |       {children}
+     | ^^^^^^^^^
+> 48 |     </Link>
+     | ^^^^^^^^^
+> 49 |   );
+     | ^^^^ The component is created during render here
+  50 |
+  51 |   return (
+  52 |     <div className="min-h-screen bg-gray-50 flex flex-col">                                                                                                                                                                                                                                                                                                     react-hooks/static-components
+  161:22  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  159 |                     </div>
+  160 |
+> 161 |                     <NavLink to="/shop">Shop</NavLink>
+      |                      ^^^^^^^ This component is created during render
+  162 |
+  163 |                     {/* Cart Icon - Desktop */}
+  164 |                     <Link to="/checkout" className="flex items-center gap-2 hover:text-accent relative px-2">
+
+  39 |   if (error) return <div>Error: {error}</div>;
+  40 |
+> 41 |   const NavLink = ({ to, children, className = "" }) => (
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 42 |     <Link
+     | ^^^^^^^^^
+> 43 |       to={to}
+     | ^^^^^^^^^
+> 44 |       className={`hover:text-accent transition-colors font-medium ${className} ${location.pathname === to ? 'text-accent' : ''}`}
+     | ^^^^^^^^^
+> 45 |       onClick={() => setIsMobileMenuOpen(false)}
+     | ^^^^^^^^^
+> 46 |     >
+     | ^^^^^^^^^
+> 47 |       {children}
+     | ^^^^^^^^^
+> 48 |     </Link>
+     | ^^^^^^^^^
+> 49 |   );
+     | ^^^^ The component is created during render here
+  50 |
+  51 |   return (
+  52 |     <div className="min-h-screen bg-gray-50 flex flex-col">                                                                                                                                                                                                                                                                                               react-hooks/static-components
+  176:24  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  174 |                       <span className="font-medium">Hi, {user.firstName}</span>
+  175 |
+> 176 |                       <NavLink to="/my-orders">My Orders</NavLink>
+      |                        ^^^^^^^ This component is created during render
+  177 |                       <NavLink to="/my-planes">My Planes</NavLink>
+  178 |
+  179 |                       <button
+
+  39 |   if (error) return <div>Error: {error}</div>;
+  40 |
+> 41 |   const NavLink = ({ to, children, className = "" }) => (
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 42 |     <Link
+     | ^^^^^^^^^
+> 43 |       to={to}
+     | ^^^^^^^^^
+> 44 |       className={`hover:text-accent transition-colors font-medium ${className} ${location.pathname === to ? 'text-accent' : ''}`}
+     | ^^^^^^^^^
+> 45 |       onClick={() => setIsMobileMenuOpen(false)}
+     | ^^^^^^^^^
+> 46 |     >
+     | ^^^^^^^^^
+> 47 |       {children}
+     | ^^^^^^^^^
+> 48 |     </Link>
+     | ^^^^^^^^^
+> 49 |   );
+     | ^^^^ The component is created during render here
+  50 |
+  51 |   return (
+  52 |     <div className="min-h-screen bg-gray-50 flex flex-col">                                                                                                                                                                                                                                                                                         react-hooks/static-components
+  177:24  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  175 |
+  176 |                       <NavLink to="/my-orders">My Orders</NavLink>
+> 177 |                       <NavLink to="/my-planes">My Planes</NavLink>
+      |                        ^^^^^^^ This component is created during render
+  178 |
+  179 |                       <button
+  180 |                         onClick={handleLogout}
+
+  39 |   if (error) return <div>Error: {error}</div>;
+  40 |
+> 41 |   const NavLink = ({ to, children, className = "" }) => (
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 42 |     <Link
+     | ^^^^^^^^^
+> 43 |       to={to}
+     | ^^^^^^^^^
+> 44 |       className={`hover:text-accent transition-colors font-medium ${className} ${location.pathname === to ? 'text-accent' : ''}`}
+     | ^^^^^^^^^
+> 45 |       onClick={() => setIsMobileMenuOpen(false)}
+     | ^^^^^^^^^
+> 46 |     >
+     | ^^^^^^^^^
+> 47 |       {children}
+     | ^^^^^^^^^
+> 48 |     </Link>
+     | ^^^^^^^^^
+> 49 |   );
+     | ^^^^ The component is created during render here
+  50 |
+  51 |   return (
+  52 |     <div className="min-h-screen bg-gray-50 flex flex-col">                                                                                                                                                                                                                                                                                                                          react-hooks/static-components
+  206:18  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  204 |             {user && user.role === 'admin' ? (
+  205 |               <>
+> 206 |                 <NavLink to="/admin" className="text-2xl">Home</NavLink>
+      |                  ^^^^^^^ This component is created during render
+  207 |                 <NavLink to="/events" className="text-2xl">Events</NavLink>
+  208 |                 <NavLink to="/admin/merchandise" className="text-2xl">Merchandise</NavLink>
+  209 |                 <NavLink to="/admin/assets" className="text-2xl">Assets</NavLink>
+
+  39 |   if (error) return <div>Error: {error}</div>;
+  40 |
+> 41 |   const NavLink = ({ to, children, className = "" }) => (
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 42 |     <Link
+     | ^^^^^^^^^
+> 43 |       to={to}
+     | ^^^^^^^^^
+> 44 |       className={`hover:text-accent transition-colors font-medium ${className} ${location.pathname === to ? 'text-accent' : ''}`}
+     | ^^^^^^^^^
+> 45 |       onClick={() => setIsMobileMenuOpen(false)}
+     | ^^^^^^^^^
+> 46 |     >
+     | ^^^^^^^^^
+> 47 |       {children}
+     | ^^^^^^^^^
+> 48 |     </Link>
+     | ^^^^^^^^^
+> 49 |   );
+     | ^^^^ The component is created during render here
+  50 |
+  51 |   return (
+  52 |     <div className="min-h-screen bg-gray-50 flex flex-col">                                                                                                                                                react-hooks/static-components
+  207:18  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  205 |               <>
+  206 |                 <NavLink to="/admin" className="text-2xl">Home</NavLink>
+> 207 |                 <NavLink to="/events" className="text-2xl">Events</NavLink>
+      |                  ^^^^^^^ This component is created during render
+  208 |                 <NavLink to="/admin/merchandise" className="text-2xl">Merchandise</NavLink>
+  209 |                 <NavLink to="/admin/assets" className="text-2xl">Assets</NavLink>
+  210 |                 <NavLink to="/admin/subevents" className="text-2xl">Subevents</NavLink>
+
+  39 |   if (error) return <div>Error: {error}</div>;
+  40 |
+> 41 |   const NavLink = ({ to, children, className = "" }) => (
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 42 |     <Link
+     | ^^^^^^^^^
+> 43 |       to={to}
+     | ^^^^^^^^^
+> 44 |       className={`hover:text-accent transition-colors font-medium ${className} ${location.pathname === to ? 'text-accent' : ''}`}
+     | ^^^^^^^^^
+> 45 |       onClick={() => setIsMobileMenuOpen(false)}
+     | ^^^^^^^^^
+> 46 |     >
+     | ^^^^^^^^^
+> 47 |       {children}
+     | ^^^^^^^^^
+> 48 |     </Link>
+     | ^^^^^^^^^
+> 49 |   );
+     | ^^^^ The component is created during render here
+  50 |
+  51 |   return (
+  52 |     <div className="min-h-screen bg-gray-50 flex flex-col">                                                                                                       react-hooks/static-components
+  208:18  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  206 |                 <NavLink to="/admin" className="text-2xl">Home</NavLink>
+  207 |                 <NavLink to="/events" className="text-2xl">Events</NavLink>
+> 208 |                 <NavLink to="/admin/merchandise" className="text-2xl">Merchandise</NavLink>
+      |                  ^^^^^^^ This component is created during render
+  209 |                 <NavLink to="/admin/assets" className="text-2xl">Assets</NavLink>
+  210 |                 <NavLink to="/admin/subevents" className="text-2xl">Subevents</NavLink>
+  211 |                 <NavLink to="/admin/map" className="text-2xl">Camping</NavLink>
+
+  39 |   if (error) return <div>Error: {error}</div>;
+  40 |
+> 41 |   const NavLink = ({ to, children, className = "" }) => (
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 42 |     <Link
+     | ^^^^^^^^^
+> 43 |       to={to}
+     | ^^^^^^^^^
+> 44 |       className={`hover:text-accent transition-colors font-medium ${className} ${location.pathname === to ? 'text-accent' : ''}`}
+     | ^^^^^^^^^
+> 45 |       onClick={() => setIsMobileMenuOpen(false)}
+     | ^^^^^^^^^
+> 46 |     >
+     | ^^^^^^^^^
+> 47 |       {children}
+     | ^^^^^^^^^
+> 48 |     </Link>
+     | ^^^^^^^^^
+> 49 |   );
+     | ^^^^ The component is created during render here
+  50 |
+  51 |   return (
+  52 |     <div className="min-h-screen bg-gray-50 flex flex-col">                                        react-hooks/static-components
+  209:18  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  207 |                 <NavLink to="/events" className="text-2xl">Events</NavLink>
+  208 |                 <NavLink to="/admin/merchandise" className="text-2xl">Merchandise</NavLink>
+> 209 |                 <NavLink to="/admin/assets" className="text-2xl">Assets</NavLink>
+      |                  ^^^^^^^ This component is created during render
+  210 |                 <NavLink to="/admin/subevents" className="text-2xl">Subevents</NavLink>
+  211 |                 <NavLink to="/admin/map" className="text-2xl">Camping</NavLink>
+  212 |                 <NavLink to="/admin/orders" className="text-2xl">Orders</NavLink>
+
+  39 |   if (error) return <div>Error: {error}</div>;
+  40 |
+> 41 |   const NavLink = ({ to, children, className = "" }) => (
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 42 |     <Link
+     | ^^^^^^^^^
+> 43 |       to={to}
+     | ^^^^^^^^^
+> 44 |       className={`hover:text-accent transition-colors font-medium ${className} ${location.pathname === to ? 'text-accent' : ''}`}
+     | ^^^^^^^^^
+> 45 |       onClick={() => setIsMobileMenuOpen(false)}
+     | ^^^^^^^^^
+> 46 |     >
+     | ^^^^^^^^^
+> 47 |       {children}
+     | ^^^^^^^^^
+> 48 |     </Link>
+     | ^^^^^^^^^
+> 49 |   );
+     | ^^^^ The component is created during render here
+  50 |
+  51 |   return (
+  52 |     <div className="min-h-screen bg-gray-50 flex flex-col">                               react-hooks/static-components
+  210:18  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  208 |                 <NavLink to="/admin/merchandise" className="text-2xl">Merchandise</NavLink>
+  209 |                 <NavLink to="/admin/assets" className="text-2xl">Assets</NavLink>
+> 210 |                 <NavLink to="/admin/subevents" className="text-2xl">Subevents</NavLink>
+      |                  ^^^^^^^ This component is created during render
+  211 |                 <NavLink to="/admin/map" className="text-2xl">Camping</NavLink>
+  212 |                 <NavLink to="/admin/orders" className="text-2xl">Orders</NavLink>
+  213 |                 <NavLink to="/admin/settings" className="text-2xl">Settings</NavLink>
+
+  39 |   if (error) return <div>Error: {error}</div>;
+  40 |
+> 41 |   const NavLink = ({ to, children, className = "" }) => (
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 42 |     <Link
+     | ^^^^^^^^^
+> 43 |       to={to}
+     | ^^^^^^^^^
+> 44 |       className={`hover:text-accent transition-colors font-medium ${className} ${location.pathname === to ? 'text-accent' : ''}`}
+     | ^^^^^^^^^
+> 45 |       onClick={() => setIsMobileMenuOpen(false)}
+     | ^^^^^^^^^
+> 46 |     >
+     | ^^^^^^^^^
+> 47 |       {children}
+     | ^^^^^^^^^
+> 48 |     </Link>
+     | ^^^^^^^^^
+> 49 |   );
+     | ^^^^ The component is created during render here
+  50 |
+  51 |   return (
+  52 |     <div className="min-h-screen bg-gray-50 flex flex-col">                     react-hooks/static-components
+  211:18  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  209 |                 <NavLink to="/admin/assets" className="text-2xl">Assets</NavLink>
+  210 |                 <NavLink to="/admin/subevents" className="text-2xl">Subevents</NavLink>
+> 211 |                 <NavLink to="/admin/map" className="text-2xl">Camping</NavLink>
+      |                  ^^^^^^^ This component is created during render
+  212 |                 <NavLink to="/admin/orders" className="text-2xl">Orders</NavLink>
+  213 |                 <NavLink to="/admin/settings" className="text-2xl">Settings</NavLink>
+  214 |                 <button onClick={handleLogout} className="text-2xl text-accent font-bold mt-4">Logout</button>
+
+  39 |   if (error) return <div>Error: {error}</div>;
+  40 |
+> 41 |   const NavLink = ({ to, children, className = "" }) => (
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 42 |     <Link
+     | ^^^^^^^^^
+> 43 |       to={to}
+     | ^^^^^^^^^
+> 44 |       className={`hover:text-accent transition-colors font-medium ${className} ${location.pathname === to ? 'text-accent' : ''}`}
+     | ^^^^^^^^^
+> 45 |       onClick={() => setIsMobileMenuOpen(false)}
+     | ^^^^^^^^^
+> 46 |     >
+     | ^^^^^^^^^
+> 47 |       {children}
+     | ^^^^^^^^^
+> 48 |     </Link>
+     | ^^^^^^^^^
+> 49 |   );
+     | ^^^^ The component is created during render here
+  50 |
+  51 |   return (
+  52 |     <div className="min-h-screen bg-gray-50 flex flex-col">  react-hooks/static-components
+  212:18  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  210 |                 <NavLink to="/admin/subevents" className="text-2xl">Subevents</NavLink>
+  211 |                 <NavLink to="/admin/map" className="text-2xl">Camping</NavLink>
+> 212 |                 <NavLink to="/admin/orders" className="text-2xl">Orders</NavLink>
+      |                  ^^^^^^^ This component is created during render
+  213 |                 <NavLink to="/admin/settings" className="text-2xl">Settings</NavLink>
+  214 |                 <button onClick={handleLogout} className="text-2xl text-accent font-bold mt-4">Logout</button>
+  215 |               </>
+
+  39 |   if (error) return <div>Error: {error}</div>;
+  40 |
+> 41 |   const NavLink = ({ to, children, className = "" }) => (
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 42 |     <Link
+     | ^^^^^^^^^
+> 43 |       to={to}
+     | ^^^^^^^^^
+> 44 |       className={`hover:text-accent transition-colors font-medium ${className} ${location.pathname === to ? 'text-accent' : ''}`}
+     | ^^^^^^^^^
+> 45 |       onClick={() => setIsMobileMenuOpen(false)}
+     | ^^^^^^^^^
+> 46 |     >
+     | ^^^^^^^^^
+> 47 |       {children}
+     | ^^^^^^^^^
+> 48 |     </Link>
+     | ^^^^^^^^^
+> 49 |   );
+     | ^^^^ The component is created during render here
+  50 |
+  51 |   return (
+  52 |     <div className="min-h-screen bg-gray-50 flex flex-col">                                                                  react-hooks/static-components
+  213:18  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  211 |                 <NavLink to="/admin/map" className="text-2xl">Camping</NavLink>
+  212 |                 <NavLink to="/admin/orders" className="text-2xl">Orders</NavLink>
+> 213 |                 <NavLink to="/admin/settings" className="text-2xl">Settings</NavLink>
+      |                  ^^^^^^^ This component is created during render
+  214 |                 <button onClick={handleLogout} className="text-2xl text-accent font-bold mt-4">Logout</button>
+  215 |               </>
+  216 |             ) : (
+
+  39 |   if (error) return <div>Error: {error}</div>;
+  40 |
+> 41 |   const NavLink = ({ to, children, className = "" }) => (
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 42 |     <Link
+     | ^^^^^^^^^
+> 43 |       to={to}
+     | ^^^^^^^^^
+> 44 |       className={`hover:text-accent transition-colors font-medium ${className} ${location.pathname === to ? 'text-accent' : ''}`}
+     | ^^^^^^^^^
+> 45 |       onClick={() => setIsMobileMenuOpen(false)}
+     | ^^^^^^^^^
+> 46 |     >
+     | ^^^^^^^^^
+> 47 |       {children}
+     | ^^^^^^^^^
+> 48 |     </Link>
+     | ^^^^^^^^^
+> 49 |   );
+     | ^^^^ The component is created during render here
+  50 |
+  51 |   return (
+  52 |     <div className="min-h-screen bg-gray-50 flex flex-col">                                                                                                                                        react-hooks/static-components
+  218:18  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  216 |             ) : (
+  217 |               <>
+> 218 |                 <NavLink to="/" className="text-2xl">Home</NavLink>
+      |                  ^^^^^^^ This component is created during render
+  219 |                 <NavLink to="/events" className="text-2xl">Events</NavLink>
+  220 |
+  221 |                 {user && (
+
+  39 |   if (error) return <div>Error: {error}</div>;
+  40 |
+> 41 |   const NavLink = ({ to, children, className = "" }) => (
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 42 |     <Link
+     | ^^^^^^^^^
+> 43 |       to={to}
+     | ^^^^^^^^^
+> 44 |       className={`hover:text-accent transition-colors font-medium ${className} ${location.pathname === to ? 'text-accent' : ''}`}
+     | ^^^^^^^^^
+> 45 |       onClick={() => setIsMobileMenuOpen(false)}
+     | ^^^^^^^^^
+> 46 |     >
+     | ^^^^^^^^^
+> 47 |       {children}
+     | ^^^^^^^^^
+> 48 |     </Link>
+     | ^^^^^^^^^
+> 49 |   );
+     | ^^^^ The component is created during render here
+  50 |
+  51 |   return (
+  52 |     <div className="min-h-screen bg-gray-50 flex flex-col">                                                                                                                                                                                                                                                                                                                                     react-hooks/static-components
+  219:18  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  217 |               <>
+  218 |                 <NavLink to="/" className="text-2xl">Home</NavLink>
+> 219 |                 <NavLink to="/events" className="text-2xl">Events</NavLink>
+      |                  ^^^^^^^ This component is created during render
+  220 |
+  221 |                 {user && (
+  222 |                   <>
+
+  39 |   if (error) return <div>Error: {error}</div>;
+  40 |
+> 41 |   const NavLink = ({ to, children, className = "" }) => (
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 42 |     <Link
+     | ^^^^^^^^^
+> 43 |       to={to}
+     | ^^^^^^^^^
+> 44 |       className={`hover:text-accent transition-colors font-medium ${className} ${location.pathname === to ? 'text-accent' : ''}`}
+     | ^^^^^^^^^
+> 45 |       onClick={() => setIsMobileMenuOpen(false)}
+     | ^^^^^^^^^
+> 46 |     >
+     | ^^^^^^^^^
+> 47 |       {children}
+     | ^^^^^^^^^
+> 48 |     </Link>
+     | ^^^^^^^^^
+> 49 |   );
+     | ^^^^ The component is created during render here
+  50 |
+  51 |   return (
+  52 |     <div className="min-h-screen bg-gray-50 flex flex-col">                                                                                                                                                                                                                                                                                                                                  react-hooks/static-components
+  223:22  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  221 |                 {user && (
+  222 |                   <>
+> 223 |                     <NavLink to="/shop" className="text-2xl">Shop</NavLink>
+      |                      ^^^^^^^ This component is created during render
+  224 |
+  225 |                     <div className="w-16 h-1 bg-white/10 my-1"></div>
+  226 |                     <span className="text-sm font-bold text-accent uppercase tracking-wider">Information</span>
+
+  39 |   if (error) return <div>Error: {error}</div>;
+  40 |
+> 41 |   const NavLink = ({ to, children, className = "" }) => (
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 42 |     <Link
+     | ^^^^^^^^^
+> 43 |       to={to}
+     | ^^^^^^^^^
+> 44 |       className={`hover:text-accent transition-colors font-medium ${className} ${location.pathname === to ? 'text-accent' : ''}`}
+     | ^^^^^^^^^
+> 45 |       onClick={() => setIsMobileMenuOpen(false)}
+     | ^^^^^^^^^
+> 46 |     >
+     | ^^^^^^^^^
+> 47 |       {children}
+     | ^^^^^^^^^
+> 48 |     </Link>
+     | ^^^^^^^^^
+> 49 |   );
+     | ^^^^ The component is created during render here
+  50 |
+  51 |   return (
+  52 |     <div className="min-h-screen bg-gray-50 flex flex-col">                                                                                                                                                                                                                             react-hooks/static-components
+  227:22  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  225 |                     <div className="w-16 h-1 bg-white/10 my-1"></div>
+  226 |                     <span className="text-sm font-bold text-accent uppercase tracking-wider">Information</span>
+> 227 |                     <NavLink to="/my-roster-events" className="text-xl">Flight Line Duties</NavLink>
+      |                      ^^^^^^^ This component is created during render
+  228 |                     <NavLink to="/faq" className="text-xl">FAQ</NavLink>
+  229 |                     <NavLink to="#" className="text-xl">Event Schedule</NavLink>
+  230 |
+
+  39 |   if (error) return <div>Error: {error}</div>;
+  40 |
+> 41 |   const NavLink = ({ to, children, className = "" }) => (
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 42 |     <Link
+     | ^^^^^^^^^
+> 43 |       to={to}
+     | ^^^^^^^^^
+> 44 |       className={`hover:text-accent transition-colors font-medium ${className} ${location.pathname === to ? 'text-accent' : ''}`}
+     | ^^^^^^^^^
+> 45 |       onClick={() => setIsMobileMenuOpen(false)}
+     | ^^^^^^^^^
+> 46 |     >
+     | ^^^^^^^^^
+> 47 |       {children}
+     | ^^^^^^^^^
+> 48 |     </Link>
+     | ^^^^^^^^^
+> 49 |   );
+     | ^^^^ The component is created during render here
+  50 |
+  51 |   return (
+  52 |     <div className="min-h-screen bg-gray-50 flex flex-col">                                                                                          react-hooks/static-components
+  228:22  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  226 |                     <span className="text-sm font-bold text-accent uppercase tracking-wider">Information</span>
+  227 |                     <NavLink to="/my-roster-events" className="text-xl">Flight Line Duties</NavLink>
+> 228 |                     <NavLink to="/faq" className="text-xl">FAQ</NavLink>
+      |                      ^^^^^^^ This component is created during render
+  229 |                     <NavLink to="#" className="text-xl">Event Schedule</NavLink>
+  230 |
+  231 |                     <div className="w-16 h-1 bg-white/20 my-2"></div>
+
+  39 |   if (error) return <div>Error: {error}</div>;
+  40 |
+> 41 |   const NavLink = ({ to, children, className = "" }) => (
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 42 |     <Link
+     | ^^^^^^^^^
+> 43 |       to={to}
+     | ^^^^^^^^^
+> 44 |       className={`hover:text-accent transition-colors font-medium ${className} ${location.pathname === to ? 'text-accent' : ''}`}
+     | ^^^^^^^^^
+> 45 |       onClick={() => setIsMobileMenuOpen(false)}
+     | ^^^^^^^^^
+> 46 |     >
+     | ^^^^^^^^^
+> 47 |       {children}
+     | ^^^^^^^^^
+> 48 |     </Link>
+     | ^^^^^^^^^
+> 49 |   );
+     | ^^^^ The component is created during render here
+  50 |
+  51 |   return (
+  52 |     <div className="min-h-screen bg-gray-50 flex flex-col">                                                                                          react-hooks/static-components
+  229:22  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  227 |                     <NavLink to="/my-roster-events" className="text-xl">Flight Line Duties</NavLink>
+  228 |                     <NavLink to="/faq" className="text-xl">FAQ</NavLink>
+> 229 |                     <NavLink to="#" className="text-xl">Event Schedule</NavLink>
+      |                      ^^^^^^^ This component is created during render
+  230 |
+  231 |                     <div className="w-16 h-1 bg-white/20 my-2"></div>
+  232 |                     <span className="text-xl opacity-75">Hi, {user.firstName}</span>
+
+  39 |   if (error) return <div>Error: {error}</div>;
+  40 |
+> 41 |   const NavLink = ({ to, children, className = "" }) => (
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 42 |     <Link
+     | ^^^^^^^^^
+> 43 |       to={to}
+     | ^^^^^^^^^
+> 44 |       className={`hover:text-accent transition-colors font-medium ${className} ${location.pathname === to ? 'text-accent' : ''}`}
+     | ^^^^^^^^^
+> 45 |       onClick={() => setIsMobileMenuOpen(false)}
+     | ^^^^^^^^^
+> 46 |     >
+     | ^^^^^^^^^
+> 47 |       {children}
+     | ^^^^^^^^^
+> 48 |     </Link>
+     | ^^^^^^^^^
+> 49 |   );
+     | ^^^^ The component is created during render here
+  50 |
+  51 |   return (
+  52 |     <div className="min-h-screen bg-gray-50 flex flex-col">                                                                                                                     react-hooks/static-components
+  233:22  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  231 |                     <div className="w-16 h-1 bg-white/20 my-2"></div>
+  232 |                     <span className="text-xl opacity-75">Hi, {user.firstName}</span>
+> 233 |                     <NavLink to="/my-orders" className="text-2xl">My Orders</NavLink>
+      |                      ^^^^^^^ This component is created during render
+  234 |                     <NavLink to="/my-planes" className="text-2xl">My Planes</NavLink>
+  235 |                     <button onClick={handleLogout} className="text-2xl text-accent font-bold mt-4">Logout</button>
+  236 |                   </>
+
+  39 |   if (error) return <div>Error: {error}</div>;
+  40 |
+> 41 |   const NavLink = ({ to, children, className = "" }) => (
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 42 |     <Link
+     | ^^^^^^^^^
+> 43 |       to={to}
+     | ^^^^^^^^^
+> 44 |       className={`hover:text-accent transition-colors font-medium ${className} ${location.pathname === to ? 'text-accent' : ''}`}
+     | ^^^^^^^^^
+> 45 |       onClick={() => setIsMobileMenuOpen(false)}
+     | ^^^^^^^^^
+> 46 |     >
+     | ^^^^^^^^^
+> 47 |       {children}
+     | ^^^^^^^^^
+> 48 |     </Link>
+     | ^^^^^^^^^
+> 49 |   );
+     | ^^^^ The component is created during render here
+  50 |
+  51 |   return (
+  52 |     <div className="min-h-screen bg-gray-50 flex flex-col">                                                               react-hooks/static-components
+  234:22  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  232 |                     <span className="text-xl opacity-75">Hi, {user.firstName}</span>
+  233 |                     <NavLink to="/my-orders" className="text-2xl">My Orders</NavLink>
+> 234 |                     <NavLink to="/my-planes" className="text-2xl">My Planes</NavLink>
+      |                      ^^^^^^^ This component is created during render
+  235 |                     <button onClick={handleLogout} className="text-2xl text-accent font-bold mt-4">Logout</button>
+  236 |                   </>
+  237 |                 )}
+
+  39 |   if (error) return <div>Error: {error}</div>;
+  40 |
+> 41 |   const NavLink = ({ to, children, className = "" }) => (
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 42 |     <Link
+     | ^^^^^^^^^
+> 43 |       to={to}
+     | ^^^^^^^^^
+> 44 |       className={`hover:text-accent transition-colors font-medium ${className} ${location.pathname === to ? 'text-accent' : ''}`}
+     | ^^^^^^^^^
+> 45 |       onClick={() => setIsMobileMenuOpen(false)}
+     | ^^^^^^^^^
+> 46 |     >
+     | ^^^^^^^^^
+> 47 |       {children}
+     | ^^^^^^^^^
+> 48 |     </Link>
+     | ^^^^^^^^^
+> 49 |   );
+     | ^^^^ The component is created during render here
+  50 |
+  51 |   return (
+  52 |     <div className="min-h-screen bg-gray-50 flex flex-col">                                                                                                                  react-hooks/static-components
+
+C:\laragon\www\AERO-Project\client\src\components\ProductModal.jsx
+  18:9  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  16 |             if (opt.values.length > 0) defaults[opt.name] = opt.values[0];
+  17 |         });
+> 18 |         setSelectedOptions(defaults);
+     |         ^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  19 |     }, [product]);
+  20 |
+  21 |     // Resolve SKU based on selection  react-hooks/set-state-in-effect
+  35:9  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  33 |         });
+  34 |
+> 35 |         setMatchedSku(found || null);
+     |         ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  36 |
+  37 |         // Update Image if SKU has one
+  38 |         if (found && found.image) {                                                                react-hooks/set-state-in-effect
+
+C:\laragon\www\AERO-Project\client\src\components\Public\PublicRegistrationModal.jsx
+  58:11  error  'displayTime' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\laragon\www\AERO-Project\client\src\components\SubeventModal.jsx
+  50:9  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  48 |             }
+  49 |         });
+> 50 |         setDefaultOptions(list);
+     |         ^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  51 |     }, [myPilots, cart]);
+  52 |
+  53 |     // Close dropdown on click outside  react-hooks/set-state-in-effect
+
+C:\laragon\www\AERO-Project\client\src\components\admin\SubeventVariationManager.jsx
+   37:8   warning  React Hook useEffect has a missing dependency: 'fetchVariations'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+   59:18  error    'e' is defined but never used                                                                                       no-unused-vars
+   73:22  error    'e' is defined but never used                                                                                       no-unused-vars
+   97:18  error    'e' is defined but never used                                                                                       no-unused-vars
+  111:22  error    'e' is defined but never used                                                                                       no-unused-vars
+
+C:\laragon\www\AERO-Project\client\src\context\AuthContext.jsx
+  16:7   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  14 |
+  15 |     if (storedToken && savedUser) {
+> 16 |       setToken(storedToken);
+     |       ^^^^^^^^ Avoid calling setState() directly within an effect
+  17 |       setUser(JSON.parse(savedUser));
+  18 |     }
+  19 |     setLoading(false);  react-hooks/set-state-in-effect
+  43:14  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             react-refresh/only-export-components
+
+C:\laragon\www\AERO-Project\client\src\context\CartContext.jsx
+  5:17  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\laragon\www\AERO-Project\client\src\context\NotificationContext.jsx
+   7:14  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           react-refresh/only-export-components
+  38:17  error  Error: Cannot access variable before it is declared
+
+`closeConfirm` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+  36 |             onConfirm: () => {
+  37 |                 if (onConfirm) onConfirm();
+> 38 |                 closeConfirm();
+     |                 ^^^^^^^^^^^^ `closeConfirm` accessed before it is declared
+  39 |             },
+  40 |             onCancel: () => {
+  41 |                 closeConfirm();
+
+  44 |     }, []);
+  45 |
+> 46 |     const closeConfirm = () => {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 47 |         setConfirmState(prev => ({ ...prev, isOpen: false }));
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 48 |     };
+     | ^^^^^^^ `closeConfirm` is declared here
+  49 |
+  50 |     return (
+  51 |         <NotificationContext.Provider value={{ notify, confirm }}>  react-hooks/immutability
+
+C:\laragon\www\AERO-Project\client\src\pages\EventDetails.jsx
+  11:11  error  'navigate' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+  12:11  error  'location' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+  13:13  error  'user' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u      no-unused-vars
+  14:13  error  'notify' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u    no-unused-vars
+  44:29  error  'tickets' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u   no-unused-vars
+
+C:\laragon\www\AERO-Project\client\src\pages\FAQ.jsx
+  20:22  error  'e' is defined but never used  no-unused-vars
+
+C:\laragon\www\AERO-Project\client\src\pages\MyFlightLineDuties.jsx
+  32:8  warning  React Hook useEffect has a missing dependency: 'notify'. Either include it or remove the dependency array       react-hooks/exhaustive-deps
+  38:8  warning  React Hook useEffect has a missing dependency: 'fetchDuties'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\laragon\www\AERO-Project\client\src\pages\MyPlanes.jsx
+  19:12  error    'selectedEventSlug' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u               no-unused-vars
+  36:8   warning  React Hook useEffect has a missing dependency: 'fetchPlanes'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\laragon\www\AERO-Project\client\src\pages\Register.jsx
+  13:9  error  'navigate' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\laragon\www\AERO-Project\client\src\pages\RosterEventSelector.jsx
+  27:8  warning  React Hook useEffect has a missing dependency: 'notify'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\laragon\www\AERO-Project\client\src\pages\StorePage.jsx
+  14:22  error  'orgSettings' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               no-unused-vars
+  30:9   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  28 |
+  29 |     useEffect(() => {
+> 30 |         setLoading(true);
+     |         ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  31 |         const headers = {};
+  32 |         if (token) {
+  33 |             headers['Authorization'] = `Bearer ${token}`;  react-hooks/set-state-in-effect
+
+C:\laragon\www\AERO-Project\client\src\pages\admin\AdminDashboard.jsx
+  12:13  error    'user' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                     no-unused-vars
+  13:11  error    'navigate' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                 no-unused-vars
+  17:8   warning  React Hook useEffect has a missing dependency: 'fetchStats'. Either include it or remove the dependency array            react-hooks/exhaustive-deps
+  24:8   warning  React Hook useEffect has a missing dependency: 'selectedCampgroundId'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  75:11  error    'totalSites' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                               no-unused-vars
+
+C:\laragon\www\AERO-Project\client\src\pages\admin\AdminOrders.jsx
+  107:15  error  'paid' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\laragon\www\AERO-Project\client\src\pages\admin\CampingAvailabilityReport.jsx
+  41:8  warning  React Hook useEffect has a missing dependency: 'handleSearch'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\laragon\www\AERO-Project\client\src\pages\admin\FlightLineRoster.jsx
+   40:8   warning  React Hook useEffect has a missing dependency: 'notify'. Either include it or remove the dependency array                                                        react-hooks/exhaustive-deps
+   48:8   warning  React Hook useEffect has missing dependencies: 'fetchEligiblePilots', 'fetchFlightLines', and 'fetchRoster'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  217:17  error    'replaceExisting' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                  no-unused-vars
+
+C:\laragon\www\AERO-Project\client\src\pages\admin\FlightLinesSetup.jsx
+  165:18  error  'err' is defined but never used                                                                  no-unused-vars
+  281:17  error  'replaceExisting' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\laragon\www\AERO-Project\client\src\pages\admin\MerchandiseList.jsx
+  120:18  error  'e' is defined but never used  no-unused-vars
+
+C:\laragon\www\AERO-Project\client\src\pages\admin\ProductEditor.jsx
+   24:12  error    'newOptValue' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                             no-unused-vars
+   25:12  error    'selectedVariantId' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                       no-unused-vars
+   25:31  error    'setSelectedVariantId' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                    no-unused-vars
+   48:8   warning  React Hook useEffect has missing dependencies: 'fetchDetails' and 'fetchSuppliers'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+   95:18  error    'e' is defined but never used                                                                                                           no-unused-vars
+  116:18  error    'e' is defined but never used                                                                                                           no-unused-vars
+  161:18  error    'e' is defined but never used                                                                                                           no-unused-vars
+  187:22  error    'e' is defined but never used                                                                                                           no-unused-vars
+  210:22  error    'e' is defined but never used                                                                                                           no-unused-vars
+  219:34  error    'existingId' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                              no-unused-vars
+  248:18  error    'e' is defined but never used                                                                                                           no-unused-vars
+  265:22  error    'e' is defined but never used                                                                                                           no-unused-vars
+  287:18  error    'e' is defined but never used                                                                                                           no-unused-vars
+  307:18  error    'e' is defined but never used                                                                                                           no-unused-vars
+  324:30  error    'err' is defined but never used                                                                                                         no-unused-vars
+  329:22  error    'e' is defined but never used                                                                                                           no-unused-vars
+  396:18  error    'e' is defined but never used                                                                                                           no-unused-vars
+
+C:\laragon\www\AERO-Project\client\src\pages\admin\VariantTemplates.jsx
+   7:13  error    'user' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                               no-unused-vars
+  21:8   warning  React Hook useEffect has a missing dependency: 'fetchTemplates'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\laragon\www\AERO-Project\client\src\pages\admin\assets\AssetCategoryManager.jsx
+   39:8   warning  React Hook useEffect has a missing dependency: 'fetchCategories'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+   82:18  error    'e' is defined but never used                                                                                       no-unused-vars
+  103:22  error    'e' is defined but never used                                                                                       no-unused-vars
+  155:22  error    'e' is defined but never used                                                                                       no-unused-vars
+
+C:\laragon\www\AERO-Project\client\src\pages\admin\assets\AssetHires.jsx
+  13:8   warning  React Hook useEffect has a missing dependency: 'fetchHires'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  23:18  error    'e' is defined but never used                                                                                  no-unused-vars
+  75:22  error    'e' is defined but never used                                                                                  no-unused-vars
+
+C:\laragon\www\AERO-Project\client\src\pages\admin\assets\AssetItems.jsx
+   40:8   warning  React Hook useEffect has a missing dependency: 'fetchItems'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+   50:18  error    'e' is defined but never used                                                                                  no-unused-vars
+  103:18  error    'e' is defined but never used                                                                                  no-unused-vars
+  120:22  error    'e' is defined but never used                                                                                  no-unused-vars
+  144:18  error    'e' is defined but never used                                                                                  no-unused-vars
+
+C:\laragon\www\AERO-Project\client\src\pages\admin\assets\AssetTypes.jsx
+  31:8  warning  React Hook useEffect has a missing dependency: 'fetchData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\laragon\www\AERO-Project\client\src\pages\admin\settings\AdminList.jsx
+  17:8  warning  React Hook useEffect has a missing dependency: 'fetchAdmins'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\laragon\www\AERO-Project\client\src\pages\admin\settings\FAQManager.jsx
+   25:8   warning  React Hook useEffect has a missing dependency: 'fetchFaqs'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+   39:18  error    'e' is defined but never used                                                                                 no-unused-vars
+   85:22  error    'e' is defined but never used                                                                                 no-unused-vars
+  110:18  error    'e' is defined but never used                                                                                 no-unused-vars
+  140:18  error    'e' is defined but never used                                                                                 no-unused-vars
+
+C:\laragon\www\AERO-Project\client\src\pages\admin\settings\UserList.jsx
+  14:8  warning  React Hook useEffect has a missing dependency: 'fetchUsers'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\laragon\www\AERO-Project\client\src\pages\camping\AdminMapTool.jsx
+   21:33  error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?   react-hooks/rules-of-hooks
+   22:51  error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?   react-hooks/rules-of-hooks
+   23:43  error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?   react-hooks/rules-of-hooks
+   24:61  error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?   react-hooks/rules-of-hooks
+   28:41  error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?   react-hooks/rules-of-hooks
+   29:31  error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?   react-hooks/rules-of-hooks
+   30:35  error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?   react-hooks/rules-of-hooks
+   31:49  error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?   react-hooks/rules-of-hooks
+   32:12  error    'tempCoords' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                                   no-unused-vars
+   32:41  error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?   react-hooks/rules-of-hooks
+   33:43  error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?   react-hooks/rules-of-hooks
+   34:49  error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?   react-hooks/rules-of-hooks
+   37:51  error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?   react-hooks/rules-of-hooks
+   38:43  error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?   react-hooks/rules-of-hooks
+   39:45  error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?   react-hooks/rules-of-hooks
+   40:39  error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?   react-hooks/rules-of-hooks
+   43:47  error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?   react-hooks/rules-of-hooks
+   44:37  error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?   react-hooks/rules-of-hooks
+   45:37  error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?   react-hooks/rules-of-hooks
+   48:5   error    React Hook "useEffect" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+   51:8   warning  React Hook useEffect has a missing dependency: 'fetchEvents'. Either include it or remove the dependency array                                                                               react-hooks/exhaustive-deps
+   54:5   error    React Hook "useEffect" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+   65:5   error    React Hook "useEffect" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+  140:31  error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?   react-hooks/rules-of-hooks
+  191:30  error    'e' is defined but never used                                                                                                                                                                no-unused-vars
+  350:18  error    'e' is defined but never used                                                                                                                                                                no-unused-vars
+  376:18  error    'e' is defined but never used                                                                                                                                                                no-unused-vars
+  859:90  error    'e' is defined but never used                                                                                                                                                                no-unused-vars
+
+C:\laragon\www\AERO-Project\client\src\pages\camping\CampingPage.jsx
+   12:19   error    'token' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                         no-unused-vars
+   24:39   error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render   react-hooks/rules-of-hooks
+   27:35   error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render   react-hooks/rules-of-hooks
+   28:39   error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render   react-hooks/rules-of-hooks
+   29:31   error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render   react-hooks/rules-of-hooks
+   30:43   error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render   react-hooks/rules-of-hooks
+   31:55   error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render   react-hooks/rules-of-hooks
+   32:43   error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render   react-hooks/rules-of-hooks
+   33:57   error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render   react-hooks/rules-of-hooks
+   34:37   error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render   react-hooks/rules-of-hooks
+   36:35   error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render   react-hooks/rules-of-hooks
+   37:45   error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render   react-hooks/rules-of-hooks
+   38:43   error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render   react-hooks/rules-of-hooks
+   41:33   error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render   react-hooks/rules-of-hooks
+   42:37   error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render   react-hooks/rules-of-hooks
+   45:5    error    React Hook "useEffect" is called conditionally. React Hooks must be called in the exact same order in every component render  react-hooks/rules-of-hooks
+   67:8    warning  React Hook useEffect has a missing dependency: 'fetchEventDetails'. Either include it or remove the dependency array          react-hooks/exhaustive-deps
+   70:5    error    React Hook "useEffect" is called conditionally. React Hooks must be called in the exact same order in every component render  react-hooks/rules-of-hooks
+   74:8    warning  React Hook useEffect has a missing dependency: 'fetchAvailability'. Either include it or remove the dependency array          react-hooks/exhaustive-deps
+  133:5    error    React Hook "useEffect" is called conditionally. React Hooks must be called in the exact same order in every component render  react-hooks/rules-of-hooks
+  351:110  error    'e' is defined but never used                                                                                                 no-unused-vars
+
+Ô£û 169 problems (146 errors, 23 warnings)
+

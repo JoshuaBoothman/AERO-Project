@@ -2,6 +2,15 @@
 
 This document outlines the logical order of execution for the pending implementation plans.
 
+## Phase 0: Critical Stability Fixes
+*These tasks fix fundamental code issues that can cause runtime crashes, state corruption, and application failures.*
+
+- [x] **[Critical Lint Error Fixes](20260202_lint_critical_fixes.md)**
+    - *Goal*: Fix 43 critical ESLint errors including React Hooks violations, undefined variables, and immutability issues.
+    - *Scope*: Frontend code quality fixes - No functional changes.
+    - *Impact*: **Prevents crashes** in CampingPage, Admin tools, and script failures.
+    - *Priority*: **HIGHEST** - These are ticking time bombs that can crash production.
+
 ## Phase 1: Critical Bug Fixes & Blockers
 *These tasks address broken functionality, data integrity issues, or immediate blockers for users.*
 

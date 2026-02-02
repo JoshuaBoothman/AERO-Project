@@ -278,7 +278,7 @@ function FlightLinesSetup() {
                 headers: { 'Authorization': `Bearer ${token}`, 'X-Auth-Token': token }
             });
 
-            let replaceExisting = false;
+
 
             if (checkRes.ok) {
                 const { hasAssignments } = await checkRes.json();

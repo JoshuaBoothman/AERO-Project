@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
@@ -9,16 +9,13 @@ import AdminMapTool from './AdminMapTool';
 function CampingPage({ embedded = false, event = null }) {
     const { slug } = useParams();
     const navigate = useNavigate();
-    const { user, token } = useAuth();
+    const { user } = useAuth();
     const { addToCart, cart, cartTotal } = useCart();
 
     // Mode: "Index" (no slug) vs "Detail" (slug)
     const isIndex = !slug;
 
-    // Admin View Redirect (Dashboard)
-    if (isIndex && user?.role === 'admin') {
-        return <AdminMapTool />;
-    }
+    // === ALL HOOKS MUST BE DECLARED BEFORE ANY EARLY RETURNS ===
 
     // Index State
     const [allEvents, setAllEvents] = useState([]);
@@ -64,17 +61,18 @@ function CampingPage({ embedded = false, event = null }) {
         } else {
             fetchEventDetails();
         }
-    }, [slug, isIndex, embedded, event]);
+    }, [slug, isIndex, embedded, event, fetchEventsIndex, fetchEventDetails]);
+
 
     // --- EFFECT: Load Availability (Detail Mode) ---
     useEffect(() => {
         if (!isIndex && eventId && dates.start && dates.end) {
             fetchAvailability();
         }
-    }, [eventId, dates, isIndex]);
+    }, [eventId, dates, isIndex, fetchAvailability]);
 
     // --- API: Index ---
-    const fetchEventsIndex = async () => {
+    const fetchEventsIndex = useCallback(async () => {
         try {
             const res = await fetch('/api/events');
             if (res.ok) {
@@ -84,12 +82,12 @@ function CampingPage({ embedded = false, event = null }) {
                 const relevant = data.filter(e => new Date(e.end_date) >= now);
                 setAllEvents(relevant);
             }
-        } catch (e) { console.error(e); }
+        } catch (err) { console.error('Failed to fetch events index:', err); }
         finally { setLoading(false); }
-    };
+    }, []);
 
     // --- API: Details ---
-    const fetchEventDetails = async () => {
+    const fetchEventDetails = useCallback(async () => {
         try {
             const res = await fetch(`/api/events/${slug}`);
             if (res.ok) {
@@ -103,11 +101,11 @@ function CampingPage({ embedded = false, event = null }) {
                     setEventBounds({ start: startRaw, end: endRaw });
                 }
             }
-        } catch (e) { console.error(e); }
+        } catch (err) { console.error('Failed to fetch event details:', err); }
         // Loading continues until availability ensures campgrounds are loaded
-    };
+    }, [slug]);
 
-    const fetchAvailability = async () => {
+    const fetchAvailability = useCallback(async () => {
         setLoading(true);
         try {
             const res = await fetch(`/api/events/${eventId}/campgrounds?start_date=${dates.start}&end_date=${dates.end}`);
@@ -123,9 +121,9 @@ function CampingPage({ embedded = false, event = null }) {
                     setActiveCampgroundId(data.campgrounds[0].campground_id);
                 }
             }
-        } catch (e) { console.error(e); }
+        } catch (err) { console.error('Failed to fetch availability:', err); }
         finally { setLoading(false); }
-    };
+    }, [eventId, dates.start, dates.end]);
 
     // --- EFFECT: Auto-Check Full Event ---
     // REMOVED: Defaulting to full event dates on package selection.
@@ -140,6 +138,13 @@ function CampingPage({ embedded = false, event = null }) {
             }
         }
     }, [dates, eventBounds, selectedSite]);
+
+    // === EARLY RETURNS (after all Hooks) ===
+
+    // Admin View Redirect (Dashboard)
+    if (isIndex && user?.role === 'admin') {
+        return <AdminMapTool />;
+    }
 
     // --- HANDLERS ---
     const handleSiteClick = (site) => {
@@ -348,7 +353,7 @@ function CampingPage({ embedded = false, event = null }) {
                                                     {activeCampground.sites.map(site => {
                                                         if (!site.map_coordinates) return null;
                                                         let c;
-                                                        try { c = JSON.parse(site.map_coordinates); } catch (e) { return null; }
+                                                        try { c = JSON.parse(site.map_coordinates); } catch (_parseErr) { return null; }
 
                                                         const isSelected = selectedSite?.campsite_id === site.campsite_id;
 

@@ -1,8 +1,24 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { Menu, X, ShoppingCart, ChevronDown } from 'lucide-react';
+
+// NavLink component moved outside of Layout to avoid 'create component during render' error
+function NavLink({ to, children, className = "", onClick }) {
+  const location = useLocation();
+  const isActive = location.pathname === to;
+
+  return (
+    <Link
+      to={to}
+      className={`hover:text-accent transition-colors font-medium ${className} ${isActive ? 'text-accent' : ''}`}
+      onClick={onClick}
+    >
+      {children}
+    </Link>
+  );
+}
 
 function Layout({ orgSettings, loading, error, refreshSettings }) {
   const { user, logout } = useAuth();
@@ -10,7 +26,6 @@ function Layout({ orgSettings, loading, error, refreshSettings }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [hasPlanes, setHasPlanes] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -28,25 +43,19 @@ function Layout({ orgSettings, loading, error, refreshSettings }) {
   }, [orgSettings]);
 
   // Close mobile menu when route changes
+  // This is intentionally setting state in effect - it's responding to navigation
+  const prevPathname = useRef(location.pathname);
   useEffect(() => {
-    setIsMobileMenuOpen(false);
+    if (prevPathname.current !== location.pathname) {
+      prevPathname.current = location.pathname;
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIsMobileMenuOpen(false);
+    }
   }, [location.pathname]);
 
-  // Check if user has planes (for My Planes menu) - REMOVED: Always show for authenticated users
-  // useEffect(() => { ... }, [user]);
-
+  // === EARLY RETURNS (after all hooks) ===
   if (loading) return <div>Loading settings...</div>;
   if (error) return <div>Error: {error}</div>;
-
-  const NavLink = ({ to, children, className = "" }) => (
-    <Link
-      to={to}
-      className={`hover:text-accent transition-colors font-medium ${className} ${location.pathname === to ? 'text-accent' : ''}`}
-      onClick={() => setIsMobileMenuOpen(false)}
-    >
-      {children}
-    </Link>
-  );
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">

@@ -97,7 +97,7 @@ function AttendeesList() {
                     const data = await res.json();
                     setTicketTypes(data.tickets || []);
                 }
-            } catch (e) { console.error(e); }
+            } catch (err) { console.error('Failed to fetch ticket types:', err); }
         };
         fetchTicketTypes();
     }, [slug]);

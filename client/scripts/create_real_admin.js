@@ -1,3 +1,4 @@
+/* global require */
 const { sql, query } = require('../../api/src/lib/db');
 const bcrypt = require('bcryptjs');
 

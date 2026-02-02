@@ -8,15 +8,7 @@ function AdminMapTool() {
     const { notify, confirm } = useNotification();
     const navigate = useNavigate();
 
-    // Route Protection
-    useEffect(() => {
-        if (!user || user.role !== 'admin') {
-            navigate('/login');
-        }
-    }, [user, navigate]);
-
-    if (!user || user.role !== 'admin') return null; // Prevent flicker
-
+    // === ALL STATE HOOKS MUST BE DECLARED BEFORE ANY EARLY RETURNS ===
     // Selection State
     const [events, setEvents] = useState([]);
     const [selectedEventId, setSelectedEventId] = useState('');
@@ -24,12 +16,11 @@ function AdminMapTool() {
     const [selectedCampgroundId, setSelectedCampgroundId] = useState(null);
 
     // Map/Editor State
-    // Map/Editor State
     const [campground, setCampground] = useState(null);
     const [sites, setSites] = useState([]);
     const [loading, setLoading] = useState(false);
     const [selectedSiteId, setSelectedSiteId] = useState(null);
-    const [tempCoords, setTempCoords] = useState(null);
+    // const [tempCoords, setTempCoords] = useState(null); // Removed unused state
     const [orgSettings, setOrgSettings] = useState(null);
     const [nextSiteNumber, setNextSiteNumber] = useState(1);
 
@@ -43,6 +34,17 @@ function AdminMapTool() {
     const [showEditModal, setShowEditModal] = useState(false);
     const [editData, setEditData] = useState({ id: null, name: '' });
     const [editFile, setEditFile] = useState(null);
+
+    // Error State (moved up from line 140)
+    const [error, setError] = useState(null);
+
+    // Route Protection
+    useEffect(() => {
+        if (!user || user.role !== 'admin') {
+            navigate('/login');
+        }
+    }, [user, navigate]);
+
 
     // Initial Load: Fetch Events & Settings
     useEffect(() => {
@@ -70,6 +72,9 @@ function AdminMapTool() {
             setSites([]);
         }
     }, [selectedCampgroundId]);
+
+    // === EARLY RETURNS (after all Hooks) ===
+    if (!user || user.role !== 'admin') return null; // Prevent flicker
 
     const fetchSettings = async () => {
         try {
@@ -136,10 +141,6 @@ function AdminMapTool() {
             }
         } catch (e) { console.error(e); }
     };
-
-    const [error, setError] = useState(null);
-
-    // ... (existing code)
 
     const fetchCampgroundData = async (id) => {
         setLoading(true);
@@ -347,7 +348,7 @@ function AdminMapTool() {
                 // Clear inputs
                 document.getElementById('addQty').value = '1';
             } else { alert('Failed to add sites'); }
-        } catch (e) { alert('Error adding sites'); }
+        } catch (e) { console.error(e); alert('Error adding sites'); }
     };
 
     const handleSingleAdd = async (name, price) => {
@@ -373,7 +374,7 @@ function AdminMapTool() {
                 fetchCampgroundData(selectedCampgroundId);
                 document.getElementById('singleName').value = '';
             } else { alert('Failed to add site'); }
-        } catch (e) { alert('Error adding site'); }
+        } catch (e) { console.error(e); alert('Error adding site'); }
     };
 
     const handleRename = (id, newName) => {
@@ -494,7 +495,7 @@ function AdminMapTool() {
         const y = ((e.clientY - rect.top) / rect.height) * 100;
         const xFixed = parseFloat(x.toFixed(1));
         const yFixed = parseFloat(y.toFixed(1));
-        setTempCoords({ x: xFixed, y: yFixed });
+        // setTempCoords({ x: xFixed, y: yFixed });
         saveCoords(selectedSiteId, { x: xFixed, y: yFixed });
     };
 
@@ -511,7 +512,7 @@ function AdminMapTool() {
             });
             if (res.ok) {
                 setSites(prev => prev.map(s => s.campsite_id === siteId ? { ...s, map_coordinates: coords ? JSON.stringify(coords) : null } : s));
-                setTempCoords(null);
+                // setTempCoords(null);
             } else {
                 const err = await res.json();
                 notify(`Failed to save: ${err.error || 'Unknown error'}`, "error");
@@ -856,7 +857,7 @@ function AdminMapTool() {
                                 {sites.map(site => {
                                     if (!site.map_coordinates) return null;
                                     let c;
-                                    try { c = JSON.parse(site.map_coordinates); } catch (e) { return null; }
+                                    try { c = JSON.parse(site.map_coordinates); } catch (_parseErr) { return null; }
                                     if (!c) return null;
                                     return (
                                         <div

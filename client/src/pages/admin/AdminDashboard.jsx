@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { Link } from 'react-router-dom';
+// import { useAuth } from '../../context/AuthContext';
 
 function AdminDashboard() {
     const [stats, setStats] = useState(null);
@@ -9,8 +9,8 @@ function AdminDashboard() {
     const [selectedEventId, setSelectedEventId] = useState('');
     const [selectedCampgroundId, setSelectedCampgroundId] = useState('');
 
-    const { user } = useAuth();
-    const navigate = useNavigate();
+    // const { user } = useAuth(); // Unused
+    // const navigate = useNavigate(); // Unused
 
     useEffect(() => {
         fetchStats();
@@ -72,7 +72,7 @@ function AdminDashboard() {
 
     // Camping Calc
     const selectedCampground = camping.find(c => c.campground_id == selectedCampgroundId) || (camping.length > 0 ? camping[0] : null);
-    const totalSites = camping.reduce((acc, c) => acc + c.capacity, 0);
+
     // Simple "booked" metric for summary (sum of unique sites booked? backend didn't send that explicitly, it sent daily. 
     // Let's use max daily occupancy as a rough proxy for "peak booking" or just show capacity on the card)
     // Actually, let's just show Total Capacity for now on the card, and leave booking detail to the chart.
