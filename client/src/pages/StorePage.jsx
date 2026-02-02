@@ -144,6 +144,7 @@ function StorePage({ orgSettings }) {
             checkIn: dates.start,
             checkOut: dates.end,
             // Key Change: Store Type ID.
+            id: asset.id,
             assetTypeId: asset.id,
             assetId: asset.id, // Legacy/Fallback compatibility
             // We don't store specificItem.asset_item_id (it's -1)

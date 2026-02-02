@@ -58,7 +58,8 @@ function Checkout() {
                     price: m.price
                 })),
                 assets: assets.map(a => ({
-                    assetId: a.id,
+                    assetId: a.assetTypeId || a.assetId || a.id,
+                    assetTypeId: a.assetTypeId || a.assetId || a.id,
                     checkIn: a.checkIn,
                     checkOut: a.checkOut,
                     price: a.price
