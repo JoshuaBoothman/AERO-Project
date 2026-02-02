@@ -95,7 +95,7 @@ function AttendeesList() {
                 const res = await fetch(`/api/events/${slug}`);
                 if (res.ok) {
                     const data = await res.json();
-                    setTicketTypes(data.ticket_types || []);
+                    setTicketTypes(data.tickets || []);
                 }
             } catch (e) { console.error(e); }
         };

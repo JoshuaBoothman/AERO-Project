@@ -17,7 +17,7 @@ This document outlines the logical order of execution for the pending implementa
     - *Goal*: Fix "Add to Cart" button being unreachable on small screens in Subevents modal.
     - *Scope*: CSS/Layout fix.
 
-- [ ] **[Admin Attendees Ticket Type Fix](20260202_admin_attendees_ticket_type_fix.md)**
+- [x] **[Admin Attendees Ticket Type Fix](20260202_admin_attendees_ticket_type_fix.md)**
     - *Goal*: Fix empty "Ticket Type" dropdown in Admin Attendees list.
     - *Scope*: Frontend property name fix.
 
