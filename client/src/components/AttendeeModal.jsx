@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNotification } from '../context/NotificationContext';
+import { formatDateForDisplay } from '../utils/dateHelpers';
 
 /**
  * Reusable Modal for collecting Attendee Details (Pilots, Crew, etc.)
@@ -176,6 +177,25 @@ function AttendeeModal({
                 for (const req of requiredFields) {
                     if (!d[req.field] || !d[req.field].trim()) {
                         notify(`${label}: Please enter ${req.name}.`, "error");
+                        return;
+                    }
+                }
+
+                // Date Range Validation (Strict)
+                if (event && event.eventStartDate && event.eventEndDate) {
+                    const eventStart = event.eventStartDate.split('T')[0];
+                    const eventEnd = event.eventEndDate.split('T')[0];
+
+                    if (d.arrivalDate < eventStart) {
+                        notify(`${label}: Arrival date cannot be before ${formatDateForDisplay(event.eventStartDate)}`, "error");
+                        return;
+                    }
+                    if (d.departureDate > eventEnd) {
+                        notify(`${label}: Departure date cannot be after ${formatDateForDisplay(event.eventEndDate)}`, "error");
+                        return;
+                    }
+                    if (d.arrivalDate > d.departureDate) {
+                        notify(`${label}: Arrival date cannot be after Departure date.`, "error");
                         return;
                     }
                 }
