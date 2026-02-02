@@ -13,7 +13,7 @@ This document outlines the logical order of execution for the pending implementa
     - *Goal*: strict server-side/logic validation to preventing selection of dates outside event range (common on mobile).
     - *Scope*: Frontend logic update in `AttendeeModal`.
 
-- [ ] **[Subevents Button Visibility](20260202_missing_or_unreachable_button_subevents.md)**
+- [x] **[Subevents Button Visibility](20260202_missing_or_unreachable_button_subevents.md)**
     - *Goal*: Fix "Add to Cart" button being unreachable on small screens in Subevents modal.
     - *Scope*: CSS/Layout fix.
 

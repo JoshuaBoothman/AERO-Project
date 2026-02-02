@@ -139,7 +139,7 @@ export default function SubeventModal({ subevent, onClose, onAddToCart, myPilots
 
     return (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden flex flex-col max-h-[90dvh]">
 
                 {/* Header */}
                 <div className="p-6 border-b border-gray-100 flex justify-between items-start">
@@ -156,7 +156,7 @@ export default function SubeventModal({ subevent, onClose, onAddToCart, myPilots
                 </div>
 
                 {/* Content */}
-                <div className="p-6 overflow-y-auto min-h-[300px]">
+                <div className="p-6 overflow-y-auto min-h-0 flex-1">
                     <div className="space-y-6">
 
                         {/* Custom Combobox */}

@@ -1,4 +1,17 @@
 
+## [2026-02-02] - Subevent Modal Button Visibility Fix (Completed)
+- **Time**: 15:46 - 15:54
+- **Completed Items**:
+    - **Bug Fix**: Fixed layout issue where "Add to Cart" button was unreachable on small screens in Subevents modal.
+    - **Frontend (Client)**:
+        - Updated `SubeventModal.jsx` modal container from `max-h-[90vh]` to `max-h-[90dvh]` for better mobile browser support.
+        - Changed content area from `min-h-[300px]` to `min-h-0 flex-1` to ensure proper flexbox behavior.
+        - Footer with button now stays pinned at bottom on all screen sizes.
+    - **Verification**:
+        - Linted `client/` (no errors).
+        - Created `walkthrough.md` with comprehensive manual verification steps for mobile testing.
+    - **Documentation**:
+        - Updated `Master_Implementation_Schedule.md`.
 
 ## [2026-02-02] - Mobile Date Selection Bugfix (Completed)
 - **Time**: 15:13 - 15:35
