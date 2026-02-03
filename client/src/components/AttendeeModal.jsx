@@ -527,6 +527,84 @@ function AttendeeModal({
                                 })()}
 
                                 {/* Pilot Fields */}
+                                {/* Flight Line Duties Section (Moved from inside Pilot & Aircraft Registration) */}
+                                {ticket.system_role === 'pilot' && (() => {
+                                    // Calculate duration for Day Pass visibility check
+                                    let showFlightLine = true;
+                                    if (ticket.is_day_pass && data.arrivalDate && data.departureDate) {
+                                        const arrival = new Date(data.arrivalDate);
+                                        const departure = new Date(data.departureDate);
+                                        const daysDiff = Math.ceil((departure - arrival) / (1000 * 60 * 60 * 24)) + 1; // +1 for inclusive
+                                        showFlightLine = daysDiff >= 3;
+                                    }
+
+                                    if (!showFlightLine) return null;
+
+                                    return (
+                                        <div className="mb-6 p-4 bg-white border border-gray-200 rounded shadow-sm">
+                                            <h5 className="font-bold mb-3 text-lg border-b pb-2">Flight Line Duties</h5>
+
+                                            <p className="text-sm text-gray-600 mb-4">
+                                                Please select your preference regarding flight line duties.
+                                            </p>
+
+                                            <div className="space-y-3">
+                                                {/* Option 1: Agree */}
+                                                <label className={`flex items-center justify-between p-3 border rounded cursor-pointer transition-colors ${data.flightLineDuties !== false ? 'bg-green-50 border-green-500 ring-1 ring-green-500' : 'border-gray-300 hover:border-green-300'}`}>
+                                                    <div className="flex items-center gap-3">
+                                                        <input
+                                                            type="radio"
+                                                            name={`fld_${key}`}
+                                                            checked={data.flightLineDuties !== false}
+                                                            onChange={() => handleChange(key, 'flightLineDuties', true)}
+                                                            className="w-5 h-5 text-green-600"
+                                                        />
+                                                        <div className="flex flex-col">
+                                                            <span className="font-bold text-gray-800">I agree to perform flight line duties</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <span className="block font-bold text-green-600 text-lg">
+                                                            ${Number(ticket.price).toFixed(2)}
+                                                        </span>
+                                                        <span className="text-xs text-gray-400">Standard Price</span>
+                                                    </div>
+                                                </label>
+
+                                                {/* Option 2: Disagree */}
+                                                <label className={`flex items-center justify-between p-3 border rounded cursor-pointer transition-colors ${data.flightLineDuties === false ? 'bg-amber-50 border-amber-500 ring-1 ring-amber-500' : 'border-gray-300 hover:border-amber-300'}`}>
+                                                    <div className="flex items-center gap-3">
+                                                        <input
+                                                            type="radio"
+                                                            name={`fld_${key}`}
+                                                            checked={data.flightLineDuties === false}
+                                                            onChange={() => handleChange(key, 'flightLineDuties', false)}
+                                                            className="w-5 h-5 text-amber-600"
+                                                        />
+                                                        <div className="flex flex-col">
+                                                            <span className="font-bold text-gray-800">I DO NOT agree</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <span className="block font-bold text-amber-600 text-lg">
+                                                            ${Number(ticket.price_no_flight_line || ticket.price).toFixed(2)}
+                                                        </span>
+                                                        {ticket.price_no_flight_line && (
+                                                            <span className="text-xs text-gray-400">Includes Surcharge</span>
+                                                        )}
+                                                    </div>
+                                                </label>
+                                            </div>
+
+                                            {ticket.is_day_pass && (
+                                                <div className="mt-2 text-xs text-gray-500 italic">
+                                                    * Day Pass tickets have fixed per-day pricing.
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })()}
+
                                 {
                                     ['pilot', 'junior_pilot'].includes(ticket?.system_role) && (
                                         <div className="mt-4 p-4 bg-white border border-gray-200 rounded">
@@ -559,50 +637,7 @@ function AttendeeModal({
                                                 style={{ ...inputStyle, marginBottom: '1rem' }}
                                             />
 
-                                            {/* Flight Line Duties (New) */}
-                                            {/* Flight Line Duties - ONLY FOR PILOTS, NOT JUNIOR PILOTS */}
-                                            {/* For Day Pass: only show if duration >= 3 days. For regular tickets: always show. */}
-                                            {ticket.system_role === 'pilot' && (() => {
-                                                // Calculate duration if dates are set
-                                                let showFlightLine = true;
-                                                if (ticket.is_day_pass && data.arrivalDate && data.departureDate) {
-                                                    const arrival = new Date(data.arrivalDate);
-                                                    const departure = new Date(data.departureDate);
-                                                    const daysDiff = Math.ceil((departure - arrival) / (1000 * 60 * 60 * 24)) + 1; // +1 for inclusive
-                                                    showFlightLine = daysDiff >= 3;
-                                                }
-
-                                                if (!showFlightLine) return null;
-
-                                                return (
-                                                    <div className="mb-4">
-                                                        <label className="flex items-center gap-2 cursor-pointer">
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={data.flightLineDuties || false}
-                                                                onChange={e => handleChange(key, 'flightLineDuties', e.target.checked)}
-                                                            />
-                                                            <div>
-                                                                <span className="font-medium text-sm">I agree to perform flight line duties</span>
-                                                                {ticket.price_no_flight_line && !ticket.is_day_pass && (
-                                                                    <div className="text-xs mt-1">
-                                                                        {data.flightLineDuties ? (
-                                                                            <span className="text-green-600 font-bold">Price: ${Number(ticket.price).toFixed(2)} (Standard)</span>
-                                                                        ) : (
-                                                                            <span className="text-amber-600 font-bold">Price: ${Number(ticket.price_no_flight_line).toFixed(2)} (No Duties Surcharge)</span>
-                                                                        )}
-                                                                    </div>
-                                                                )}
-                                                                {ticket.is_day_pass && (
-                                                                    <div className="text-xs mt-1 text-gray-600">
-                                                                        Day Pass tickets have fixed per-day pricing regardless of flight line duty selection.
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        </label>
-                                                    </div>
-                                                );
-                                            })()}
+                                            {/* Flight Line Duties Logic Moved Above */}
 
                                             {/* Heavy Models Toggle */}
                                             <div className="mb-4 space-y-3">

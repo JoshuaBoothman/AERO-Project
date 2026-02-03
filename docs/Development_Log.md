@@ -1,6 +1,25 @@
 
 
 
+## [2026-02-03] - Flight Line Duties Interface (Completed)
+- **Time**: 14:15 - 14:30
+- **Completed Items**:
+    - **Feature**: Refactored "Flight Line Duties" selection in `AttendeeModal.jsx`.
+    - **UI**:
+        - Moved section above Pilot Registration for better visibility.
+        - Replaced single checkbox with "Agree" (Green/Standard) vs "Disagree" (Amber/Surcharge) radio cards.
+        - Improved price transparency by showing the exact cost difference.
+        - **Refinement**: Removed "simulate 2 hours" and "prefer not to" text for cleaner UI (User Request).
+    - **Logic**:
+        - Preserved Day Pass logic (hidden for < 3 days).
+        - Defaults to "Agree" (Standard Price) to encourage volunteering.
+    - **Verification**:
+        - Logic check of `AttendeeModal.jsx` confirmed correct state handling and conditional rendering.
+        - Verified `ticket.system_role === 'pilot'` restriction is maintained.
+    - **Documentation**:
+        - Archived plan to `completed/`.
+        - Updated `Master_Implementation_Schedule.md`.
+
 ## [2026-02-03] - Subevent Note Implementation (Completed)
 - **Time**: 12:45 - 13:25
 - **Completed Items**:

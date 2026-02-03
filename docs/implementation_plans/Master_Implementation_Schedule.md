@@ -45,7 +45,7 @@ This document outlines the logical order of execution for the pending implementa
     - *Goal*: Allow users to add notes (e.g. dietary reqs) to subevent bookings.
     - *Scope*: **DB Change** (add columns to `subevents` and `registrations`), Admin UI, Store UI.
 
-- [ ] **[Flight Line Duties Interface](20260202_display_flight_line_prices.md)**
+- [x] **[Flight Line Duties Interface](20260202_display_flight_line_prices.md)**
     - *Goal*: Improve UI for "Flight Line Duties" agreement (Agree/Disagree options with transparent pricing).
     - *Scope*: Frontend UI refactor in `AttendeeModal`.
 
