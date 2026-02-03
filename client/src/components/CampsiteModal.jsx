@@ -24,6 +24,17 @@ function CampsiteModal({ event, onClose, onAddToCart, orgSettings }) {
     const [adults, setAdults] = useState(1);
     const [children, setChildren] = useState(0);
 
+    // Derived State for Validation
+    const nights = Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24));
+    const isShortStay = nights <= 4;
+
+    // Enforce 5+ nights rule
+    useEffect(() => {
+        if (useFullEventPrice && isShortStay) {
+            setUseFullEventPrice(false);
+        }
+    }, [isShortStay, useFullEventPrice]);
+
     // Toggle Full Event Logic
     const handleFullEventToggle = (checked) => {
         setUseFullEventPrice(checked);
@@ -172,16 +183,21 @@ function CampsiteModal({ event, onClose, onAddToCart, orgSettings }) {
                                 style={{ padding: '4px', background: useFullEventPrice ? '#eee' : 'white' }}
                             />
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '15px' }}>
-                            <input
-                                type="checkbox"
-                                id="fullEventCheck"
-                                checked={useFullEventPrice}
-                                onChange={e => handleFullEventToggle(e.target.checked)}
-                            />
-                            <label htmlFor="fullEventCheck" style={{ fontSize: '0.9rem', cursor: 'pointer' }}>
-                                Full Event Package
-                            </label>
+                        <div style={{ display: 'flex', flexDirection: 'column', marginTop: '15px', gap: '2px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                <input
+                                    type="checkbox"
+                                    id="fullEventCheck"
+                                    checked={useFullEventPrice}
+                                    onChange={e => handleFullEventToggle(e.target.checked)}
+                                    disabled={isShortStay}
+                                    style={{ cursor: isShortStay ? 'not-allowed' : 'pointer' }}
+                                />
+                                <label htmlFor="fullEventCheck" style={{ fontSize: '0.9rem', cursor: isShortStay ? 'not-allowed' : 'pointer', color: isShortStay ? '#999' : 'inherit' }}>
+                                    Full Event Package
+                                </label>
+                            </div>
+                            {isShortStay && <span style={{ fontSize: '0.75rem', color: '#d32f2f', marginLeft: '20px' }}>Requires 5+ nights</span>}
                         </div>
                     </div>
 
@@ -247,7 +263,7 @@ function CampsiteModal({ event, onClose, onAddToCart, orgSettings }) {
                                 {sites.map(site => {
                                     if (!site.map_coordinates) return null;
                                     let c;
-                                    try { c = JSON.parse(site.map_coordinates); } catch (e) { return null; }
+                                    try { c = JSON.parse(site.map_coordinates); } catch (_e) { return null; }
 
                                     const isSelected = selectedSites.some(s => s.campsite_id === site.campsite_id);
 

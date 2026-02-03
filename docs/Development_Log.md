@@ -1,6 +1,32 @@
 
 
 
+## [2026-02-03] - CampingPage ReferenceError Fix (Completed)
+- **Time**: 11:50 - 12:00
+- **Completed Items**:
+    - **Bug Fix**: Resolved `ReferenceError: Cannot access 'fetchEventsIndex' before initialization` in `CampingPage.jsx`.
+    - **Fix**: Moved `useCallback` definitions (`fetchEventsIndex`, `fetchEventDetails`, `fetchAvailability`) above the `useEffect` hooks that depend on them. This ensures functions are defined before `useEffect` captures them in its dependency array, resolving the Temporal Dead Zone (TDZ) crash.
+    - **Verification**: Lint check passed.
+
+## [2026-02-03] - Full Event Package Limitations (Completed)
+- **Time**: 10:40 - 11:15
+- **Completed Items**:
+    - **Feature**: Restricted "Full Event Package" pricing option for camping to stays of 5+ nights.
+    - **Backend (API)**:
+        - Updated `createOrder.js` to enforce strict validation: if `full_event_price` is sent but stay is <= 4 nights, the price is recalculated as daily rate (causing rejection if price mismatch).
+    - **Frontend (Client)**:
+        - Updated `CampingPage.jsx` and `CampsiteModal.jsx` to:
+            - Calculate nights dynamically.
+            - Disable/Grey out the "Full Event Package" checkbox if stay is <= 4 nights.
+            - Auto-uncheck the option if dates are changed to a short stay.
+            - Display explanatory warning text ("Requires 5+ nights").
+    - **Verification**:
+        - Linted `client/` to ensure code correctness (fixed unused variables).
+        - Verified logic covers both main camping page and modal booking flows.
+    - **Documentation**:
+        - Moved implementation plan to `completed/`.
+        - Updated `Master_Implementation_Schedule.md`.
+
 ## [2026-02-02] - Critical Lint Error Fixes (Completed)
 - **Time**: 16:00 - 16:55
 - **Completed Items**:

@@ -38,39 +38,6 @@ function CampingPage({ embedded = false, event = null }) {
     const [adults, setAdults] = useState(1);
     const [children, setChildren] = useState(0);
 
-    // --- EFFECT: Load Data ---
-    useEffect(() => {
-        setLoading(true);
-        if (isIndex && !embedded) {
-            fetchEventsIndex();
-        } else if (embedded && event) {
-            // Use passed event data
-            setEventId(event.event_id || event.id || event.eventId);
-            setEventName(event.name || event.eventName);
-
-            const s = event.start_date || event.eventStartDate;
-            const e = event.end_date || event.eventEndDate;
-
-            if (s && e) {
-                const startRaw = s.split('T')[0];
-                const endRaw = e.split('T')[0];
-                setDates({ start: startRaw, end: endRaw });
-                setEventBounds({ start: startRaw, end: endRaw });
-            }
-            // Don't set loading false yet, we need availability
-        } else {
-            fetchEventDetails();
-        }
-    }, [slug, isIndex, embedded, event, fetchEventsIndex, fetchEventDetails]);
-
-
-    // --- EFFECT: Load Availability (Detail Mode) ---
-    useEffect(() => {
-        if (!isIndex && eventId && dates.start && dates.end) {
-            fetchAvailability();
-        }
-    }, [eventId, dates, isIndex, fetchAvailability]);
-
     // --- API: Index ---
     const fetchEventsIndex = useCallback(async () => {
         try {
@@ -125,19 +92,66 @@ function CampingPage({ embedded = false, event = null }) {
         finally { setLoading(false); }
     }, [eventId, dates.start, dates.end]);
 
-    // --- EFFECT: Auto-Check Full Event ---
+    // --- EFFECT: Load Data ---
+    useEffect(() => {
+        setLoading(true);
+        if (isIndex && !embedded) {
+            fetchEventsIndex();
+        } else if (embedded && event) {
+            // Use passed event data
+            setEventId(event.event_id || event.id || event.eventId);
+            setEventName(event.name || event.eventName);
+
+            const s = event.start_date || event.eventStartDate;
+            const e = event.end_date || event.eventEndDate;
+
+            if (s && e) {
+                const startRaw = s.split('T')[0];
+                const endRaw = e.split('T')[0];
+                setDates({ start: startRaw, end: endRaw });
+                setEventBounds({ start: startRaw, end: endRaw });
+            }
+            // Don't set loading false yet, we need availability
+        } else {
+            fetchEventDetails();
+        }
+    }, [slug, isIndex, embedded, event, fetchEventsIndex, fetchEventDetails]);
+
+
+    // --- EFFECT: Load Availability (Detail Mode) ---
+    useEffect(() => {
+        if (!isIndex && eventId && dates.start && dates.end) {
+            fetchAvailability();
+        }
+    }, [eventId, dates, isIndex, fetchAvailability]);
+
+
+
+    // === EFFECT: Auto-Check Full Event ===
     // REMOVED: Defaulting to full event dates on package selection.
     // We now allow custom dates even with full event package (as requested).
     useEffect(() => {
         if (selectedSite?.full_event_price && eventBounds.start && eventBounds.end) {
             // Check if user has manually selected full duration
-            const isFullDuration = dates.start === eventBounds.start && dates.end === eventBounds.end;
-            if (isFullDuration) {
-                // Optional: We could auto-check it if they match, but let's leave it manual or sticky.
-                // setUseFullEventPrice(true); 
-            }
+            // const isFullDuration = dates.start === eventBounds.start && dates.end === eventBounds.end;
+            // if (isFullDuration) {
+            //    // setUseFullEventPrice(true); 
+            // }
         }
     }, [dates, eventBounds, selectedSite]);
+
+    // Derived State for Short Stay Restriction
+    const sDate = new Date(dates.start);
+    const eDate = new Date(dates.end);
+    const calculatedNights = dates.start && dates.end ? Math.max(1, Math.ceil((eDate - sDate) / (1000 * 60 * 60 * 24))) : 0;
+    const isShortStay = calculatedNights <= 4;
+
+    // Enforce 5+ nights rule
+    useEffect(() => {
+        if (useFullEventPrice && isShortStay) {
+            setUseFullEventPrice(false);
+        }
+    }, [isShortStay, useFullEventPrice]);
 
     // === EARLY RETURNS (after all Hooks) ===
 
@@ -483,20 +497,22 @@ function CampingPage({ embedded = false, event = null }) {
                                     <p><strong>Power:</strong> {selectedSite.is_powered ? 'Yes' : 'No'}</p>
                                     <p><strong>Price:</strong> ${selectedSite.price_per_night} / night</p>
                                     {selectedSite.full_event_price && (
-                                        <div style={{ marginTop: '5px', padding: '10px', background: '#e0f7fa', borderRadius: '4px' }}>
+                                        <div style={{ marginTop: '5px', padding: '10px', background: isShortStay ? '#f5f5f5' : '#e0f7fa', borderRadius: '4px', opacity: isShortStay ? 0.7 : 1 }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                 <input
                                                     type="checkbox"
                                                     id="fullEventCheck"
                                                     checked={useFullEventPrice}
+                                                    disabled={isShortStay}
                                                     onChange={e => {
                                                         setUseFullEventPrice(e.target.checked);
                                                         if (e.target.checked) setDates({ ...eventBounds });
                                                     }}
-                                                    style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                                                    style={{ width: '18px', height: '18px', cursor: isShortStay ? 'not-allowed' : 'pointer' }}
                                                 />
-                                                <label htmlFor="fullEventCheck" style={{ cursor: 'pointer', fontWeight: 'bold', flex: 1 }}>
+                                                <label htmlFor="fullEventCheck" style={{ cursor: isShortStay ? 'not-allowed' : 'pointer', fontWeight: 'bold', flex: 1, color: isShortStay ? '#666' : 'inherit' }}>
                                                     Full Event Package (${selectedSite.full_event_price})
+                                                    {isShortStay && <div style={{ fontSize: '0.8rem', color: '#d32f2f', fontWeight: 'normal' }}>Requires 5+ nights</div>}
                                                 </label>
                                             </div>
                                         </div>

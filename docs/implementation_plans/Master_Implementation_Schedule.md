@@ -30,7 +30,7 @@ This document outlines the logical order of execution for the pending implementa
     - *Goal*: Fix empty "Ticket Type" dropdown in Admin Attendees list.
     - *Scope*: Frontend property name fix.
 
-- [ ] **[Full Event Package Limitations](20260202_full_event_package_limitations.md)**
+- [x] **[Full Event Package Limitations](20260202_full_event_package_limitations.md)**
     - *Goal*: Restrict "Full Event Package" pricing to stays of >4 nights only.
     - *Scope*: Frontend UI disable + Backend logic enforcement.
 

@@ -482,7 +482,8 @@ app.http('createOrder', {
 
                         // Option 2: Full Event Rate
                         let totalFull = null;
-                        if (full_event_price) {
+                        // Only allow full event rate if stay is > 4 nights (per 2026-02-02 plan)
+                        if (full_event_price && nights > 4) {
                             const baseFull = full_event_price;
                             const extraFull = extraAdults * (extra_adult_full_event_price || 0);
                             totalFull = baseFull + extraFull;

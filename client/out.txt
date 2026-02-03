@@ -1,0 +1,50 @@
+
+C:\laragon\www\AERO-Project\client\src\components\CampsiteModal.jsx
+  34:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  32 |     useEffect(() => {
+  33 |         if (useFullEventPrice && isShortStay) {
+> 34 |             setUseFullEventPrice(false);
+     |             ^^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  35 |         }
+  36 |     }, [isShortStay, useFullEventPrice]);
+  37 |                                                                                                                            react-hooks/set-state-in-effect
+  70:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  68 |     useEffect(() => {
+  69 |         if (campgrounds.length > 0 && !selectedCampgroundId) {
+> 70 |             setSelectedCampgroundId(campgrounds[0].campground_id);
+     |             ^^^^^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  71 |         }
+  72 |     }, [campgrounds, selectedCampgroundId]);
+  73 |                                                                             react-hooks/set-state-in-effect
+  77:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  75 |     useEffect(() => {
+  76 |         if (selectedCampgroundId && startDate && endDate) {
+> 77 |             setLoading(true);
+     |             ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  78 |             fetch(`/api/campgrounds/${selectedCampgroundId}/sites?startDate=${startDate}&endDate=${endDate}`)
+  79 |                 .then(res => res.json())
+  80 |                 .then(data => {  react-hooks/set-state-in-effect
+
+✖ 3 problems (3 errors, 0 warnings)
+
