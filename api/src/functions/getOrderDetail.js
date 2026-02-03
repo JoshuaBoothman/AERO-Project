@@ -56,6 +56,7 @@ app.http('getOrderDetail', {
                     oi.order_item_id,
                     oi.refunded_at,
                     oi.price_at_purchase,
+                    oi.quantity,
                     oi.item_type,
                     CASE 
                         WHEN oi.item_type = 'Merchandise' THEN p_prod.name 

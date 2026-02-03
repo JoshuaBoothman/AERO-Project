@@ -21,7 +21,7 @@ app.http('refundOrderItem', {
         try {
             // 1. Check if item exists and get status
             const itemQuery = `
-                SELECT order_item_id, item_type, item_reference_id, refunded_at 
+                SELECT order_item_id, item_type, item_reference_id, refunded_at, quantity 
                 FROM order_items 
                 WHERE order_id = @orderId AND order_item_id = @itemId
             `;
@@ -57,7 +57,8 @@ app.http('refundOrderItem', {
                     // B. Restore Stock if Merchandise
                     if (item.item_type === 'Merchandise' && item.item_reference_id) {
                         await request.input('skuId', sql.Int, item.item_reference_id)
-                            .query(`UPDATE product_skus SET current_stock = current_stock + 1 WHERE product_sku_id = @skuId`);
+                            .input('qty', sql.Int, item.quantity || 1)
+                            .query(`UPDATE product_skus SET current_stock = current_stock + @qty WHERE product_sku_id = @skuId`);
                     }
                 }
                 else if (action === 'unrefund') {
@@ -73,7 +74,8 @@ app.http('refundOrderItem', {
                     // B. Reduce Stock if Merchandise
                     if (item.item_type === 'Merchandise' && item.item_reference_id) {
                         await request.input('skuIdUn', sql.Int, item.item_reference_id)
-                            .query(`UPDATE product_skus SET current_stock = current_stock - 1 WHERE product_sku_id = @skuIdUn`);
+                            .input('qtyUn', sql.Int, item.quantity || 1)
+                            .query(`UPDATE product_skus SET current_stock = current_stock - @qtyUn WHERE product_sku_id = @skuIdUn`);
                     }
                 } else {
                     await transaction.rollback();

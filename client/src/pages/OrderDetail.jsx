@@ -268,9 +268,16 @@ function OrderDetail() {
                             <tr key={item.order_item_id} className="hover:bg-gray-50/50 transition-colors">
                                 <td className="px-6 py-4 align-top">
                                     <div className="font-bold text-gray-800 text-lg mb-1">{item.item_name}</div>
-                                    <span className={`status-badge`}>
-                                        {item.item_type.toUpperCase()}
-                                    </span>
+                                    <div className="flex gap-2">
+                                        <span className={`status-badge`}>
+                                            {item.item_type.toUpperCase()}
+                                        </span>
+                                        {(item.quantity || 1) > 1 && (
+                                            <span className="status-badge" style={{ backgroundColor: '#e0e7ff', color: '#3730a3', border: '1px solid #c7d2fe' }}>
+                                                Qty: {item.quantity}
+                                            </span>
+                                        )}
+                                    </div>
                                 </td>
                                 <td className="px-6 py-4 align-top">
                                     <div className="text-sm text-gray-600 space-y-1">
@@ -369,7 +376,12 @@ function OrderDetail() {
                                     </td>
                                 )}
                                 <td className="px-6 py-4 align-top text-right font-bold text-gray-900">
-                                    ${item.price_at_purchase.toFixed(2)}
+                                    ${(item.price_at_purchase * (item.quantity || 1)).toFixed(2)}
+                                    {(item.quantity || 1) > 1 && (
+                                        <div className="text-xs font-normal text-gray-500 mt-1">
+                                            ${item.price_at_purchase.toFixed(2)} ea
+                                        </div>
+                                    )}
                                 </td>
                             </tr>
                         ))}

@@ -360,7 +360,7 @@ app.http('createOrder', {
                                 .input('itype', sql.VarChar, 'Ticket')
                                 .input('refid', sql.Int, item.ticketTypeId)
                                 .input('price', sql.Decimal(10, 2), price)
-                                .query(`INSERT INTO order_items (order_id, attendee_id, item_type, item_reference_id, price_at_purchase) VALUES (@oid, @aid, @itype, @refid, @price);`);
+                                .query(`INSERT INTO order_items (order_id, attendee_id, item_type, item_reference_id, price_at_purchase, quantity) VALUES (@oid, @aid, @itype, @refid, @price, 1);`);
 
                             // HANDLE INCLUDED MERCHANDISE
                             if (ticketType.includes_merch && attendeeData.merchSkuId) {
@@ -405,7 +405,7 @@ app.http('createOrder', {
                                     .input('itype', sql.VarChar, 'Merchandise')
                                     .input('refid', sql.Int, mSkuId)
                                     .input('price', sql.Decimal(10, 2), 0)
-                                    .query(`INSERT INTO order_items (order_id, attendee_id, item_type, item_reference_id, price_at_purchase) VALUES (@oid, @aid, @itype, @refid, @price)`);
+                                    .query(`INSERT INTO order_items (order_id, attendee_id, item_type, item_reference_id, price_at_purchase, quantity) VALUES (@oid, @aid, @itype, @refid, @price, 1)`);
                             }
                         }
                     }
@@ -502,7 +502,7 @@ app.http('createOrder', {
                         const itemReq = new sql.Request(transaction);
                         const itemRes = await itemReq
                             .input('oid', sql.Int, orderId).input('aid', sql.Int, mainAttendeeId).input('itype', sql.VarChar, 'Campsite').input('refid', sql.Int, campsiteId).input('price', sql.Decimal(10, 2), price)
-                            .query(`INSERT INTO order_items (order_id, attendee_id, item_type, item_reference_id, price_at_purchase) VALUES (@oid, @aid, @itype, @refid, @price); SELECT SCOPE_IDENTITY() AS id`);
+                            .query(`INSERT INTO order_items (order_id, attendee_id, item_type, item_reference_id, price_at_purchase, quantity) VALUES (@oid, @aid, @itype, @refid, @price, 1); SELECT SCOPE_IDENTITY() AS id`);
 
                         const orderItemId = itemRes.recordset[0].id;
                         await new sql.Request(transaction)
@@ -542,16 +542,16 @@ app.http('createOrder', {
 
                         totalAmount += (price * qty);
 
-                        // Create Order Item (One per qty? Or one line item? Schema doesn't have quantity in order_items. It has one row per item.)
-                        // Since `order_items` is one-per-item, we loop qty.
-                        for (let i = 0; i < qty; i++) {
-                            const itemReq = new sql.Request(transaction);
-                            await itemReq
-                                .input('oid', sql.Int, orderId).input('aid', sql.Int, mainAttendeeId).input('itype', sql.VarChar, 'Merchandise')
-                                .input('refid', sql.Int, skuId) // Storing Product SKU ID
-                                .input('price', sql.Decimal(10, 2), price)
-                                .query(`INSERT INTO order_items (order_id, attendee_id, item_type, item_reference_id, price_at_purchase) VALUES (@oid, @aid, @itype, @refid, @price)`);
-                        }
+                        // Create Order Item (Single row with quantity)
+                        const itemReq = new sql.Request(transaction);
+                        await itemReq
+                            .input('oid', sql.Int, orderId)
+                            .input('aid', sql.Int, mainAttendeeId)
+                            .input('itype', sql.VarChar, 'Merchandise')
+                            .input('refid', sql.Int, skuId)
+                            .input('price', sql.Decimal(10, 2), price)
+                            .input('qty', sql.Int, qty)
+                            .query(`INSERT INTO order_items (order_id, attendee_id, item_type, item_reference_id, price_at_purchase, quantity) VALUES (@oid, @aid, @itype, @refid, @price, @qty)`);
                     }
                 }
 
@@ -611,7 +611,7 @@ app.http('createOrder', {
                             .input('oid', sql.Int, orderId).input('aid', sql.Int, mainAttendeeId).input('itype', sql.VarChar, 'Asset')
                             .input('refid', sql.Int, assetTypeId) // UPDATED: Storing Asset TYPE ID here now
                             .input('price', sql.Decimal(10, 2), asset.price)
-                            .query(`INSERT INTO order_items (order_id, attendee_id, item_type, item_reference_id, price_at_purchase) VALUES (@oid, @aid, @itype, @refid, @price); SELECT SCOPE_IDENTITY() AS id`);
+                            .query(`INSERT INTO order_items (order_id, attendee_id, item_type, item_reference_id, price_at_purchase, quantity) VALUES (@oid, @aid, @itype, @refid, @price, 1); SELECT SCOPE_IDENTITY() AS id`);
 
                         const orderItemId = itemRes.recordset[0].id;
 
@@ -684,7 +684,7 @@ app.http('createOrder', {
                             .input('oid', sql.Int, orderId).input('aid', sql.Int, subeventAttendeeId).input('itype', sql.VarChar, 'Subevent')
                             .input('refid', sql.Int, sub.subeventId)
                             .input('price', sql.Decimal(10, 2), finalPrice)
-                            .query(`INSERT INTO order_items (order_id, attendee_id, item_type, item_reference_id, price_at_purchase) VALUES (@oid, @aid, @itype, @refid, @price); SELECT SCOPE_IDENTITY() AS id`);
+                            .query(`INSERT INTO order_items (order_id, attendee_id, item_type, item_reference_id, price_at_purchase, quantity) VALUES (@oid, @aid, @itype, @refid, @price, 1); SELECT SCOPE_IDENTITY() AS id`);
 
                         const orderItemId = itemRes.recordset[0].id;
 

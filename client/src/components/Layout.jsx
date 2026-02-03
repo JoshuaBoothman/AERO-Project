@@ -22,7 +22,7 @@ function NavLink({ to, children, className = "", onClick }) {
 
 function Layout({ orgSettings, loading, error, refreshSettings }) {
   const { user, logout } = useAuth();
-  const { cart } = useCart();
+  const { cart, cartItemCount } = useCart();
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -81,9 +81,9 @@ function Layout({ orgSettings, loading, error, refreshSettings }) {
             {(!user || user.role !== 'admin') && (
               <Link to="/checkout" className="flex items-center hover:text-accent relative" onClick={() => setIsMobileMenuOpen(false)}>
                 <ShoppingCart size={24} />
-                {cart.length > 0 && (
+                {cartItemCount > 0 && (
                   <span className="bg-accent text-primary rounded-full px-1.5 py-0.5 text-[10px] font-bold absolute -top-2 -right-2 min-w-[16px] text-center">
-                    {cart.length}
+                    {cartItemCount}
                   </span>
                 )}
               </Link>
@@ -172,9 +172,9 @@ function Layout({ orgSettings, loading, error, refreshSettings }) {
                     {/* Cart Icon - Desktop */}
                     <Link to="/checkout" className="flex items-center gap-2 hover:text-accent relative px-2">
                       <ShoppingCart size={20} />
-                      {cart.length > 0 && (
+                      {cartItemCount > 0 && (
                         <span className="bg-accent text-primary rounded-full px-1.5 py-0.5 text-xs font-bold absolute -top-2 -right-2 min-w-[18px] text-center">
-                          {cart.length}
+                          {cartItemCount}
                         </span>
                       )}
                     </Link>

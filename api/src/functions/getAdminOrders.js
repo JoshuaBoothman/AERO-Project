@@ -46,7 +46,7 @@ app.http('getAdminOrders', {
                     u.email as user_email,
                     p.first_name as user_first_name,
                     p.last_name as user_last_name,
-                    (SELECT COUNT(*) FROM order_items WHERE order_id = o.order_id) as item_count,
+                    (SELECT COALESCE(SUM(quantity), 0) FROM order_items WHERE order_id = o.order_id) as item_count,
                     (SELECT TOP 1 e.name 
                      FROM order_items oi 
                      JOIN attendees a ON oi.attendee_id = a.attendee_id 

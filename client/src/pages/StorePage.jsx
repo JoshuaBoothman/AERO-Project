@@ -108,14 +108,14 @@ function StorePage({ orgSettings }) {
     const [selectedSubevent, setSelectedSubevent] = useState(null);
 
     // Handlers
-    const handleAddMerch = (product, sku) => {
+    const handleAddMerch = (product, sku, qty = 1) => {
         // Construct cart item
         const item = {
             ...product,
             id: sku.product_sku_id || sku.id, // Use SKU ID as the primary ID for the cart
             productId: product.id,
             skuCode: sku.sku_code || sku.code,
-            quantity: 1, // Default to 1
+            quantity: qty, // Use selected quantity
             price: sku.price, // Use SKU price
             eventId: data.eventId,
             type: 'MERCH',

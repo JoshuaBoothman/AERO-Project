@@ -128,8 +128,15 @@ function Invoice() {
                         {order.items.map((item, idx) => (
                             <tr key={idx} className="border-b border-gray-100 last:border-0">
                                 <td className="py-3">
-                                    <div className="font-medium">{item.item_name}</div>
-                                    <div className="text-xs text-gray-500">
+                                    <div className="flex items-center">
+                                        {(item.quantity || 1) > 1 && (
+                                            <span className="bg-gray-100 text-gray-600 font-bold px-2 py-1 rounded text-xs mr-3">
+                                                {item.quantity}x
+                                            </span>
+                                        )}
+                                        <div className="font-medium">{item.item_name}</div>
+                                    </div>
+                                    <div className="text-xs text-gray-500 mt-1">
                                         {item.item_type === 'Asset' ? (
                                             <div>
                                                 {item.first_name} {item.last_name}
@@ -146,13 +153,20 @@ function Invoice() {
                                                 {item.subevent_attendee_name}
                                             </span>
                                         ) : (
-                                            `${item.first_name} ${item.last_name}`
+                                            `${item.first_name || ''} ${item.last_name || ''}`
                                         )}
                                         {item.ticket_code && ` (${item.ticket_code})`}
+
+                                        {/* Unit Price breakdown for quantity > 1 */}
+                                        {(item.quantity || 1) > 1 && (
+                                            <div className="text-gray-400 mt-1">
+                                                {item.quantity} x ${parseFloat(item.price_at_purchase).toFixed(2)}
+                                            </div>
+                                        )}
                                     </div>
                                 </td>
-                                <td className="text-right py-3">
-                                    ${parseFloat(item.price_at_purchase).toFixed(2)}
+                                <td className="text-right py-3 align-top">
+                                    ${(parseFloat(item.price_at_purchase) * (item.quantity || 1)).toFixed(2)}
                                 </td>
                             </tr>
                         ))}

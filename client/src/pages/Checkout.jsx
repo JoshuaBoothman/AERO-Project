@@ -6,7 +6,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { formatDateTimeForDisplay } from '../utils/dateHelpers';
 
 function Checkout() {
-    const { cart, removeFromCart, clearCart, cartTotal } = useCart();
+    const { cart, removeFromCart, clearCart, cartTotal, cartItemCount } = useCart();
     const { token } = useAuth();
     const { notify } = useNotification();
     const navigate = useNavigate();
@@ -168,6 +168,9 @@ function Checkout() {
                     <div className="flex items-center gap-2 flex-wrap mb-1">
                         <strong className="text-lg text-gray-800">{item.name}</strong>
                         <span className="text-xs font-bold uppercase tracking-wider bg-gray-100 text-gray-500 px-2 py-0.5 rounded whitespace-nowrap">{item.type}</span>
+                        {(item.quantity || 1) > 1 && (
+                            <span className="text-xs font-bold uppercase tracking-wider bg-blue-100 text-blue-700 px-2 py-0.5 rounded whitespace-nowrap ml-2">Qty: {item.quantity}</span>
+                        )}
                     </div>
 
                     {details && (
@@ -189,7 +192,12 @@ function Checkout() {
                     )}
                 </div>
                 <div className="flex items-center justify-between w-full sm:w-auto sm:gap-6">
-                    <span className="font-bold text-lg text-gray-900">${Number(item.price || 0).toFixed(2)}</span>
+                    <div className="text-right">
+                        <span className="font-bold text-lg text-gray-900">${(Number(item.price || 0) * (item.quantity || 1)).toFixed(2)}</span>
+                        {(item.quantity || 1) > 1 && (
+                            <div className="text-xs text-gray-500">${Number(item.price || 0).toFixed(2)} ea</div>
+                        )}
+                    </div>
                     <button
                         onClick={() => removeFromCart(idx)}
                         className="text-gray-400 hover:text-red-600 bg-transparent hover:bg-red-50 rounded-full w-10 h-10 flex items-center justify-center transition-all focus:outline-none"
@@ -209,7 +217,7 @@ function Checkout() {
             <div className="bg-white shadow-lg rounded-xl overflow-hidden mb-8 border border-gray-100">
                 <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                     <span className="text-sm font-bold uppercase text-gray-500 tracking-wider">Order Summary</span>
-                    <span className="text-sm font-semibold text-gray-600">{cart.length} Items</span>
+                    <span className="text-sm font-semibold text-gray-600">{cartItemCount} Items</span>
                 </div>
 
                 {/* Cart Items List */}

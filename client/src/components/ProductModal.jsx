@@ -50,10 +50,12 @@ function ProductModal({ product, onClose, onAddToCart }) {
 
     const { notify } = useNotification();
 
+    const [quantity, setQuantity] = useState(1);
+
     const handleAdd = () => {
         if (!matchedSku) return notify("Unavailable combination", "error");
         // if (matchedSku.stock <= 0) return notify("Out of stock", "error");
-        onAddToCart(product, matchedSku);
+        onAddToCart(product, matchedSku, quantity);
         onClose();
     };
 
@@ -113,6 +115,22 @@ function ProductModal({ product, onClose, onAddToCart }) {
                                 </div>
                             </div>
                         ))}
+
+                        {/* Quantity Selector */}
+                        <div>
+                            <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">Quantity</label>
+                            <div className="flex items-center border border-gray-300 rounded-md w-32">
+                                <button
+                                    className="w-10 h-10 flex items-center justify-center text-gray-600 hover:bg-gray-100 border-r border-gray-300"
+                                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                                >-</button>
+                                <div className="flex-1 text-center font-bold text-gray-800">{quantity}</div>
+                                <button
+                                    className="w-10 h-10 flex items-center justify-center text-gray-600 hover:bg-gray-100 border-l border-gray-300"
+                                    onClick={() => setQuantity(quantity + 1)}
+                                >+</button>
+                            </div>
+                        </div>
                     </div>
 
                     <div className="mt-auto">
@@ -126,7 +144,7 @@ function ProductModal({ product, onClose, onAddToCart }) {
                                 }
                             `}
                         >
-                            Add to Cart
+                            Add to Cart {quantity > 1 ? `(${(matchedSku?.price * quantity).toFixed(2)})` : ''}
                         </button>
                     </div>
 

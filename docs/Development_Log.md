@@ -1,6 +1,30 @@
 
 
 
+## [2026-02-03] - Merchandise Quantity Selection (Completed)
+- **Time**: 11:30 - 12:00
+- **Completed Items**:
+    - **Feature**: Implemented quantity selection for Merchandise items (apparel, etc.), allowing purchases of multiple items in a single cart row.
+    - **Database**:
+        - Added `quantity` column to `order_items` table (Manual Script applied).
+    - **Backend (API)**:
+        - Updated `createOrder.js` to insert single row with quantity.
+        - Updated `getOrderDetail.js` to return quantity.
+        - Updated `getAdminOrders.js` to sum quantity for item counts.
+        - Updated `refundOrderItem.js` to handle quantity-based stock restoration.
+    - **Frontend (Client)**:
+        - Updated `ProductModal.jsx` with +/- quantity selector.
+        - Updated `CartContext.jsx` to calculate totals based on item quantity.
+        - Updated `Layout.jsx` (Header/Mobile) to show total item count in cart badge.
+        - Updated `Checkout.jsx`, `OrderDetail.jsx`, and `Invoice.jsx` to display "Qty: X", unit prices, and correct line totals.
+    - **Verification**:
+        - Verified database schema.
+        - Verified full purchase flow with multi-quantity items.
+        - Verified Invoice generation and price calculations.
+        - Verified Admin Order view item counts.
+    - **Documentation**:
+        - Updated `Master_Implementation_Schedule.md`.
+
 ## [2026-02-03] - CampingPage ReferenceError Fix (Completed)
 - **Time**: 11:50 - 12:00
 - **Completed Items**:

@@ -37,7 +37,7 @@ This document outlines the logical order of execution for the pending implementa
 ## Phase 2: Store Enchancements & Database Updates
 *These tasks add core functionality to the purchasing flow and require Database schema changes.*
 
-- [ ] **[Merchandise Quantity Selection](20260202_order_items_qty.md)**
+- [x] **[Merchandise Quantity Selection](20260202_order_items_qty.md)**
     - *Goal*: Allow selecting quantity > 1 for merchandise.
     - *Scope*: **DB Change** (add `quantity` to `order_items`), Frontend UI, Backend logic.
 
