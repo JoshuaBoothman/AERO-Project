@@ -181,7 +181,7 @@ function StorePage({ orgSettings }) {
         }
     };
 
-    const handleConfirmSubevent = (subevent, selections, totalPrice, attendeeLink) => {
+    const handleConfirmSubevent = (subevent, selections, totalPrice, attendeeLink, note) => {
         addToCart({
             ...subevent,
             eventId: data.eventId,
@@ -191,7 +191,8 @@ function StorePage({ orgSettings }) {
             attendeeId: attendeeLink.attendeeId, // Existing
             attendeeTempId: attendeeLink.attendeeTempId, // New (Cart)
             guestName: attendeeLink.guestName, // [NEW] Guest Name
-            attendeeName: attendeeLink.name // For display in cart if needed
+            attendeeName: attendeeLink.name, // For display in cart if needed
+            note: note
         });
         setSelectedSubevent(null);
         notify(`${subevent.name} added to cart!`, 'success');

@@ -41,7 +41,7 @@ This document outlines the logical order of execution for the pending implementa
     - *Goal*: Allow selecting quantity > 1 for merchandise.
     - *Scope*: **DB Change** (add `quantity` to `order_items`), Frontend UI, Backend logic.
 
-- [ ] **[Subevent Notes](20260202_subevent_notes.md)**
+- [x] **[Subevent Notes](20260202_subevent_notes.md)**
     - *Goal*: Allow users to add notes (e.g. dietary reqs) to subevent bookings.
     - *Scope*: **DB Change** (add columns to `subevents` and `registrations`), Admin UI, Store UI.
 

@@ -331,6 +331,11 @@ function OrderDetail() {
                                                         {item.subevent_options}
                                                     </div>
                                                 )}
+                                                {item.subevent_note && (
+                                                    <div className="mt-1 text-xs text-gray-600 italic">
+                                                        <span className="font-semibold">{item.note_title || "Note"}:</span> {item.subevent_note}
+                                                    </div>
+                                                )}
                                             </div>
                                         )}
 

@@ -3,6 +3,7 @@ import { X, Check, Search, User, UserPlus } from 'lucide-react';
 
 export default function SubeventModal({ subevent, onClose, onAddToCart, myPilots = [], cart = [], onSearchAttendees }) {
     const [selections, setSelections] = useState({});
+    const [note, setNote] = useState("");
 
     // Combobox State
     const [inputValue, setInputValue] = useState("");
@@ -133,7 +134,7 @@ export default function SubeventModal({ subevent, onClose, onAddToCart, myPilots
 
     const handleSubmit = () => {
         if (isValid()) {
-            onAddToCart(subevent, selections, calculateTotal(), selectedOption.value);
+            onAddToCart(subevent, selections, calculateTotal(), selectedOption.value, note);
         }
     };
 
@@ -285,6 +286,22 @@ export default function SubeventModal({ subevent, onClose, onAddToCart, myPilots
                             </div>
                         ))}
                     </div>
+
+                    {/* Note Field */}
+                    {subevent.note_title && (
+                        <div className="space-y-3 mt-6">
+                            <label className="block text-sm font-semibold text-gray-700">
+                                {subevent.note_title}
+                            </label>
+                            <textarea
+                                className="w-full border border-gray-200 rounded-lg p-3 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                rows="2"
+                                placeholder={`Enter ${subevent.note_title.toLowerCase()}...`}
+                                value={note}
+                                onChange={(e) => setNote(e.target.value)}
+                            />
+                        </div>
+                    )}
                 </div>
 
                 {/* Footer */}
@@ -308,6 +325,6 @@ export default function SubeventModal({ subevent, onClose, onAddToCart, myPilots
                     </button>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }

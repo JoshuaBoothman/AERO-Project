@@ -1,6 +1,30 @@
 
 
 
+## [2026-02-03] - Subevent Note Implementation (Completed)
+- **Time**: 12:45 - 13:25
+- **Completed Items**:
+    - **Feature**: Implemented "Subevent Notes" allowing users to add specific notes (e.g., Dietary Requirements) to subevent bookings.
+    - **Database**:
+        - Added `note_title` to `subevents` table (for admin configuration).
+        - Added `attendee_note` to `subevent_registrations` table (for user input).
+    - **Backend (API)**:
+        - Updated `createSubevent.js` and `updateSubevent.js` to manage `note_title`.
+        - Updated `createOrder.js` to persist `attendee_note` in subevent registrations.
+        - Updated `getOrderDetail.js` to return note details for display.
+        - **Bug Fix**: Updated `getStoreItems.js` to include `note_title` in the response (resolved missing field issue).
+    - **Frontend (Client)**:
+        - **Admin**: Updated `SubeventForm.jsx` to allow admins to set a "Note Title".
+        - **Store**: Updated `SubeventModal.jsx` to prompt for input if a note title is configured.
+        - **Checkout**: Updated `StorePage.jsx` and `Checkout.jsx` to ensure the note is passed through the cart to the final order payload.
+        - **Orders**: Updated `OrderDetail.jsx` to display the saved note on the order confirmation.
+    - **Verification**:
+        - Verified database schema.
+        - Debugged and fixed missing field issues in API and Checkout payload.
+        - Verified end-to-end flow: Admin Config -> Store Purchase -> Database Persistence -> Order Display.
+    - **Documentation**:
+        - Updated `Master_Implementation_Schedule.md`.
+
 ## [2026-02-03] - Merchandise Quantity Selection (Completed)
 - **Time**: 11:30 - 12:00
 - **Completed Items**:

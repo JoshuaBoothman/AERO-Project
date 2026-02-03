@@ -16,7 +16,7 @@ app.http('updateSubevent', {
             }
 
             // 2. Parse Body
-            const { name, description, start_time, end_time, capacity, cost, img_url } = await request.json();
+            const { name, description, start_time, end_time, capacity, cost, img_url, note_title } = await request.json();
 
             // 3. Update
             const updateQuery = `
@@ -28,7 +28,8 @@ app.http('updateSubevent', {
                     end_time = @end_time,
                     capacity = @capacity,
                     cost = @cost,
-                    img_url = @img_url
+                    img_url = @img_url,
+                    note_title = @note_title
                 WHERE subevent_id = @id
             `;
 
@@ -40,7 +41,8 @@ app.http('updateSubevent', {
                 { name: 'end_time', type: sql.DateTime2, value: end_time },
                 { name: 'capacity', type: sql.Int, value: capacity || null },
                 { name: 'cost', type: sql.Decimal(10, 2), value: cost || 0 },
-                { name: 'img_url', type: sql.NVarChar, value: img_url || null }
+                { name: 'img_url', type: sql.NVarChar, value: img_url || null },
+                { name: 'note_title', type: sql.NVarChar, value: note_title || null }
             ]);
 
             return {

@@ -11,7 +11,8 @@ function SubeventForm({ isOpen, onClose, onSubmit, initialData }) {
         end_time: '',
         capacity: '',
         cost: '',
-        img_url: ''
+        img_url: '',
+        note_title: ''
     });
 
     useEffect(() => {
@@ -25,7 +26,8 @@ function SubeventForm({ isOpen, onClose, onSubmit, initialData }) {
                 end_time: formatDateTimeForInput(initialData.end_time),
                 capacity: initialData.capacity || '',
                 cost: initialData.cost || 0,
-                img_url: initialData.img_url || ''
+                img_url: initialData.img_url || '',
+                note_title: initialData.note_title || ''
             });
         } else {
             setFormData({
@@ -35,7 +37,8 @@ function SubeventForm({ isOpen, onClose, onSubmit, initialData }) {
                 end_time: '',
                 capacity: '',
                 cost: '',
-                img_url: ''
+                img_url: '',
+                note_title: ''
             });
         }
     }, [initialData, isOpen]);
@@ -109,6 +112,19 @@ function SubeventForm({ isOpen, onClose, onSubmit, initialData }) {
                             onChange={handleChange}
                             className="w-full border p-2 rounded"
                             rows={3}
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium mb-1">Note Title (Optional)</label>
+                        <p className="text-xs text-gray-500 mb-1">e.g., "Dietary Requirements" or "Seating Preference". leave blank if not needed.</p>
+                        <input
+                            type="text"
+                            name="note_title"
+                            value={formData.note_title}
+                            onChange={handleChange}
+                            placeholder="e.g. Dietary Requirements"
+                            className="w-full border p-2 rounded"
                         />
                     </div>
 

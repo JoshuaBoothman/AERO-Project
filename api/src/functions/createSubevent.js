@@ -15,7 +15,7 @@ app.http('createSubevent', {
             }
 
             // 2. Parse Body
-            const { event_id, name, description, start_time, end_time, capacity, cost, img_url } = await request.json();
+            const { event_id, name, description, start_time, end_time, capacity, cost, img_url, note_title } = await request.json();
 
             if (!event_id || !name || !start_time || !end_time) {
                 return { status: 400, body: JSON.stringify({ error: "Missing required fields (event_id, name, dates)" }) };
@@ -24,11 +24,11 @@ app.http('createSubevent', {
             // 3. Insert
             const insertQuery = `
                 INSERT INTO subevents (
-                    event_id, name, description, start_time, end_time, capacity, cost, img_url
+                    event_id, name, description, start_time, end_time, capacity, cost, img_url, note_title
                 )
                 OUTPUT INSERTED.*
                 VALUES (
-                    @event_id, @name, @description, @start_time, @end_time, @capacity, @cost, @img_url
+                    @event_id, @name, @description, @start_time, @end_time, @capacity, @cost, @img_url, @note_title
                 )
             `;
 
@@ -40,7 +40,8 @@ app.http('createSubevent', {
                 { name: 'end_time', type: sql.DateTime2, value: end_time },
                 { name: 'capacity', type: sql.Int, value: capacity || null },
                 { name: 'cost', type: sql.Decimal(10, 2), value: cost || 0 },
-                { name: 'img_url', type: sql.NVarChar, value: img_url || null }
+                { name: 'img_url', type: sql.NVarChar, value: img_url || null },
+                { name: 'note_title', type: sql.NVarChar, value: note_title || null }
             ]);
 
             return {

@@ -103,6 +103,7 @@ app.http('getOrderDetail', {
                     ah.hire_end_date as asset_end,
                     -- Extra Fields for Subevents
                     se.start_time as subevent_start,
+                    se.note_title,
                     (
                         SELECT STRING_AGG(svo.name, ', ')
                         FROM subevent_registration_choices src
@@ -128,6 +129,12 @@ app.http('getOrderDetail', {
                          FROM subevent_registrations sr_sub
                          WHERE sr_sub.order_item_id = oi.order_item_id
                     ) as is_subevent_guest,
+                    -- Subevent Attendee Note
+                    (
+                         SELECT TOP 1 sr_sub.attendee_note
+                         FROM subevent_registrations sr_sub
+                         WHERE sr_sub.order_item_id = oi.order_item_id
+                    ) as subevent_note,
                     -- Pilot Name (Linked or Direct)
                     CASE
                         WHEN a.pilot_name IS NOT NULL THEN a.pilot_name

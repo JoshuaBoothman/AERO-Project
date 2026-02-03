@@ -695,7 +695,8 @@ app.http('createOrder', {
                             .input('oiid', sql.Int, orderItemId)
                             .input('aid', sql.Int, registrationAttendeeId) // Can be NULL now
                             .input('gn', sql.NVarChar, registrationGuestName) // [NEW]
-                            .query(`INSERT INTO subevent_registrations (subevent_id, order_item_id, attendee_id, guest_name) VALUES (@sid, @oiid, @aid, @gn); SELECT SCOPE_IDENTITY() AS id`);
+                            .input('note', sql.NVarChar, sub.note || null)
+                            .query(`INSERT INTO subevent_registrations (subevent_id, order_item_id, attendee_id, guest_name, attendee_note) VALUES (@sid, @oiid, @aid, @gn, @note); SELECT SCOPE_IDENTITY() AS id`);
 
                         const registrationId = regRes.recordset[0].id;
 

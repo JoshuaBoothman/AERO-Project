@@ -190,7 +190,7 @@ app.http('getStoreItems', {
 
             // 5. Fetch Subevents
             const subRes = await pool.request().input('eid', sql.Int, eventId).query(`
-                SELECT subevent_id, name, description, start_time, end_time, capacity, cost
+                SELECT subevent_id, name, description, start_time, end_time, capacity, cost, note_title
                 FROM subevents
                 WHERE event_id = @eid
             `);
@@ -244,6 +244,7 @@ app.http('getStoreItems', {
                 endTime: s.end_time,
                 price: s.cost,
                 capacity: s.capacity,
+                note_title: s.note_title,
                 variations: variationMap.get(s.subevent_id) || []
             }));
 

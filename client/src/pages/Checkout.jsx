@@ -70,7 +70,8 @@ function Checkout() {
                     selectedOptions: s.selectedOptions || {},
                     attendeeId: s.attendeeId,
                     attendeeTempId: s.attendeeTempId,
-                    guestName: s.guestName
+                    guestName: s.guestName,
+                    note: s.note // [NEW] Pass note to backend
                 }))
             };
 
