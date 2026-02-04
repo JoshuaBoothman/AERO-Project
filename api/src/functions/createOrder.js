@@ -466,7 +466,65 @@ app.http('createOrder', {
                         if (availRes.recordset.length === 0) throw new Error(`Invalid campsite ID: ${campsiteId}`);
                         const { is_booked, price_per_night, full_event_price, extra_adult_price_per_night, extra_adult_full_event_price } = availRes.recordset[0];
 
-                        if (is_booked) throw new Error(`Campsite ${campsiteId} not available.`);
+                        // if (is_booked) throw new Error(`Campsite ${campsiteId} not available.`);
+                        if (is_booked) {
+                            // Check if this is a "Legacy" booking owned by the SAME user (Claiming process)
+                            const legacyCheckReq = new sql.Request(transaction);
+                            const legacyCheckRes = await legacyCheckReq
+                                .input('cid', sql.Int, campsiteId)
+                                .input('uid', sql.Int, user.userId)
+                                .input('start', sql.Date, checkIn)
+                                .input('end', sql.Date, checkOut)
+                                .query(`
+                                    SELECT cb.booking_id, oi.order_item_id, oi.attendee_id, o.order_id
+                                    FROM campsite_bookings cb
+                                    JOIN order_items oi ON cb.order_item_id = oi.order_item_id
+                                    JOIN orders o ON oi.order_id = o.order_id
+                                    WHERE cb.campsite_id = @cid
+                                    AND o.user_id = @uid
+                                    AND o.payment_status = 'Pending'
+                                    AND o.booking_source = 'Legacy' -- Must be marked as Legacy
+                                    AND cb.check_in_date < @end AND cb.check_out_date > @start
+                                `);
+
+                            if (legacyCheckRes.recordset.length > 0) {
+                                // It IS a legacy booking. We "Merge" it.
+                                const { booking_id, order_item_id, attendee_id } = legacyCheckRes.recordset[0];
+
+                                // 1. Delete Campsite Booking
+                                await new sql.Request(transaction)
+                                    .input('cbid', sql.Int, booking_id)
+                                    .query("DELETE FROM campsite_bookings WHERE booking_id = @cbid");
+
+                                // 2. Delete Order Item
+                                await new sql.Request(transaction)
+                                    .input('oiid', sql.Int, order_item_id)
+                                    .query("DELETE FROM order_items WHERE order_item_id = @oiid");
+
+                                // 3. Clean up Legacy Attendee (if applicable)
+                                if (attendee_id) {
+                                    // Check if this is a placeholder attendee
+                                    const attCheckRes = await new sql.Request(transaction)
+                                        .input('aid', sql.Int, attendee_id)
+                                        .query(`
+                                            SELECT tt.name 
+                                            FROM attendees a
+                                            JOIN event_ticket_types tt ON a.ticket_type_id = tt.ticket_type_id
+                                            WHERE a.attendee_id = @aid
+                                        `);
+
+                                    if (attCheckRes.recordset.length > 0 && attCheckRes.recordset[0].name === 'Legacy Booking Placeholder') {
+                                        await new sql.Request(transaction)
+                                            .input('aid', sql.Int, attendee_id)
+                                            .query("DELETE FROM attendees WHERE attendee_id = @aid");
+                                    }
+                                }
+
+                                // Proceed (is_booked effectively becomes false for this flow)
+                            } else {
+                                throw new Error(`Campsite ${campsiteId} not available.`);
+                            }
+                        }
 
                         // Validate Price
                         const start = new Date(checkIn);

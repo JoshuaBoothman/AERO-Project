@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useNotification } from '../../context/NotificationContext';
+import AdminLegacyImport from '../admin/AdminLegacyImport';
 
 function AdminMapTool() {
     const { user, token } = useAuth();
@@ -34,6 +35,9 @@ function AdminMapTool() {
     const [showEditModal, setShowEditModal] = useState(false);
     const [editData, setEditData] = useState({ id: null, name: '' });
     const [editFile, setEditFile] = useState(null);
+
+    // Legacy Import Modal State
+    const [legacyModalData, setLegacyModalData] = useState(null);
 
     // Error State (moved up from line 140)
     const [error, setError] = useState(null);
@@ -595,6 +599,35 @@ function AdminMapTool() {
                         >
                             +
                         </button>
+                        {selectedSiteId && (
+                            <button
+                                onClick={() => {
+                                    const site = sites.find(s => s.campsite_id === selectedSiteId);
+                                    const selectedEvent = events.find(e => e.event_id === parseInt(selectedEventId));
+                                    setLegacyModalData({
+                                        campsiteId: selectedSiteId,
+                                        campsiteName: site?.site_number || 'Unknown',
+                                        siteNumber: site?.site_number || 'Unknown',
+                                        eventId: selectedEventId,
+                                        eventStartDate: selectedEvent?.start_date,
+                                        eventEndDate: selectedEvent?.end_date
+                                    });
+                                }}
+                                style={{
+                                    padding: '8px 16px',
+                                    background: '#007bff',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    cursor: 'pointer',
+                                    marginLeft: '15px',
+                                    fontWeight: 'bold'
+                                }}
+                                title="Book campsite for a returning/past attendee"
+                            >
+                                📋 Book Past Attendee (Site {sites.find(s => s.campsite_id === selectedSiteId)?.site_number})
+                            </button>
+                        )}
                     </div>
                 )}
             </div>
@@ -816,7 +849,7 @@ function AdminMapTool() {
                                     return (
                                         <div
                                             key={site.campsite_id}
-                                            onClick={() => setSelectedSiteId(site.campsite_id)}
+                                            onClick={() => setSelectedSiteId(selectedSiteId === site.campsite_id ? null : site.campsite_id)}
                                             style={{
                                                 aspectRatio: '1',
                                                 display: 'flex',
@@ -862,7 +895,7 @@ function AdminMapTool() {
                                     return (
                                         <div
                                             key={site.campsite_id}
-                                            onClick={(e) => { e.stopPropagation(); setSelectedSiteId(site.campsite_id); }}
+                                            onClick={(e) => { e.stopPropagation(); setSelectedSiteId(selectedSiteId === site.campsite_id ? null : site.campsite_id); }}
                                             style={{
                                                 position: 'absolute',
                                                 left: `${c.x}%`,
@@ -965,6 +998,23 @@ function AdminMapTool() {
                     </div>
                 )
             }
+
+            {/* Legacy Import Modal */}
+            {legacyModalData && (
+                <AdminLegacyImport
+                    campsiteId={legacyModalData.campsiteId}
+                    campsiteName={legacyModalData.campsiteName}
+                    siteNumber={legacyModalData.siteNumber}
+                    eventId={legacyModalData.eventId}
+                    eventStartDate={legacyModalData.eventStartDate}
+                    eventEndDate={legacyModalData.eventEndDate}
+                    onClose={() => setLegacyModalData(null)}
+                    onSuccess={() => {
+                        // Refresh Data?
+                        if (selectedCampgroundId) fetchCampgroundData(selectedCampgroundId);
+                    }}
+                />
+            )}
 
         </div>
     );

@@ -160,8 +160,78 @@ async function sendPasswordResetEmail(email, token, firstName, siteUrl) {
     }
 }
 
+/**
+ * Sends a legacy welcome email (for imported bookings).
+ * @param {string} email - The user's email address.
+ * @param {string} token - The verification/claim token.
+ * @param {string} firstName - The user's first name.
+ * @param {string} organizationName - Organization name.
+ * @param {string} siteUrl - Frontend URL.
+ * @param {string} campsiteName - Booked campsite name.
+ */
+async function sendLegacyWelcomeEmail(email, token, firstName, organizationName, siteUrl, campsiteName) {
+    if (!process.env.RESEND_API_KEY) {
+        console.error('RESEND_API_KEY is missing.');
+        return { success: false, error: 'Misconfigured: Missing RESEND_API_KEY' };
+    }
+
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    const orgName = organizationName || 'Aeromodelling';
+    const baseUrl = siteUrl || process.env.SITE_URL || 'http://localhost:5173';
+
+    // Link points to 'claim-account' or just standard verify? 
+    // The authRegister logic works via standard registration form.
+    // So the email should tell them to "Complete your account setup" or "Register to claim".
+    // But we generated a verification token.
+    // If they click verify link, it verifies the *placeholder* account.
+    // But they need to *set a password*.
+    // The 'legacy' flow in authRegister.js handles the "Claim" via the register endpoint.
+    // So we should direct them to the **Registration Page** where they enter their email.
+    // Alternatively, a special link `register?email=...&token=...` could pre-fill.
+    // For now, let's just point them to the site and tell them to Register with THIS email.
+    // Wait, the `createLegacyBooking.js` generated a `verificationToken` and passed it here.
+    // If they verify via `verify-email?token=...`, they verify the account but still have no password?
+    // The user needs to "Register" (which claims the account and sets password).
+    // So the link should probably be to the Registration page.
+
+    const registrationLink = `${baseUrl}/register?email=${encodeURIComponent(email)}`;
+
+    try {
+        const data = await resend.emails.send({
+            from: `${orgName} <registrations@meandervalleywebdesign.com.au>`,
+            to: [email],
+            subject: 'Complete your Campsite Booking',
+            html: `
+                <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto;">
+                    <h2>Welcome back, ${firstName}!</h2>
+                    <p>A campsite booking (<strong>${campsiteName}</strong>) has been reserved for you for the upcoming event.</p>
+                    <p>To confirm this booking and pay, you need to active your account.</p>
+                    <div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #007bff; margin: 20px 0;">
+                        <strong>Action Required:</strong> Please register an account using this email address: <strong>${email}</strong>
+                    </div>
+                    <a href="${registrationLink}" style="background-color: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 10px 0; font-weight: bold;">Create Account to Claim Booking</a>
+                    <p>Or visit: <a href="${registrationLink}">${registrationLink}</a></p>
+                    <p>Once registered, you will find your campsite reservation in your cart, ready for checkout.</p>
+                </div>
+            `
+        });
+
+        if (data.error) {
+            console.error('Resend API error:', data.error);
+            return { success: false, error: data.error };
+        }
+
+        console.log('Legacy welcome email sent:', data);
+        return { success: true, data };
+    } catch (error) {
+        console.error('Error sending legacy email:', error);
+        return { success: false, error };
+    }
+}
+
 module.exports = {
     sendVerificationEmail,
     sendPublicRegistrationEmail,
-    sendPasswordResetEmail
+    sendPasswordResetEmail,
+    sendLegacyWelcomeEmail
 };

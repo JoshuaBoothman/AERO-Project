@@ -1,7 +1,52 @@
 
 
+## [2026-02-04] - Legacy/Past Attendee Campsite Booking (Completed)
+- **Time**: 11:00 - 15:49
+- **Completed Items**:
+    - **Feature**: Implemented admin ability to book campsites for returning/past attendees who haven't created accounts yet.
+    - **Backend (API)**:
+        - **`createLegacyBooking.js`**:
+            - Updated to accept `arrivalDate` and `departureDate` parameters (previously used event dates automatically).
+            - Added **availability check** before creating booking - prevents double-booking by checking for conflicting reservations.
+            - Returns HTTP 409 (Conflict) with clear error message if site is already booked for selected dates.
+            - Sends welcome email to new legacy users with account claim instructions.
+        - **`getLegacyBookings.js`**:
+            - Fixed `Invalid column name 'name'` error - changed to `site_number` (correct column in `campsites` table).
+        - **`createOrder.js`**:
+            - Fixed `Invalid column name 'campsite_booking_id'` error - changed to `booking_id` (correct column in `campsite_bookings` table).
+            - Fixed legacy booking merge logic for checkout.
+    - **Frontend (Admin)**:
+        - **`AdminLegacyImport.jsx`** (Modal Component):
+            - Added **Arrival Date** and **Departure Date** input fields.
+            - Dates are **pre-filled with event dates** and **constrained to event date range** (min/max validation).
+            - Added **Site Confirmation Banner** displaying the selected campsite number.
+            - Renamed submit button to "Create Booking".
+            - Added client-side validation (dates required, departure after arrival).
+        - **`AdminMapTool.jsx`**:
+            - Renamed button from "Import Legacy" to **"Book Past Attendee"**.
+            - **Moved button to header area** (next to campground toggles) for better visibility.
+            - Button only appears when a site is selected and shows the site number.
+            - **Added toggle behavior**: Clicking a selected site now deselects it, hiding the Edit Site section.
+            - Passes event start/end dates to the modal for date validation.
+    - **Frontend (Client)**:
+        - **`CartContext.jsx`**:
+            - Fixed legacy items not displaying in cart by adding **normalization on load** (ensures `type`, `name`, `checkIn`, `checkOut` properties exist).
+            - Fixed duplicate check to use uppercase `'CAMPSITE'` for consistency.
+    - **Key Design Decisions**:
+        - **Date Flexibility**: Admins can specify custom arrival/departure dates (within event bounds) rather than full event dates only. This accommodates partial-event attendees.
+        - **Availability Validation**: Backend validates site availability to prevent conflicts, using same logic as regular bookings.
+        - **Button Placement**: Initially in "Editing Site" section, moved to header for quicker access without scrolling.
+        - **Toggle Selection**: Clicking a selected site deselects it, providing intuitive UX.
+        - **Date Constraints**: Used `min`/`max` HTML attributes (matching `CampsiteModal.jsx` pattern) to enforce event date boundaries.
+        - **Pre-filled Dates**: Dates default to full event duration for convenience, can be adjusted.
+    - **Verification**:
+        - Fixed multiple schema mismatches between code and database (`name` vs `site_number`, `campsite_booking_id` vs `booking_id`).
+        - Verified legacy booking flow end-to-end.
+    - **Documentation**:
+        - Updated `Master_Implementation_Schedule.md`.
 
 ## [2026-02-03] - Delete Existing Asset Inventory (Completed)
+
 - **Time**: 16:30 - 17:30
 - **Completed Items**:
     - **Feature**: Implemented "Delete" logic for Asset Inventory items.

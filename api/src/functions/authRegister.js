@@ -14,13 +14,22 @@ app.http('authRegister', {
             }
 
             // 1. Check if user exists
-            const checkQuery = "SELECT user_id FROM users WHERE email = @email";
-            const existingUser = await query(checkQuery, [
+            const checkQuery = "SELECT user_id, is_email_verified, is_legacy_import FROM users WHERE email = @email";
+            const existingUserRes = await query(checkQuery, [
                 { name: 'email', type: sql.NVarChar, value: email }
             ]);
 
-            if (existingUser.length > 0) {
-                return { status: 409, body: "Email already registered." };
+            let legacyUserId = null;
+
+            if (existingUserRes.length > 0) {
+                const user = existingUserRes[0];
+                // Check if this is a Legacy Import account that hasn't been claimed/verified yet
+                if (user.is_legacy_import && user.is_email_verified === false) {
+                    legacyUserId = user.user_id;
+                    // Proceed to allow "registration" (which is actually claiming the account)
+                } else {
+                    return { status: 409, body: "Email already registered." };
+                }
             }
 
             // 2. Hash Password
@@ -35,21 +44,43 @@ app.http('authRegister', {
             const tokenExpires = new Date();
             tokenExpires.setHours(tokenExpires.getHours() + 24); // Expires in 24 hours
 
-            // 4. Insert User
-            const insertQuery = `
-                INSERT INTO users (email, password_hash, first_name, last_name, aus_number, is_email_verified, verification_token, verification_token_expires)
-                VALUES (@email, @hash, @first, @last, @aus, 0, @token, @expires)
-            `;
+            // 4. Insert or Update User
+            if (legacyUserId) {
+                const updateQuery = `
+                    UPDATE users SET 
+                        password_hash = @hash, 
+                        first_name = @first, 
+                        last_name = @last, 
+                        aus_number = @aus, 
+                        verification_token = @token, 
+                        verification_token_expires = @expires
+                    WHERE user_id = @uid
+                `;
+                await query(updateQuery, [
+                    { name: 'uid', type: sql.Int, value: legacyUserId },
+                    { name: 'hash', type: sql.NVarChar, value: passwordHash },
+                    { name: 'first', type: sql.NVarChar, value: firstName },
+                    { name: 'last', type: sql.NVarChar, value: lastName },
+                    { name: 'aus', type: sql.NVarChar, value: ausNumber },
+                    { name: 'token', type: sql.NVarChar, value: verificationToken },
+                    { name: 'expires', type: sql.DateTime, value: tokenExpires }
+                ]);
+            } else {
+                const insertQuery = `
+                    INSERT INTO users (email, password_hash, first_name, last_name, aus_number, is_email_verified, verification_token, verification_token_expires)
+                    VALUES (@email, @hash, @first, @last, @aus, 0, @token, @expires)
+                `;
 
-            await query(insertQuery, [
-                { name: 'email', type: sql.NVarChar, value: email },
-                { name: 'hash', type: sql.NVarChar, value: passwordHash },
-                { name: 'first', type: sql.NVarChar, value: firstName },
-                { name: 'last', type: sql.NVarChar, value: lastName },
-                { name: 'aus', type: sql.NVarChar, value: ausNumber },
-                { name: 'token', type: sql.NVarChar, value: verificationToken },
-                { name: 'expires', type: sql.DateTime, value: tokenExpires }
-            ]);
+                await query(insertQuery, [
+                    { name: 'email', type: sql.NVarChar, value: email },
+                    { name: 'hash', type: sql.NVarChar, value: passwordHash },
+                    { name: 'first', type: sql.NVarChar, value: firstName },
+                    { name: 'last', type: sql.NVarChar, value: lastName },
+                    { name: 'aus', type: sql.NVarChar, value: ausNumber },
+                    { name: 'token', type: sql.NVarChar, value: verificationToken },
+                    { name: 'expires', type: sql.DateTime, value: tokenExpires }
+                ]);
+            }
 
 
             // 5. Send Verification Email
@@ -77,14 +108,21 @@ app.http('authRegister', {
                 // Ideally we would delete the user here to allow retry.
 
                 // Let's delete the user to allow retry
-                const deleteQuery = "DELETE FROM users WHERE email = @email";
-                await query(deleteQuery, [
-                    { name: 'email', type: sql.NVarChar, value: email }
-                ]);
+                // WARNING: If legacy user, maybe don't delete? 
+                // If legacy user, we should probably revert the update? 
+                // But simpler: just delete. If admin imported, they can re-import if things break. 
+                // Or better: Don't delete legacy user, just fail.
+
+                if (!legacyUserId) {
+                    const deleteQuery = "DELETE FROM users WHERE email = @email";
+                    await query(deleteQuery, [
+                        { name: 'email', type: sql.NVarChar, value: email }
+                    ]);
+                }
 
                 return {
                     status: 500,
-                    body: `User created but email failed to send: ${JSON.stringify(emailResult.error)}. User deleted, please try again.`
+                    body: `User created but email failed to send: ${JSON.stringify(emailResult.error)}. Please try again.`
                 };
             }
 
