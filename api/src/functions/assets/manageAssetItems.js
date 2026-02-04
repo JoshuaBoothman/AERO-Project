@@ -14,11 +14,12 @@ app.http('manageAssetItems', {
             // GET items for a specific type (filtered by query param)
             if (method === 'GET') {
                 const typeId = request.query.get('typeId');
-                let query = "SELECT * FROM asset_items";
+                // Filter out soft-deleted items by default
+                let query = "SELECT * FROM asset_items WHERE status != 'Deleted'";
                 const req = pool.request();
 
                 if (typeId) {
-                    query += " WHERE asset_type_id = @typeId";
+                    query += " AND asset_type_id = @typeId";
                     req.input('typeId', sql.Int, typeId);
                 }
 
@@ -67,15 +68,27 @@ app.http('manageAssetItems', {
 
             if (method === 'DELETE') {
                 if (!id) return { status: 400, body: "ID required" };
-                // Check for hires? Ideally yes, but for now allow delete if logic permits.
-                // Assuming we shouldn't delete if hired.
-                const check = await pool.request().input('id', sql.Int, id).query("SELECT COUNT(*) as count FROM asset_hires WHERE asset_item_id = @id");
-                if (check.recordset[0].count > 0) {
-                    return { status: 400, body: JSON.stringify({ error: "Cannot delete item with hire history." }) };
-                }
 
-                await pool.request().input('id', sql.Int, id).query("DELETE FROM asset_items WHERE asset_item_id = @id");
-                return { status: 200, jsonBody: { message: "Item deleted" } };
+                // Check for hires to determine Soft vs Hard delete
+                const check = await pool.request()
+                    .input('id', sql.Int, id)
+                    .query("SELECT COUNT(*) as count FROM asset_hires WHERE asset_item_id = @id");
+
+                const hasHistory = check.recordset[0].count > 0;
+
+                if (hasHistory) {
+                    // Soft Delete (Archive)
+                    await pool.request()
+                        .input('id', sql.Int, id)
+                        .query("UPDATE asset_items SET status = 'Deleted' WHERE asset_item_id = @id");
+                    return { status: 200, jsonBody: { message: "Item archived (Soft Delete)" } };
+                } else {
+                    // Hard Delete
+                    await pool.request()
+                        .input('id', sql.Int, id)
+                        .query("DELETE FROM asset_items WHERE asset_item_id = @id");
+                    return { status: 200, jsonBody: { message: "Item permanently deleted" } };
+                }
             }
 
         } catch (error) {

@@ -147,6 +147,9 @@ To act as a "Startup Engineer" — a senior technical partner who prioritizes ve
 
 *   **[2026-01-28] Component Duplication Cleanliness**: When duplicating components (e.g., creating `SupplierList` from `MerchandiseList`), aggressively prune unused imports and variables *before* running lint verification to save cycles.
     *   **Action**: Scan for `useEffect` dependencies and unused state/variables immediately after copying.
+    
+*   **[2026-02-03] Database Dependency Blindness**: Synthesizing test data (e.g., `attendees`, `orders`) often fails due to hidden not-null constraints or Foreign Keys (e.g., `ticket_type_id`, `event_id`, `person_id`).
+    *   **Action**: ALWAYS dump the schema constraints (`IS_NULLABLE`, `COLUMN_DEFAULT`) for target tables *before* writing `INSERT` statements in test scripts to avoid "Cannot insert NULL" loops.
 
 ---
 **Verified on**: 2026-01-28

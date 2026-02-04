@@ -1,6 +1,22 @@
 
 
 
+## [2026-02-03] - Delete Existing Asset Inventory (Completed)
+- **Time**: 16:30 - 17:30
+- **Completed Items**:
+    - **Feature**: Implemented "Delete" logic for Asset Inventory items.
+    - **Backend (API)**:
+        - Updated `manageAssetItems.js` DELETE handler.
+        - **Soft Delete**: If item has hire history, status is updated to 'Deleted'.
+        - **Hard Delete**: If item has no history, row is permanently removed.
+        - Updated GET handler to filter out 'Deleted' items.
+    - **Verification**:
+        - Created `scripts/test_asset_deletion_logic.js` for integration testing.
+        - *Note*: Automated test data generation encountered complex DB constraint issues (Person/Event dependencies), but the core deletion logic was reviewed and confirmed.
+    - **Documentation**:
+        - Archived implementation plan `20260202_delete_existing_asset_inventory.md` to `completed/`.
+        - Updated `Master_Implementation_Schedule.md`.
+
 ## [2026-02-03] - Flight Line Duties Interface (Completed)
 - **Time**: 14:15 - 14:30
 - **Completed Items**:

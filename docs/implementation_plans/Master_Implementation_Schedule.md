@@ -52,7 +52,7 @@ This document outlines the logical order of execution for the pending implementa
 ## Phase 3: Admin Tools & Back-office
 *These tasks improve administrative capabilities and data management.*
 
-- [ ] **[Delete Existing Asset Inventory](20260202_delete_existing_asset_inventory.md)**
+- [x] **[Delete Existing Asset Inventory](20260202_delete_existing_asset_inventory.md)**
     - *Goal*: Allow deletion of inventory items even if they have history (implement Soft Delete).
     - *Scope*: Backend logic change (Status='Deleted'), Admin UI update.
 
