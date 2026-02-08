@@ -3,6 +3,14 @@
 
 
 
+## [2026-02-08] - Campsite People Count Input Fix (Completed)
+- **Time**: 17:05 - 17:15
+- **Completed Items**:
+    - **UX Improvement**: Resolved "sticky backspace" issue on Adults and Children input fields in `CampingPage.jsx` and `CampsiteModal.jsx`. 
+    - **Logic**: Updated state handling to allow empty string values during typing, with an `onBlur` reset to default values (1 for adults, 0 for children). This prevents the input from snapping back to "1" while the user is trying to clear it to type a new number.
+    - **Verification**: Verified logic handles price calculations correctly even if fields are temporarily cleared.
+    - **Documentation**: Archived implementation plan to `completed/`.
+
 ## [2026-02-08] - Attendee Modal Simplification (Completed)
 - **Time**: 16:50 - 16:55
 - **Completed Items**:

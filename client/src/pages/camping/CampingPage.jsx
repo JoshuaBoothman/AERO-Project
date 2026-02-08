@@ -175,7 +175,8 @@ function CampingPage({ embedded = false, event = null }) {
         const s = new Date(dates.start);
         const e = new Date(dates.end);
         const nights = Math.max(1, Math.ceil((e - s) / (1000 * 60 * 60 * 24)));
-        const extraAdults = Math.max(0, adults - 1);
+        const safeAdults = adults === '' ? 1 : parseInt(adults);
+        const extraAdults = Math.max(0, safeAdults - 1);
 
         let price = 0;
         if (useFullEventPrice && selectedSite.full_event_price) {
@@ -193,8 +194,8 @@ function CampingPage({ embedded = false, event = null }) {
             checkOut: dates.end,
             details: selectedSite,
             eventId: eventId,
-            adults: adults,
-            children: children
+            adults: adults === '' ? 1 : parseInt(adults),
+            children: children === '' ? 0 : parseInt(children)
         };
 
         addToCart(item);
@@ -546,7 +547,8 @@ function CampingPage({ embedded = false, event = null }) {
                                                 type="number"
                                                 min="1"
                                                 value={adults}
-                                                onChange={e => setAdults(parseInt(e.target.value) || 1)}
+                                                onChange={e => setAdults(e.target.value === '' ? '' : parseInt(e.target.value))}
+                                                onBlur={() => { if (adults === '') setAdults(1); }}
                                                 style={{ width: '100%', padding: '5px', border: '1px solid #ccc', borderRadius: '4px' }}
                                             />
                                         </div>
@@ -556,7 +558,8 @@ function CampingPage({ embedded = false, event = null }) {
                                                 type="number"
                                                 min="0"
                                                 value={children}
-                                                onChange={e => setChildren(parseInt(e.target.value) || 0)}
+                                                onChange={e => setChildren(e.target.value === '' ? '' : parseInt(e.target.value))}
+                                                onBlur={() => { if (children === '') setChildren(0); }}
                                                 style={{ width: '100%', padding: '5px', border: '1px solid #ccc', borderRadius: '4px' }}
                                             />
                                         </div>
@@ -568,7 +571,8 @@ function CampingPage({ embedded = false, event = null }) {
                                         const s = new Date(dates.start);
                                         const e = new Date(dates.end);
                                         const nights = Math.max(1, Math.ceil((e - s) / (1000 * 60 * 60 * 24)));
-                                        const extraAdults = Math.max(0, adults - 1);
+                                        const safeAdults = adults === '' ? 1 : parseInt(adults);
+                                        const extraAdults = Math.max(0, safeAdults - 1);
                                         let total = 0;
                                         let feeConfig = null;
 

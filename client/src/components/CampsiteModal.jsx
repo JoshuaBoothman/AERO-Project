@@ -103,7 +103,8 @@ function CampsiteModal({ event, onClose, onAddToCart, orgSettings }) {
         // Pass selected sites back to parent
         // Attach the dates to the selection
         const nights = Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24));
-        const extraAdults = Math.max(0, adults - 1);
+        const safeAdults = adults === '' ? 1 : parseInt(adults);
+        const extraAdults = Math.max(0, safeAdults - 1);
 
         const selection = selectedSites.map(s => {
             // Calculate correct price for the item based on selection
@@ -120,8 +121,8 @@ function CampsiteModal({ event, onClose, onAddToCart, orgSettings }) {
                 checkOut: endDate,
                 campgroundName: campground?.name,
                 price: finalPrice,
-                adults: adults,
-                children: children
+                adults: adults === '' ? 1 : parseInt(adults),
+                children: children === '' ? 0 : parseInt(children)
             };
         });
         onAddToCart(selection);
@@ -209,7 +210,8 @@ function CampsiteModal({ event, onClose, onAddToCart, orgSettings }) {
                                 type="number"
                                 min="1"
                                 value={adults}
-                                onChange={e => setAdults(parseInt(e.target.value) || 1)}
+                                onChange={e => setAdults(e.target.value === '' ? '' : parseInt(e.target.value))}
+                                onBlur={() => { if (adults === '') setAdults(1); }}
                                 style={{ padding: '4px', width: '60px' }}
                             />
                         </div>
@@ -219,7 +221,8 @@ function CampsiteModal({ event, onClose, onAddToCart, orgSettings }) {
                                 type="number"
                                 min="0"
                                 value={children}
-                                onChange={e => setChildren(parseInt(e.target.value) || 0)}
+                                onChange={e => setChildren(e.target.value === '' ? '' : parseInt(e.target.value))}
+                                onBlur={() => { if (children === '') setChildren(0); }}
                                 style={{ padding: '4px', width: '60px' }}
                             />
                         </div>
@@ -230,7 +233,8 @@ function CampsiteModal({ event, onClose, onAddToCart, orgSettings }) {
                         <div style={{ fontWeight: 'bold' }}>{selectedSites.length} sites selected</div>
                         <div style={{ fontSize: '0.9rem', color: '#666' }}>
                             Total: ${selectedSites.reduce((sum, s) => {
-                                const extraAdults = Math.max(0, adults - 1);
+                                const safeAdults = adults === '' ? 1 : parseInt(adults);
+                                const extraAdults = Math.max(0, safeAdults - 1);
                                 if (useFullEventPrice && s.full_event_price) {
                                     const extraFee = extraAdults * (s.extra_adult_full_event_price || 0);
                                     return sum + s.full_event_price + extraFee;
