@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useNotification } from '../../context/NotificationContext';
 import AdminLegacyImport from '../admin/AdminLegacyImport';
+import CampsiteTooltip from '../../components/CampsiteTooltip';
 
 function AdminMapTool() {
     const { user, token } = useAuth();
@@ -24,6 +25,7 @@ function AdminMapTool() {
     // const [tempCoords, setTempCoords] = useState(null); // Removed unused state
     const [orgSettings, setOrgSettings] = useState(null);
     const [nextSiteNumber, setNextSiteNumber] = useState(1);
+    const [hoveredSite, setHoveredSite] = useState(null);
 
     // Create Campground Modal State
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -193,7 +195,7 @@ function AdminMapTool() {
                     try {
                         const json = JSON.parse(text);
                         errMsg = json.error || errMsg;
-                    } catch (e) {
+                    } catch (_e) {
                         errMsg += ` (${res.status} ${res.statusText})`;
                     }
                     notify(errMsg, "error");
@@ -649,6 +651,82 @@ function AdminMapTool() {
             ) : (
                 <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minHeight: 0 }}>
 
+                    {/* Map Area */}
+                    <div style={{ flex: 1, position: 'relative', overflow: 'hidden', background: '#ccc' }}>
+                        {hoveredSite && (
+                            <CampsiteTooltip
+                                site={hoveredSite}
+                                eventRange={{
+                                    start: events.find(e => e.event_id == selectedEventId)?.start_date,
+                                    end: events.find(e => e.event_id == selectedEventId)?.end_date
+                                }}
+                            />
+                        )}
+                        <div
+                            style={{ position: 'relative', width: '100%', height: '100%', overflow: 'auto' }}
+                            onClick={() => setSelectedSiteId(null)}
+                        >
+                            <div style={{ position: 'relative', minWidth: '1000px', display: 'inline-block' }}>
+                                <img
+                                    src={campground.map_image_url}
+                                    alt="Campground Map"
+                                    style={{ display: 'block', maxWidth: 'none' }}
+                                    onClick={handleMapClick}
+                                />
+                                {sites.map(site => {
+                                    if (!site.map_coordinates) return null;
+                                    let c;
+                                    try { c = JSON.parse(site.map_coordinates); } catch (_e) { return null; }
+
+                                    const isSelected = selectedSiteId === site.campsite_id;
+
+                                    return (
+                                        <div
+                                            key={site.campsite_id}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setSelectedSiteId(site.campsite_id);
+                                            }}
+                                            onMouseEnter={() => setHoveredSite({ ...site, x: c.x, y: c.y })}
+                                            onMouseLeave={() => setHoveredSite(null)}
+                                            style={{
+                                                position: 'absolute',
+                                                left: `${c.x}%`,
+                                                top: `${c.y}%`,
+                                                width: isSelected ? '24px' : '18px',
+                                                height: isSelected ? '24px' : '18px',
+                                                background: site.is_active ? (isSelected ? 'blue' : 'gold') : 'grey',
+                                                borderRadius: '50%',
+                                                transform: 'translate(-50%, -50%)',
+                                                border: '2px solid white',
+                                                cursor: 'pointer',
+                                                zIndex: isSelected ? 10 : 1,
+                                                boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                                            }}
+                                            title={site.site_number}
+                                        >
+                                            <span style={{
+                                                position: 'absolute',
+                                                top: '-20px',
+                                                left: '50%',
+                                                transform: 'translateX(-50%)',
+                                                background: 'rgba(0,0,0,0.7)',
+                                                color: 'white',
+                                                padding: '2px 4px',
+                                                borderRadius: '3px',
+                                                fontSize: '0.7rem',
+                                                whiteSpace: 'nowrap',
+                                                pointerEvents: 'none'
+                                            }}>
+                                                {site.site_number}
+                                            </span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </div>
+
                     {/* Sidebar Editor */}
                     <div style={{ width: '320px', minWidth: '320px', borderRight: '1px solid #eee', display: 'flex', flexDirection: 'column', background: '#fafafa', flexShrink: 0, zIndex: 20, position: 'relative', boxShadow: '2px 0 5px rgba(0,0,0,0.1)', overflowY: 'auto' }}>
 
@@ -872,58 +950,12 @@ function AdminMapTool() {
                     </div>
 
 
-                    {/* Map Area */}
-                    <div style={{ flex: 1, position: 'relative', background: '#ccc', overflow: 'hidden', minHeight: 0 }}>
-                        <div style={{ width: '100%', height: '100%', overflow: 'auto', position: 'relative' }}>
-                            <div style={{ position: 'relative', display: 'block', minWidth: '1500px', width: '100%' }}>
-                                <img
-                                    src={campground.map_image_url}
-                                    onClick={handleMapClick}
-                                    alt="Map"
-                                    style={{
-                                        display: 'block',
-                                        cursor: selectedSiteId ? 'crosshair' : 'default',
-                                        width: '100%',
-                                        height: 'auto'
-                                    }}
-                                />
-                                {sites.map(site => {
-                                    if (!site.map_coordinates) return null;
-                                    let c;
-                                    try { c = JSON.parse(site.map_coordinates); } catch (_parseErr) { return null; }
-                                    if (!c) return null;
-                                    return (
-                                        <div
-                                            key={site.campsite_id}
-                                            onClick={(e) => { e.stopPropagation(); setSelectedSiteId(selectedSiteId === site.campsite_id ? null : site.campsite_id); }}
-                                            style={{
-                                                position: 'absolute',
-                                                left: `${c.x}%`,
-                                                top: `${c.y}%`,
-                                                width: '20px',
-                                                height: '20px',
-                                                background: orgSettings?.primary_color || 'blue',
-                                                borderRadius: '50%',
-                                                transform: selectedSiteId === site.campsite_id ? 'translate(-50%, -50%) scale(1.3)' : 'translate(-50%, -50%)',
-                                                border: selectedSiteId === site.campsite_id ? '3px solid #FFD700' : '2px solid white',
-                                                cursor: 'pointer',
-                                                zIndex: selectedSiteId === site.campsite_id ? 100 : 1,
-                                                boxShadow: selectedSiteId === site.campsite_id ? '0 0 15px #FFD700, 0 0 5px black' : '0 2px 4px rgba(0,0,0,0.5)'
-                                            }}
-                                            title={site.site_number}
-                                        />
-                                    );
-                                })}
-                            </div>
-                        </div>
 
-                        {/* Overlay Instructions */}
-
-                    </div>
 
 
                 </div>
-            )}
+            )
+            }
 
             {/* Create Campground Modal */}
             {
@@ -1000,23 +1032,25 @@ function AdminMapTool() {
             }
 
             {/* Legacy Import Modal */}
-            {legacyModalData && (
-                <AdminLegacyImport
-                    campsiteId={legacyModalData.campsiteId}
-                    campsiteName={legacyModalData.campsiteName}
-                    siteNumber={legacyModalData.siteNumber}
-                    eventId={legacyModalData.eventId}
-                    eventStartDate={legacyModalData.eventStartDate}
-                    eventEndDate={legacyModalData.eventEndDate}
-                    onClose={() => setLegacyModalData(null)}
-                    onSuccess={() => {
-                        // Refresh Data?
-                        if (selectedCampgroundId) fetchCampgroundData(selectedCampgroundId);
-                    }}
-                />
-            )}
+            {
+                legacyModalData && (
+                    <AdminLegacyImport
+                        campsiteId={legacyModalData.campsiteId}
+                        campsiteName={legacyModalData.campsiteName}
+                        siteNumber={legacyModalData.siteNumber}
+                        eventId={legacyModalData.eventId}
+                        eventStartDate={legacyModalData.eventStartDate}
+                        eventEndDate={legacyModalData.eventEndDate}
+                        onClose={() => setLegacyModalData(null)}
+                        onSuccess={() => {
+                            // Refresh Data?
+                            if (selectedCampgroundId) fetchCampgroundData(selectedCampgroundId);
+                        }}
+                    />
+                )
+            }
 
-        </div>
+        </div >
     );
 }
 

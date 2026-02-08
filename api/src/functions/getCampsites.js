@@ -70,12 +70,14 @@ app.http('getCampsites', {
                         c.extra_adult_full_event_price,
                         c.map_coordinates, 
                         c.is_active,
-                        CASE WHEN EXISTS (
-                            SELECT 1 FROM campsite_bookings cb 
+                        (
+                            SELECT cb.check_in_date as check_in, cb.check_out_date as check_out
+                            FROM campsite_bookings cb 
                             WHERE cb.campsite_id = c.campsite_id
                             AND cb.check_in_date < @end
                             AND cb.check_out_date > @start
-                        ) THEN 1 ELSE 0 END AS is_booked
+                            FOR JSON PATH
+                        ) AS bookings_json
                     FROM campsites c 
                     WHERE c.campground_id = @id
                     ORDER BY c.site_sort_index ASC, c.site_number ASC
@@ -84,7 +86,23 @@ app.http('getCampsites', {
                 params.push({ name: 'end', type: sql.Date, value: endDate });
             }
 
-            const sites = await query(sitesQuery, params);
+            const sitesRaw = await query(sitesQuery, params);
+
+            const sites = sitesRaw.map(site => {
+                let bookings = [];
+                if (site.bookings_json) {
+                    try {
+                        bookings = JSON.parse(site.bookings_json);
+                    } catch (e) {
+                        context.log('Error parsing bookings JSON', e);
+                    }
+                }
+                return {
+                    ...site,
+                    bookings: bookings,
+                    is_booked: bookings.length > 0 ? 1 : 0 // Backwards compatibility for now
+                };
+            });
 
             return {
                 status: 200,

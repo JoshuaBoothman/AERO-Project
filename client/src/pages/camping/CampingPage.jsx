@@ -5,6 +5,7 @@ import { useCart } from '../../context/CartContext';
 import CampingListView from '../../components/CampingListView';
 
 import AdminMapTool from './AdminMapTool';
+import CampsiteTooltip from '../../components/CampsiteTooltip';
 
 function CampingPage({ embedded = false, event = null }) {
     const { slug } = useParams();
@@ -32,6 +33,7 @@ function CampingPage({ embedded = false, event = null }) {
 
     const [loading, setLoading] = useState(true);
     const [selectedSite, setSelectedSite] = useState(null); // { campsite_id, ... }
+    const [hoveredSite, setHoveredSite] = useState(null);
     const [cartMessage, setCartMessage] = useState('');
 
     // Guest State
@@ -246,7 +248,7 @@ function CampingPage({ embedded = false, event = null }) {
     const activeCampground = campgrounds.find(cg => cg.campground_id === activeCampgroundId);
 
     return (
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: embedded ? '0' : '20px' }}>
+        <div style={{ maxWidth: '1600px', margin: '0 auto', padding: embedded ? '0' : '20px' }}>
             {!embedded && (
                 <div style={{ marginBottom: '20px' }}>
                     <Link to="/camping" style={{ color: '#666', textDecoration: 'none' }}>← Back to Events</Link>
@@ -281,10 +283,10 @@ function CampingPage({ embedded = false, event = null }) {
                     </div>
                 )}
 
-                <div style={{ display: 'flex', flexDirection: viewMode === 'list' ? 'column' : 'row', gap: '20px' }}>
+                <div className={`camping-page-container ${viewMode === 'list' ? 'view-list' : ''}`}>
                     {/* Map / Grid View */}
                     {/* Map / List View Container */}
-                    <div style={{ flex: viewMode === 'list' ? 'none' : '2 1 0', minWidth: 0, width: viewMode === 'list' ? '100%' : 'auto' }}>
+                    <div className="camping-map-section">
                         {loading ? (
                             <div style={{ height: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f9f9f9', border: '1px solid #eee', borderRadius: '8px' }}>
                                 <h3>Checking availability...</h3>
@@ -292,7 +294,7 @@ function CampingPage({ embedded = false, event = null }) {
                         ) : (
                             <>
                                 {/* View Toggle & Legend Header */}
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '10px' }}>
                                     {/* Legend (Map Mode Only, or simplified for List) */}
                                     {viewMode === 'map' ? (
                                         <div style={{ display: 'flex', gap: '15px', fontSize: '0.9rem', padding: '10px', background: '#fff', border: '1px solid #eee', borderRadius: '4px' }}>
@@ -359,7 +361,10 @@ function CampingPage({ embedded = false, event = null }) {
                                         {campgrounds.length <= 1 && <h3>{activeCampground.name}</h3>}
 
                                         {viewMode === 'map' ? (
-                                            <div style={{ position: 'relative', border: '1px solid #ddd', background: '#ccc', overflow: 'auto', maxHeight: '75vh' }}>
+                                            <div style={{ position: 'relative', border: '1px solid #ddd', background: '#ccc', overflow: 'auto', maxHeight: '75vh', borderRadius: '8px' }}>
+                                                {hoveredSite && (
+                                                    <CampsiteTooltip site={hoveredSite} eventRange={eventBounds} />
+                                                )}
                                                 <div style={{ position: 'relative', minWidth: '1000px', width: '100%' }}>
                                                     <img src={activeCampground.map_image_url} alt={activeCampground.name} style={{ width: '100%', display: 'block' }} />
 
@@ -417,6 +422,22 @@ function CampingPage({ embedded = false, event = null }) {
                                                             <div
                                                                 key={site.campsite_id}
                                                                 onClick={() => handleSiteClick(site)}
+                                                                onMouseEnter={() => {
+                                                                    // Calculate position relative to container or just pass site and handle in Tooltip
+                                                                    // Current simplified tooltip just needs data, we can position it with mouse or fixed.
+                                                                    // But for map, maybe better to position near the pin?
+                                                                    // The tooltip component I wrote is absolute positioned but doesn't have coordinates.
+                                                                    // Let's modify the tooltip component to accept style or just position it here?
+                                                                    // Actually, standard tooltip behavior usually tracks mouse, but here we have fixed pins.
+                                                                    // Let's position it near the pin.
+
+                                                                    // Wait, the tooltip component I wrote has position: absolute but no top/left.
+                                                                    // I should update the tooltip styles in the component or pass them.
+                                                                    // Providing a key helper to set position might be complex.
+                                                                    // Let's just pass the site to state.
+                                                                    setHoveredSite({ ...site, x: c.x, y: c.y });
+                                                                }}
+                                                                onMouseLeave={() => setHoveredSite(null)}
                                                                 style={{
                                                                     position: 'absolute',
                                                                     left: `${c.x}%`,
@@ -431,7 +452,7 @@ function CampingPage({ embedded = false, event = null }) {
                                                                     zIndex: zIndex,
                                                                     opacity: site.is_available ? 1 : 0.6
                                                                 }}
-                                                                title={`Site ${site.site_number} - ${isFullyBooked ? 'Booked' : (isPartiallyBooked ? 'Partially Booked' : 'Available')}`}
+                                                            // title attribute removed to prevent default browser tooltip
                                                             />
                                                         );
                                                     })}
@@ -456,8 +477,8 @@ function CampingPage({ embedded = false, event = null }) {
                     </div>
 
                     {/* Sidebar / Info Panel */}
-                    <div style={{ flex: viewMode === 'list' ? 'none' : '0 0 350px', minWidth: viewMode === 'list' ? 'auto' : '300px', width: viewMode === 'list' ? '100%' : 'auto' }}>
-                        <div style={{ position: viewMode === 'list' ? 'static' : 'sticky', top: '20px', padding: '20px', border: '1px solid #eee', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', backgroundColor: 'white' }}>
+                    <div className="camping-sidebar-section">
+                        <div className="camping-sidebar-sticky">
                             <div style={{ marginBottom: '20px', paddingBottom: '20px', borderBottom: '1px solid #eee' }}>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                                     <div>

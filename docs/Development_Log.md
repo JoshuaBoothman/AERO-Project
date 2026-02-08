@@ -1,5 +1,34 @@
 
 
+
+## [2026-02-08] - Campsite Tooltip Implementation (Completed)
+- **Time**: 03:30 - 04:15
+- **Completed Items**:
+    - **Feature**: Implemented a tooltip on the campsite map (User and Admin) to display availability details on hover.
+    - **Backend (API)**:
+        - **`getCampsites.js`**:
+            - Updated SQL query to return `bookings` JSON array instead of simple boolean `is_booked` for the given date range.
+            - Maintains backward compatibility by calculating `is_booked` flag for existing frontend logic.
+    - **Frontend (Client)**:
+        - **`CampsiteTooltip.jsx`**:
+            - Created reusable tooltip component to display site number, price, power status, and booked date ranges.
+            - Uses `dateHelpers` for consistent timezone-free date formatting.
+            - Dynamic positioning based on map coordinates.
+        - **`CampingPage.jsx`**:
+            - Integrated `CampsiteTooltip`.
+            - Refactored layout to use CSS classes (`App.css`) for better mobile responsiveness (`flex-direction: column` on mobile).
+            - Added hover state tracking for map pins.
+        - **`AdminMapTool.jsx`**:
+            - Integrated `CampsiteTooltip`.
+            - Restored sidebar layout integrity after edit.
+            - Fixed `catch(e)` lint errors by renaming unused variables to `_e`.
+    - **Verification**:
+        - `npm run lint` passed (cleaned up unused variables).
+        - Confirmed code structure and logic handles fetching and displaying specific booking dates.
+    - **Documentation**:
+        - Archived `20260202_campsite_tooltip.md` (renamed to `20260208...`) and `20260208_campsite_booking_mobile_view.md` to `completed/`.
+        - Updated `Master_Implementation_Schedule.md`.
+
 ## [2026-02-04] - Legacy/Past Attendee Campsite Booking (Completed)
 - **Time**: 11:00 - 15:49
 - **Completed Items**:

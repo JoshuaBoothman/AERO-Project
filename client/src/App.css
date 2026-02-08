@@ -8,7 +8,7 @@
 /* Header Styling */
 header {
   padding: 1rem 2rem;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 header h1 {
@@ -18,7 +18,8 @@ header h1 {
 
 /* Main Content Area */
 main {
-  flex: 1; /* Pushes the footer down if we add one */
+  flex: 1;
+  /* Pushes the footer down if we add one */
   padding: 2rem;
   max-width: 1200px;
   margin: 0 auto;
@@ -32,7 +33,7 @@ main {
   border-radius: 8px;
   padding: 1.5rem;
   border: 1px solid #eee;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   margin-bottom: 1rem;
 }
 
@@ -54,6 +55,7 @@ button {
   background-color: var(--primary-color);
   color: var(--secondary-color);
 }
+
 .primary-button:hover {
   opacity: 0.9;
   transform: translateY(-1px);
@@ -61,9 +63,12 @@ button {
 
 /* Secondary: Used for "View Details" on upcoming/past events */
 .secondary-button {
-  background-color: #e2e8f0; /* Light Grey */
-  color: #475569;            /* Slate Grey Text */
+  background-color: #e2e8f0;
+  /* Light Grey */
+  color: #475569;
+  /* Slate Grey Text */
 }
+
 .secondary-button:hover {
   background-color: #cbd5e1;
   color: #1e293b;
@@ -74,4 +79,75 @@ button:disabled {
   color: #666 !important;
   cursor: not-allowed;
   transform: none !important;
+}
+
+/* =========================================
+   Camping Page Layout (Mobile First / Responsive)
+   ========================================= */
+
+.camping-page-container {
+  display: flex;
+  flex-direction: row;
+  /* Desktop default */
+  gap: 20px;
+}
+
+.camping-map-section {
+  flex: 2 1 0;
+  min-width: 0;
+  /* Prevents flex item from overflowing */
+}
+
+.camping-sidebar-section {
+  flex: 0 0 350px;
+  min-width: 300px;
+}
+
+.camping-sidebar-sticky {
+  position: sticky;
+  top: 20px;
+  padding: 20px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  background-color: white;
+}
+
+/* List View Overrides */
+.camping-page-container.view-list {
+  flex-direction: column;
+}
+
+.camping-page-container.view-list .camping-map-section,
+.camping-page-container.view-list .camping-sidebar-section {
+  flex: none;
+  width: 100%;
+}
+
+.camping-page-container.view-list .camping-sidebar-sticky {
+  position: static;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 1024px) {
+  .camping-page-container {
+    flex-direction: column !important;
+    /* Force stack on mobile */
+  }
+
+  .camping-map-section,
+  .camping-sidebar-section {
+    width: 100% !important;
+    flex: none !important;
+    min-width: 0 !important;
+  }
+
+  /* On mobile, map might need a fixed height if not in list view */
+  /* We handle this in component often, but can enforce here if needed */
+
+  .camping-sidebar-sticky {
+    position: static;
+    /* No sticky on mobile usually */
+    margin-top: 20px;
+  }
 }

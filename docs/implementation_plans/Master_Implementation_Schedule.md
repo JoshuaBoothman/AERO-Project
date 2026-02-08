@@ -56,21 +56,25 @@ This document outlines the logical order of execution for the pending implementa
     - *Goal*: Allow deletion of inventory items even if they have history (implement Soft Delete).
     - *Scope*: Backend logic change (Status='Deleted'), Admin UI update.
 
-- [ ] **[Admin Order Item Deletion](20260202_admin_delete_order_items.md)**
+- [x] **[Admin Order Item Deletion](20260202_admin_delete_order_items.md)**
     - *Goal*: Allow admins to remove individual items from Pending orders and restore stock.
     - *Scope*: New Backend Function, Admin UI Update.
     - *Note*: Supersedes `20260131_admin_order_editing.md`.
 
-- [ ] **[Legacy Priority Booking Implementation](20260202_legacy_campsite_bookings.md)**
+- [x] **[Legacy Priority Booking Implementation](20260202_legacy_campsite_bookings.md)**
     - *Goal*: Allow admins to create bookings for users who haven't registered yet ("Shadow Users").
     - *Scope*: New Admin Tool, Auth logic update to "claim" accounts.
 
 ## Phase 4: UI/UX Polish & Revamp
 *Visual improvements and major page revamps.*
 
-- [ ] **[Campsite Tooltips](20260202_campsite_tooltip.md)**
+- [x] **[Campsite Tooltips](20260208_campsite_tooltip.md)**
     - *Goal*: Show availability dates on hover for map pins.
     - *Scope*: Frontend component & API update to return booking dates.
+
+- [x] **[Camping Page Mobile View](20260208_campsite_booking_mobile_view.md)**
+    - *Goal*: Fix layout issues on mobile devices for the camping page.
+    - *Scope*: CSS refactor (`App.css`) and `CampingPage.jsx` layout updates.
 
 - [ ] **[Home Page Revamp](20260202_home_page_revamp.md)**
     - *Goal*: Replace auto-redirect with a proper Landing Page.
