@@ -308,14 +308,19 @@ function AttendeeModal({
                                         style={inputStyle}
                                     />
 
-                                    <input
-                                        type="date"
-                                        placeholder="Date of Birth"
-                                        title="Date of Birth"
-                                        value={data.dateOfBirth || ''}
-                                        onChange={e => handleChange(key, 'dateOfBirth', e.target.value)}
-                                        style={inputStyle}
-                                    />
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-700 mb-1">
+                                            Date of Birth
+                                        </label>
+                                        <input
+                                            type="date"
+                                            placeholder="Date of Birth"
+                                            title="Date of Birth"
+                                            value={data.dateOfBirth || ''}
+                                            onChange={e => handleChange(key, 'dateOfBirth', e.target.value)}
+                                            style={inputStyle}
+                                        />
+                                    </div>
                                 </div>
                                 <input
                                     type="email" placeholder="Email"

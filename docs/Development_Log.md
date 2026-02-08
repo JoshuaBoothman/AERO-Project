@@ -1,6 +1,15 @@
 
 
 
+## [2026-02-08] - Ticket DOB Placeholder Fix (Completed)
+- **Time**: 15:15 - 15:20
+- **Completed Items**:
+    - **UX Improvement**: Added a visible label to the Date of Birth field in `AttendeeModal.jsx`.
+    - **Problem**: On mobile devices, the native date picker often hides the `placeholder` text, leaving users guessing what the field is for.
+    - **Solution**: Wrapped the input in a container and added a `text-xs font-bold` label above it, consistent with other date fields.
+    - **Verification**: Verified code structure ensures the new label aligns correctly within the grid layout.
+    - **Documentation**: Archived implementation plan to `completed/`.
+
 ## [2026-02-08] - Campsite Tooltip Implementation (Completed)
 - **Time**: 03:30 - 04:15
 - **Completed Items**:
