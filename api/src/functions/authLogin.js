@@ -71,6 +71,7 @@ app.http('authLogin', {
                         id: user.user_id,
                         firstName: user.first_name,
                         lastName: user.last_name,
+                        email: email, // Added email to response
                         role
                     },
                     debug_secret_prefix: SECRET_KEY.substring(0, 3) + "***"

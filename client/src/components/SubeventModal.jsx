@@ -30,24 +30,35 @@ export default function SubeventModal({ subevent, onClose, onAddToCart, myPilots
         });
 
         // Cart Tickets
-        cart.filter(item => item.type === 'TICKET').forEach((ticket) => {
-            let label = ticket.name;
-            if (ticket.attendees && ticket.attendees[0]) {
-                const att = ticket.attendees[0];
-                if (att.firstName && att.lastName) {
-                    label = `${att.firstName} ${att.lastName} (${ticket.name})`;
+        if (cart && cart.length > 0) {
+            cart.filter(item => item.type === 'TICKET').forEach(ticket => {
+                // Iterating through ALL attendees in the ticket bundle
+                if (ticket.attendees && Array.isArray(ticket.attendees)) {
+                    ticket.attendees.forEach((att, idx) => {
+                        if (att.tempId) {
+                            const attName = (att.firstName && att.lastName)
+                                ? `${att.firstName} ${att.lastName}`
+                                : `Guest #${idx + 1}`;
+
+                            // Include Dates if available for clarity
+                            let dateInfo = '';
+                            if (att.arrivalDate && att.departureDate) {
+                                const start = new Date(att.arrivalDate).toLocaleDateString(undefined, { month: 'numeric', day: 'numeric' });
+                                const end = new Date(att.departureDate).toLocaleDateString(undefined, { month: 'numeric', day: 'numeric' });
+                                dateInfo = ` (${start}-${end})`;
+                            }
+
+                            list.push({
+                                key: `cart-${att.tempId}`,
+                                label: `New Ticket: ${attName} - ${ticket.name}${dateInfo}`,
+                                value: { attendeeTempId: att.tempId, name: `${attName}` },
+                                type: 'cart'
+                            });
+                        }
+                    });
                 }
-            }
-            const tempId = ticket.attendees?.[0]?.tempId;
-            if (tempId) {
-                list.push({
-                    key: `cart-${tempId}`,
-                    label: `New Ticket: ${label}`,
-                    value: { attendeeTempId: tempId, name: label },
-                    type: 'cart'
-                });
-            }
-        });
+            });
+        }
         setDefaultOptions(list);
     }, [myPilots, cart]);
 

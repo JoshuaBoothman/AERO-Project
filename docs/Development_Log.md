@@ -1,6 +1,32 @@
 
 
 
+
+## [2026-02-08] - Ticket Allocation Subevent Fixes (Completed)
+- **Time**: 15:55 - 16:15
+- **Completed Items**:
+    - **Goal**: Resolve "Mystery Guest" profile overwrites and Subevent assignment mix-ups.
+    - **Frontend (Client)**:
+        - **`AttendeeModal.jsx`**:
+            - **Removed Auto-Fill**: Stopped default auto-fill of user email for all attendees (preventing overwrites).
+            - **Feature**: Added "I am this attendee" button to explicitly populate user details when needed.
+            - **Validation**: Implemented strict check blocking users from using their own email for guests with different names.
+        - **`SubeventModal.jsx`**:
+            - **Bug Fix**: Fixed logic to list **ALL** attendees in a cart item (not just the first one).
+            - **UX**: Added Date display to attendee dropdown for clarity (e.g., "Jimmy (Fri-Mon)").
+    - **Backend (API)**:
+        - **`createOrder.js`**:
+            - **Safety Guard**: Added backend check to reject orders where Profile Name vs Email significantly mismatches for the logged-in user.
+        - **`authLogin.js`**:
+            - **Update**: Include `email` in the returned user object for better client-side validation in future sessions.
+    - **Verification**:
+        - Verified "Mystery Guest" prevention (Empty email by default).
+        - Verified "I am this attendee" functionality.
+        - Verified Validation Error when trying to overwrite profile.
+        - Verified Subevent Dropdown lists all potential attendees.
+    - **Documentation**:
+        - Archived implementation plan `20260208_ticket_allocation_issues.md` to `completed/`.
+
 ## [2026-02-08] - Ticket DOB Placeholder Fix (Completed)
 - **Time**: 15:15 - 15:20
 - **Completed Items**:

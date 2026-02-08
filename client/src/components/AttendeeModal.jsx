@@ -24,6 +24,7 @@ function AttendeeModal({
     cart,
     initialDetails = {},
     user,
+    token,
     myPilots = [],
     event,
     confirmLabel = "Confirm"
@@ -31,6 +32,27 @@ function AttendeeModal({
 
 
     const { notify } = useNotification();
+
+    // Helper to get email from token if user object is missing it
+    const getUserEmail = () => {
+        if (user?.email) return user.email;
+        if (token) {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                return JSON.parse(jsonPayload).email || '';
+            } catch (e) {
+                console.error("Failed to decode token email", e);
+                return '';
+            }
+        }
+        return '';
+    };
+
+    const userEmail = getUserEmail();
     const [details, setDetails] = useState(initialDetails);
     const [productsMap, setProductsMap] = useState({}); // Cache for product details
 
@@ -44,7 +66,7 @@ function AttendeeModal({
                     initial[`${ticketId}_${i}`] = {
                         firstName: '',
                         lastName: '',
-                        email: user?.email || '',
+                        email: '', // CHANGED: Do not auto-fill user email to prevent overwrites
                         phoneNumber: user?.phone || '',
                         country: 'Australia',
                         state: '',
@@ -200,11 +222,28 @@ function AttendeeModal({
                     }
                 }
 
-                // Email Validation
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (!emailRegex.test(d.email)) {
-                    notify(`${label}: Please enter a valid Email Address.`, "error");
-                    return;
+                // Email Validation (Optional for Guests)
+                if (d.email && d.email.trim() !== '') {
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(d.email)) {
+                        notify(`${label}: Please enter a valid Email Address.`, "error");
+                        return;
+                    }
+                }
+                // PROFILE OVERWRITE PROTECTION
+                // If the user enters THEIR OWN email, they must be entering THEIR OWN name.
+                if (userEmail && d.email && d.email.toLowerCase() === userEmail.toLowerCase()) {
+                    const uFirst = (user.firstName || '').toLowerCase();
+                    const uLast = (user.lastName || '').toLowerCase();
+                    const pFirst = d.firstName.toLowerCase();
+                    const pLast = d.lastName.toLowerCase();
+
+                    // Check if name is significantly different
+                    // Allowing simple variations (e.g. Josh vs Joshua), but blocking "Bingo"
+                    if (uFirst && pFirst && uFirst.slice(0, 2) !== pFirst.slice(0, 2)) {
+                        notify(`Do not use your email (${userEmail}) for other attendees. Either enter the attendee's email address or leave blank if they don't have one.`, "error");
+                        return;
+                    }
                 }
 
                 // DOB Validation (Future Date Check)
@@ -293,7 +332,31 @@ function AttendeeModal({
 
                         return (
                             <div key={key} className="mb-6 p-4 bg-gray-50 rounded border border-gray-100">
-                                <h4 className="font-bold mb-3 border-b pb-2">{ticketName} #{idx + 1}</h4>
+                                <div className="flex justify-between items-center border-b pb-2 mb-3">
+                                    <h4 className="font-bold">{ticketName} #{idx + 1}</h4>
+                                    <button
+                                        onClick={() => {
+                                            setDetails(prev => ({
+                                                ...prev,
+                                                [key]: {
+                                                    ...prev[key],
+                                                    firstName: user.firstName || '',
+                                                    lastName: user.lastName || '',
+                                                    email: userEmail, // Use resolved email (from user obj or token)
+                                                    phoneNumber: user.phone || '',
+                                                    address: user.address || prev[key].address,
+                                                    city: user.city || prev[key].city,
+                                                    state: user.state || prev[key].state,
+                                                    postcode: user.postcode || prev[key].postcode,
+                                                    country: user.country || 'Australia'
+                                                }
+                                            }));
+                                        }}
+                                        className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200 transition-colors"
+                                    >
+                                        I am this attendee
+                                    </button>
+                                </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                     <input
                                         placeholder="First Name"

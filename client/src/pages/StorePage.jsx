@@ -527,6 +527,7 @@ function StorePage({ orgSettings }) {
                 tickets={selectedTicketForModal ? [selectedTicketForModal] : []}
                 cart={selectedTicketForModal ? { [selectedTicketForModal.id]: 1 } : {}}
                 user={user}
+                token={token}
                 myPilots={myPilots}
                 event={data}
                 confirmLabel="Add to Cart"

@@ -150,6 +150,50 @@ app.http('createOrder', {
                             }
 
                             if (safeUserEmail && safeAttendeeEmail && safeUserEmail === safeAttendeeEmail) {
+                                // SAFETY CHECK: Prevent overwriting User Profile with Guest Name
+                                // If the logged-in user is "Josh Boothman" and they enter "Bingo Garle" with "josh@example.com", 
+                                // we MUST NOT rename Josh to Bingo.
+
+                                // Fetch current name from DB is expensive/complex here as we just have `user` object from token?
+                                // Actually, we query `persons` earlier? No, we check `mainUserPersonReq` which returns person_id.
+                                // We trust `user.firstName` / `user.lastName` from the token if available, OR we should trust the intent.
+
+                                // Better Logic: If Names differ significantly, REJECT.
+                                const uFirst = (user.firstName || '').toLowerCase();
+                                const uLast = (user.lastName || '').toLowerCase();
+                                const pFirst = pFirstName.toLowerCase();
+                                const pLast = pLastName.toLowerCase();
+
+                                // Simple Similarity Check (Exact match of First OR Last required?)
+                                // "Josh Boothman" vs "Bingo Garle" -> No match.
+                                // "Josh Boothman" vs "Joshua Boothman" -> Match.
+                                // "Josh Boothman" vs "Josh B" -> Match.
+
+                                // NOTE: Token might not have name validation. 
+                                // Let's check against their EXISTING person record if possible?
+                                // We have `mainPersonId`. We can fetch their current name.
+                                const currentNameReq = await new sql.Request(transaction)
+                                    .input('pid', sql.Int, mainPersonId)
+                                    .query("SELECT first_name, last_name FROM persons WHERE person_id = @pid");
+
+                                if (currentNameReq.recordset.length > 0) {
+                                    const curr = currentNameReq.recordset[0];
+                                    const dbFirst = (curr.first_name || '').toLowerCase();
+                                    const dbLast = (curr.last_name || '').toLowerCase();
+
+                                    // If database has purely "Unknown User", allow overwrite.
+                                    if (dbFirst !== 'unknown' && dbLast !== 'user') {
+                                        // Strict Check: First Name must vaguely match
+                                        // Level 1: If First Char of First Name overlaps? "J"osh vs "J"oshua vs "B"ingo
+                                        // Level 2: Full Edit Distance?
+                                        // Implementation: If First Name is completely different
+                                        if (dbFirst.slice(0, 2) !== pFirst.slice(0, 2) && dbLast !== pLast) {
+                                            // Names are too different. Block it.
+                                            throw new Error(`Profile Mismatch: You cannot use your email (${user.email}) for a guest named "${pFirstName}". usage of your own email for other guests will overwrite your own profile. Please leave the email field BLANK for guests.`);
+                                        }
+                                    }
+                                }
+
                                 attendeePersonId = mainPersonId;
                                 // UPDATE Main Person Details
                                 await new sql.Request(transaction)
@@ -174,6 +218,7 @@ app.http('createOrder', {
                                             emergency_contact_name = @emg_n, emergency_contact_phone = @emg_p
                                         WHERE person_id = @pid
                                     `);
+
 
                             } else if (attendeeData.firstName || attendeeData.lastName || safeAttendeeEmail) {
                                 // Check if person exists by email first (to avoid duplicates if they bought before)
