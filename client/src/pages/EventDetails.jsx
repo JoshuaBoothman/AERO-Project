@@ -86,8 +86,8 @@ function EventDetails({ propSlug }) {
                     {/* For now, just removing the dead buttons as requested. */}
                 </div>
 
-                {/* Public Event Days Section */}
-                {event.public_days && event.public_days.length > 0 && (
+                {/* Temporarily hidden: Public Event Days Section */}
+                {/* {event.public_days && event.public_days.length > 0 && (
                     <div className="mt-12 bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-left">
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                             <div>
@@ -130,7 +130,7 @@ function EventDetails({ propSlug }) {
                             ))}
                         </div>
                     </div>
-                )}
+                )} */}
 
                 {/* Public Registration Modal */}
                 <PublicRegistrationModal

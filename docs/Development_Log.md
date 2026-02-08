@@ -2,6 +2,16 @@
 
 
 
+
+## [2026-02-08] - Temporary Hide Air Show Section (Completed)
+- **Time**: 16:38 - 16:45
+- **Completed Items**:
+    - **UX Request**: Temporarily hid the "Air Show Registration (Public Attendance)" section on the event details (home) page.
+    - **Front-End (Client)**:
+        - Updated `EventDetails.jsx` by commenting out the public days section.
+    - **Reasoning**: The client is not ready to display public registrations yet but wants to keep the code for future use.
+    - **Verification**: Code wrapped in comment block in `EventDetails.jsx`.
+
 ## [2026-02-08] - Asset Hires Visibility Fix (Completed)
 - **Time**: 16:25 - 16:35
 - **Completed Items**:
