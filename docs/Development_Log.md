@@ -2,6 +2,13 @@
 
 
 
+## [2026-02-08] - Store Navigation Cleanup (Completed)
+- **Time**: 16:21 - 16:25
+- **Completed Items**:
+    - **UX Improvement**: Updated the main navigation link text from "Shop" to "Registration/Shop" in `client/src/components/Layout.jsx`.
+    - **Scope**: Applied to both Desktop and Mobile navigation menus.
+    - **Verification**: Verified code changes in `Layout.jsx` match the user request.
+
 ## [2026-02-08] - Ticket Allocation Subevent Fixes (Completed)
 - **Time**: 15:55 - 16:15
 - **Completed Items**:

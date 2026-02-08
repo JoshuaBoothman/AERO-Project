@@ -167,7 +167,7 @@ function Layout({ orgSettings, loading, error, refreshSettings }) {
                       </div>
                     </div>
 
-                    <NavLink to="/shop">Shop</NavLink>
+                    <NavLink to="/shop">Registration/Shop</NavLink>
 
                     {/* Cart Icon - Desktop */}
                     <Link to="/checkout" className="flex items-center gap-2 hover:text-accent relative px-2">
@@ -229,7 +229,7 @@ function Layout({ orgSettings, loading, error, refreshSettings }) {
 
                 {user && (
                   <>
-                    <NavLink to="/shop" className="text-2xl">Shop</NavLink>
+                    <NavLink to="/shop" className="text-2xl">Registration/Shop</NavLink>
 
                     <div className="w-16 h-1 bg-white/10 my-1"></div>
                     <span className="text-sm font-bold text-accent uppercase tracking-wider">Information</span>
