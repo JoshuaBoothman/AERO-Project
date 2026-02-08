@@ -2,6 +2,19 @@
 
 
 
+## [2026-02-08] - Asset Hires Visibility Fix (Completed)
+- **Time**: 16:25 - 16:35
+- **Completed Items**:
+    - **Bug Fix**: Resolved issue where pooled/virtual asset hires (Golf Carts) were invisible in the Admin "Hires" list.
+    - **Root Cause**: The admin query was performing an `INNER JOIN` on the physical `asset_items` table. Since pooled inventory (introduced 2026-01-31) uses virtual stock and doesn't link to a physical item ID, these records were excluded.
+    - **Back-End (API)**:
+        - Updated `getAssetHires.js` to use `LEFT JOIN` on `asset_items`.
+        - Updated join logic to link `asset_types` directly from the hire record, treating physical item details as optional.
+    - **Front-End (Client)**:
+        - Updated `AssetHires.jsx` to display "Pooled Assignment" (italicized) when no specific asset identifier is linked, clarifying the difference between tracked physical assets and pooled stock.
+    - **Verification**:
+        - Verified database query logic to include rows with `asset_item_id IS NULL`.
+
 ## [2026-02-08] - Store Navigation Cleanup (Completed)
 - **Time**: 16:21 - 16:25
 - **Completed Items**:

@@ -101,7 +101,11 @@ function AssetHires() {
                         <tr key={hire.asset_hire_id} className="border-b hover:bg-gray-50">
                             <td className="p-3">
                                 <div className="font-bold">{hire.asset_type_name}</div>
-                                <div className="text-sm text-gray-500">{hire.identifier}</div>
+                                {hire.identifier ? (
+                                    <div className="text-sm text-gray-500">{hire.identifier}</div>
+                                ) : (
+                                    <div className="text-xs text-gray-400 italic">Pooled Assignment</div>
+                                )}
                             </td>
                             <td className="p-3">
                                 <div className="font-medium">{hire.hirer_name || 'Guest'}</div>
