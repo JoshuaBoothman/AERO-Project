@@ -334,28 +334,6 @@ function AttendeeModal({
                             <div key={key} className="mb-6 p-4 bg-gray-50 rounded border border-gray-100">
                                 <div className="flex justify-between items-center border-b pb-2 mb-3">
                                     <h4 className="font-bold">{ticketName} #{idx + 1}</h4>
-                                    <button
-                                        onClick={() => {
-                                            setDetails(prev => ({
-                                                ...prev,
-                                                [key]: {
-                                                    ...prev[key],
-                                                    firstName: user.firstName || '',
-                                                    lastName: user.lastName || '',
-                                                    email: userEmail, // Use resolved email (from user obj or token)
-                                                    phoneNumber: user.phone || '',
-                                                    address: user.address || prev[key].address,
-                                                    city: user.city || prev[key].city,
-                                                    state: user.state || prev[key].state,
-                                                    postcode: user.postcode || prev[key].postcode,
-                                                    country: user.country || 'Australia'
-                                                }
-                                            }));
-                                        }}
-                                        className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200 transition-colors"
-                                    >
-                                        I am this attendee
-                                    </button>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                     <input
