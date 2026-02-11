@@ -15,7 +15,7 @@ These changes address immediate usability issues with high impact and relatively
 ## Priority Area 2: Logic Refinement & Admin Tooling
 These changes improve data integrity and solve specific transaction-level hurdles.
 
-4. [ ] **[Fix Asset Hires List Duplication](file:///c:/laragon/www/AERO-Project/docs/implementation_plans/20260211-asset-hires-list-fix.md)**
+4. [x] **[Fix Asset Hires List Duplication](file:///c:/laragon/www/AERO-Project/docs/implementation_plans/20260211-asset-hires-list-fix.md)**
    - *Why?* Ensures accurate reporting for admins before adding more asset features.
 5. [ ] **[Pit Crew to Pilot Linking (In-Cart)](file:///c:/laragon/www/AERO-Project/docs/implementation_plans/20260211-pit-crew-pilot-linking.md)**
    - *Why?* Fixes a logic gap where users couldn't link tickets in a single transaction.

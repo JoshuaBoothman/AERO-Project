@@ -1,6 +1,16 @@
 
 
 
+## [2026-02-12] - Fix Asset Hires List Duplication & Add Filters (Completed)
+- **Time**: 06:43 - 06:55
+- **Completed Items**:
+    - **Bug Fix (API)**: Replaced `LEFT JOIN persons` with `OUTER APPLY (SELECT TOP 1 ...)` in `getAssetHires.js` to prevent row duplication when a user has multiple person profiles.
+    - **Bug Fix (Frontend)**: Replaced `toLocaleDateString()` with `formatDateForDisplay()` from `dateHelpers.js` in `AssetHires.jsx` to prevent date-shift in UTC+10/+11 timezone.
+    - **Feature (Frontend)**: Added text search (by asset name, hirer name, or order #) and status filter dropdown (All / Active / Returned) to the admin Hires list.
+    - **Cleanup**: Removed the "Seed Test Data" button and associated `handleSeedTestData` function.
+    - **Lint Cleanup**: Fixed 2 unused catch variable errors (`e` → `_e`), removed unused `confirm` and `token` variables, and suppressed initialization-only `useEffect` dependency warning.
+    - **Verification**: ESLint passes cleanly.
+    - **Documentation**: Updated `IMPLEMENTATION_ROADMAP.md`.
 
 ## [2026-02-12] - 'Register Now' Navigation Logic (Completed)
 - **Time**: 06:33 - 06:45

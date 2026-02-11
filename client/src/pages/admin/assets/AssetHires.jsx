@@ -1,16 +1,17 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../../../context/AuthContext';
 import { useNotification } from '../../../context/NotificationContext';
+import { formatDateForDisplay } from '../../../utils/dateHelpers';
 
 function AssetHires() {
-    const { token } = useAuth();
-    const { notify, confirm } = useNotification();
+    const { notify } = useNotification();
     const [hires, setHires] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState('all');
 
     useEffect(() => {
         fetchHires();
-    }, []);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     const fetchHires = async () => {
         setLoading(true);
@@ -20,71 +21,51 @@ function AssetHires() {
                 const data = await res.json();
                 setHires(data);
             }
-        } catch (e) { notify('Error loading hires', 'error'); }
+        } catch (_e) { notify('Error loading hires', 'error'); }
         finally { setLoading(false); }
     };
 
-    const handleSeedTestData = async () => {
-        confirm('Generate a test hire record? This requires at least one active Asset Item and one existing Order.', async () => {
-            // 1. Get an item
-            const itemRes = await fetch('/api/assets/items');
-            const items = await itemRes.json();
-            if (items.length === 0) { notify('No asset items found to hire.', 'error'); return; }
-            const randomItem = items[0]; // Just pick first
 
-            // 2. We need a valid order_item_id. Ideally we query DB, but for quick hack we might guess or need an endpoint.
-            // Let's assume there is at least one order_item in the DB.
-            // I'll skip the 'fetch orders' step for simplicity and rely on user having data OR fail gracefully.
-            // Actually, let's try to fetch orders to get a valid ID.
-            const ordersRes = await fetch('/api/orders/all', { headers: { 'Authorization': `Bearer ${token}`, 'X-Auth-Token': token } });
-            if (!ordersRes.ok) { notify('Could not fetch orders to link hire to.', 'error'); return; }
-            const orders = await ordersRes.json();
-            if (orders.length === 0) { notify('No orders found.', 'error'); return; }
+    const filteredHires = hires.filter(hire => {
+        const term = searchTerm.toLowerCase();
+        const matchesSearch = !term ||
+            (hire.asset_type_name || '').toLowerCase().includes(term) ||
+            (hire.hirer_name || '').toLowerCase().includes(term) ||
+            (hire.order_id || '').toString().includes(searchTerm);
 
-            // We need an *order_item_id*. "orders" usually returns order-level info.
-            // We might need to fetch details of an order.
-            const orderId = orders[0].order_id;
-            const detailRes = await fetch(`/api/orders/${orderId}`, { headers: { 'Authorization': `Bearer ${token}`, 'X-Auth-Token': token } });
-            const orderDetail = await detailRes.json();
+        const matchesStatus = statusFilter === 'all' ||
+            (statusFilter === 'active' && !hire.returned_at) ||
+            (statusFilter === 'returned' && hire.returned_at);
 
-            if (!orderDetail.items || orderDetail.items.length === 0) { notify('Chosen order has no items.', 'error'); return; }
-            const randomOrderItem = orderDetail.items[0];
-
-            // 3. Create Hire
-            try {
-                const res = await fetch('/api/assets/hires', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`,
-                        'X-Auth-Token': token
-                    },
-                    body: JSON.stringify({
-                        asset_item_id: randomItem.asset_item_id,
-                        order_item_id: randomOrderItem.order_item_id,
-                        start_date: new Date().toISOString(),
-                        end_date: new Date(Date.now() + 86400000).toISOString() // +1 day
-                    })
-                });
-                if (res.ok) {
-                    notify('Test Hire created!', 'success');
-                    fetchHires();
-                } else {
-                    notify('Failed to create test hire', 'error');
-                }
-            } catch (e) { notify('Error creating hire', 'error'); }
-        });
-    };
+        return matchesSearch && matchesStatus;
+    });
 
     if (loading) return <div>Loading hires...</div>;
 
     return (
         <div>
-            <div className="flex justify-between mb-4">
+            <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold">Current Hires</h2>
-                <button onClick={handleSeedTestData} className="text-sm bg-gray-200 px-3 py-1 rounded hover:bg-gray-300">
-                    + Seed Test Data
-                </button>
+            </div>
+
+            {/* Search and Filter Controls */}
+            <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                <input
+                    type="text"
+                    placeholder="Search by asset, hirer, or order #..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                    <option value="all">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="returned">Returned</option>
+                </select>
             </div>
 
             <table className="w-full text-left border-collapse">
@@ -97,7 +78,7 @@ function AssetHires() {
                     </tr>
                 </thead>
                 <tbody>
-                    {hires.map(hire => (
+                    {filteredHires.map(hire => (
                         <tr key={hire.asset_hire_id} className="border-b hover:bg-gray-50">
                             <td className="p-3">
                                 <div className="font-bold">{hire.asset_type_name}</div>
@@ -113,7 +94,7 @@ function AssetHires() {
                             </td>
                             <td className="p-3">
                                 <div className="text-sm">
-                                    {new Date(hire.hire_start_date).toLocaleDateString()} - {new Date(hire.hire_end_date).toLocaleDateString()}
+                                    {formatDateForDisplay(hire.hire_start_date)} - {formatDateForDisplay(hire.hire_end_date)}
                                 </div>
                             </td>
                             <td className="p-3">
@@ -125,10 +106,12 @@ function AssetHires() {
                             </td>
                         </tr>
                     ))}
-                    {hires.length === 0 && (
+                    {filteredHires.length === 0 && (
                         <tr>
                             <td colSpan="4" className="p-8 text-center text-gray-500">
-                                No active hires. Use "Seed Test Data" to test.
+                                {hires.length === 0
+                                    ? 'No active hires found.'
+                                    : 'No hires match your search or filter.'}
                             </td>
                         </tr>
                     )}
