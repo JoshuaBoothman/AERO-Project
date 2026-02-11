@@ -3,6 +3,16 @@
 
 
 
+## [2026-02-12] - Mobile Store Tab Navigation Fix (Completed)
+- **Time**: 06:12 - 06:22
+- **Completed Items**:
+    - **UX Improvement**: Implemented "Option E" (Fade Gradient + Scroll Snap) for the store tab bar.
+    - **Visual Hint**: Added a right-edge fade gradient and an animated pulsing chevron (`›`) on mobile to signify off-screen content.
+    - **Scrolling**: Added `snap-x` scroll snapping to tabs for a smoother "carousel" feel.
+    - **Cleanup**: Defined the `scrollbar-hide` CSS utility and applied it to prevent native scrollbars from breaking the UI.
+    - **Verification**: Verified mobile layout via browser DevTools. Hidden on desktop (≥768px).
+    - **Documentation**: Archived implementation plan to `completed/`.
+
 ## [2026-02-08] - Campsite People Count Input Fix (Completed)
 - **Time**: 17:05 - 17:15
 - **Completed Items**:

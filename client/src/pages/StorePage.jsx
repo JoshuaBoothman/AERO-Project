@@ -147,6 +147,7 @@ function StorePage({ orgSettings }) {
             id: asset.id,
             assetTypeId: asset.id,
             assetId: asset.id, // Legacy/Fallback compatibility
+            eventId: data.eventId,
             // We don't store specificItem.asset_item_id (it's -1)
             item_reference_id: asset.id // For uniform handling
         };
@@ -304,37 +305,39 @@ function StorePage({ orgSettings }) {
             )}
 
             {/* Tabs */}
-            <div className="flex border-b border-gray-200 mb-8 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
-                <button
-                    className={`px-6 py-3 font-semibold transition-colors whitespace-nowrap flex-shrink-0 ${activeTab === 'tickets' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-primary'}`}
-                    onClick={() => handleTabClick('tickets')}
-                >
-                    Event Tickets
-                </button>
-                <button
-                    className={`px-6 py-3 font-semibold transition-colors whitespace-nowrap flex-shrink-0 ${activeTab === 'merch' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-primary'}`}
-                    onClick={() => handleTabClick('merch')}
-                >
-                    Merchandise
-                </button>
-                <button
-                    className={`px-6 py-3 font-semibold transition-colors whitespace-nowrap flex-shrink-0 ${activeTab === 'hire' ? 'border-b-2 border-primary text-primary' : isLocked ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:text-primary'}`}
-                    onClick={() => handleTabClick('hire')}
-                >
-                    Hire Assets {isLocked && '🔒'}
-                </button>
-                <button
-                    className={`px-6 py-3 font-semibold transition-colors whitespace-nowrap flex-shrink-0 ${activeTab === 'program' ? 'border-b-2 border-primary text-primary' : isLocked ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:text-primary'}`}
-                    onClick={() => handleTabClick('program')}
-                >
-                    Program / Subevents {isLocked && '🔒'}
-                </button>
-                <button
-                    className={`px-6 py-3 font-semibold transition-colors whitespace-nowrap flex-shrink-0 ${activeTab === 'camping' ? 'border-b-2 border-primary text-primary' : isLocked ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:text-primary'}`}
-                    onClick={() => handleTabClick('camping')}
-                >
-                    Camping {isLocked && '🔒'}
-                </button>
+            <div className="tab-scroll-fade md:tab-scroll-fade-none">
+                <div className="flex border-b border-gray-200 mb-8 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide snap-x snap-mandatory">
+                    <button
+                        className={`px-6 py-3 font-semibold transition-colors whitespace-nowrap flex-shrink-0 snap-start ${activeTab === 'tickets' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-primary'}`}
+                        onClick={() => handleTabClick('tickets')}
+                    >
+                        Event Tickets
+                    </button>
+                    <button
+                        className={`px-6 py-3 font-semibold transition-colors whitespace-nowrap flex-shrink-0 snap-start ${activeTab === 'merch' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-primary'}`}
+                        onClick={() => handleTabClick('merch')}
+                    >
+                        Merchandise
+                    </button>
+                    <button
+                        className={`px-6 py-3 font-semibold transition-colors whitespace-nowrap flex-shrink-0 snap-start ${activeTab === 'hire' ? 'border-b-2 border-primary text-primary' : isLocked ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:text-primary'}`}
+                        onClick={() => handleTabClick('hire')}
+                    >
+                        Hire Assets {isLocked && '🔒'}
+                    </button>
+                    <button
+                        className={`px-6 py-3 font-semibold transition-colors whitespace-nowrap flex-shrink-0 snap-start ${activeTab === 'program' ? 'border-b-2 border-primary text-primary' : isLocked ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:text-primary'}`}
+                        onClick={() => handleTabClick('program')}
+                    >
+                        Program / Subevents {isLocked && '🔒'}
+                    </button>
+                    <button
+                        className={`px-6 py-3 font-semibold transition-colors whitespace-nowrap flex-shrink-0 snap-start ${activeTab === 'camping' ? 'border-b-2 border-primary text-primary' : isLocked ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:text-primary'}`}
+                        onClick={() => handleTabClick('camping')}
+                    >
+                        Camping {isLocked && '🔒'}
+                    </button>
+                </div>
             </div>
 
             {/* Content */}

@@ -198,12 +198,14 @@ input[type="file"]::file-selector-button:hover {
   align-items: center;
   z-index: 1000;
   backdrop-filter: blur(2px);
-  padding: 1rem; /* Ensure modal doesn't touch screen edges on mobile */
+  padding: 1rem;
+  /* Ensure modal doesn't touch screen edges on mobile */
 }
 
 .modal-content {
   background: white;
-  padding: 1.5rem; /* Reduced padding for mobile */
+  padding: 1.5rem;
+  /* Reduced padding for mobile */
   border-radius: 12px;
   width: 100%;
   max-width: 600px;
@@ -254,5 +256,71 @@ input[type="file"]::file-selector-button:hover {
 @media (min-width: 640px) {
   .attendee-input-group {
     grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* --- Utility: Hide scrollbar across browsers --- */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  /* IE/Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+  /* Chrome, Safari, Opera */
+}
+
+/* --- Mobile tab fade-out indicator --- */
+.tab-scroll-fade {
+  position: relative;
+}
+
+.tab-scroll-fade::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: -1rem;
+  bottom: 0;
+  width: 3rem;
+  background: linear-gradient(to right, transparent, #f5f7fa);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.tab-scroll-fade::before {
+  content: '›';
+  position: absolute;
+  right: -0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #9ca3af;
+  pointer-events: none;
+  z-index: 2;
+  animation: nudge-right 1.5s ease-in-out infinite;
+}
+
+@keyframes nudge-right {
+
+  0%,
+  100% {
+    transform: translateY(-50%) translateX(0);
+    opacity: 0.6;
+  }
+
+  50% {
+    transform: translateY(-50%) translateX(3px);
+    opacity: 1;
+  }
+}
+
+@media (min-width: 768px) {
+
+  .tab-scroll-fade::after,
+  .tab-scroll-fade::before {
+    display: none;
   }
 }

@@ -152,7 +152,7 @@ To act as a "Startup Engineer" — a senior technical partner who prioritizes ve
     *   **Action**: ALWAYS dump the schema constraints (`IS_NULLABLE`, `COLUMN_DEFAULT`) for target tables *before* writing `INSERT` statements in test scripts to avoid "Cannot insert NULL" loops.
 
 ---
-**Verified on**: 2026-01-28
+**Verified on**: 2026-02-12
 
 ## 12. Tech Stack Specific Gotchas
 *   **Azure Functions (Node.js)**

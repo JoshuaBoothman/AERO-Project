@@ -1,21 +1,39 @@
-const fs = require('fs');
+const sql = require('mssql');
 
-async function run() {
+const config = {
+    user: 'aero_admin',
+    password: 'ZiJZ2SUjFBAWLeL',
+    server: 'sql-aero-dev-jb.database.windows.net',
+    database: 'sqldb-aero-dev',
+    options: {
+        encrypt: true,
+        trustServerCertificate: false
+    }
+};
+
+async function getTables() {
     try {
-        const settings = JSON.parse(fs.readFileSync('local.settings.json', 'utf8'));
-        process.env.SQL_CONNECTION_STRING = settings.Values.SQL_CONNECTION_STRING;
+        await sql.connect(config);
+        const result = await sql.query`SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' ORDER BY TABLE_NAME`;
+        console.log("Tables:");
+        result.recordset.forEach(row => console.log(row.TABLE_NAME));
 
-        // Require db AFTER setting env var
-        const { getPool } = require('./src/lib/db');
+        const eventColumns = await sql.query`SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'events'`;
+        console.log("\nEvents Columns:");
+        eventColumns.recordset.forEach(row => console.log(row.COLUMN_NAME));
 
-        const pool = await getPool();
-        const result = await pool.request().query('SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES');
-        console.log("Current Tables:", result.recordset.map(r => r.TABLE_NAME).join(', '));
-        process.exit(0);
+        const regCheck = result.recordset.find(r => r.TABLE_NAME === 'registrations');
+        if (regCheck) {
+            const regColumns = await sql.query`SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'registrations'`;
+            console.log("\nRegistrations Columns:");
+            regColumns.recordset.forEach(row => console.log(row.COLUMN_NAME));
+        }
+
     } catch (err) {
-        console.error("Error:", err);
-        process.exit(1);
+        console.error(err);
+    } finally {
+        await sql.close();
     }
 }
 
-run();
+getTables();

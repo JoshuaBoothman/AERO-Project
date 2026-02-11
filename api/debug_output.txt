@@ -1,0 +1,62 @@
+--- ASSET HIRES ---
+[
+  {
+    "asset_hire_id": 12,
+    "asset_item_id": null,
+    "order_item_id": 139,
+    "hire_start_date": "2026-07-02T00:00:00.000Z",
+    "hire_end_date": "2026-07-02T00:00:00.000Z",
+    "returned_at": null,
+    "condition_on_return": null,
+    "asset_type_id": 4
+  }
+]
+
+--- DETAILS FOR ORDER #120 ---
+Persons linked to this order user:
+[
+  {
+    "person_id": 32,
+    "user_id": 2,
+    "first_name": "Joshuaf",
+    "last_name": "Boothmanf"
+  },
+  {
+    "person_id": 46,
+    "user_id": 2,
+    "first_name": "j",
+    "last_name": "j"
+  },
+  {
+    "person_id": 47,
+    "user_id": 2,
+    "first_name": "timmy",
+    "last_name": "t"
+  },
+  {
+    "person_id": 48,
+    "user_id": 2,
+    "first_name": "Jimmy",
+    "last_name": "j"
+  }
+]
+
+Rows returned by API query for this order:
+[
+  {
+    "asset_hire_id": 12,
+    "hirer_name": "Joshuaf Boothmanf"
+  },
+  {
+    "asset_hire_id": 12,
+    "hirer_name": "j j"
+  },
+  {
+    "asset_hire_id": 12,
+    "hirer_name": "timmy t"
+  },
+  {
+    "asset_hire_id": 12,
+    "hirer_name": "Jimmy j"
+  }
+]
