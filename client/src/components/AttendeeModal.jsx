@@ -353,14 +353,106 @@ function AttendeeModal({
                                         <label className="block text-xs font-bold text-gray-700 mb-1">
                                             Date of Birth
                                         </label>
-                                        <input
-                                            type="date"
-                                            placeholder="Date of Birth"
-                                            title="Date of Birth"
-                                            value={data.dateOfBirth || ''}
-                                            onChange={e => handleChange(key, 'dateOfBirth', e.target.value)}
-                                            style={inputStyle}
-                                        />
+                                        {(() => {
+                                            const currentVal = data.dateOfBirth || '';
+                                            const parts = currentVal.split('-');
+                                            const selYear = parts[0] || '';
+                                            const selMonth = parts[1] || '';
+                                            const selDay = parts[2] || '';
+
+                                            const currentYear = new Date().getFullYear();
+                                            const years = [];
+                                            for (let y = currentYear; y >= currentYear - 110; y--) {
+                                                years.push(y);
+                                            }
+
+                                            const months = [
+                                                { value: '01', label: 'January' },
+                                                { value: '02', label: 'February' },
+                                                { value: '03', label: 'March' },
+                                                { value: '04', label: 'April' },
+                                                { value: '05', label: 'May' },
+                                                { value: '06', label: 'June' },
+                                                { value: '07', label: 'July' },
+                                                { value: '08', label: 'August' },
+                                                { value: '09', label: 'September' },
+                                                { value: '10', label: 'October' },
+                                                { value: '11', label: 'November' },
+                                                { value: '12', label: 'December' }
+                                            ];
+
+                                            const getDaysInMonth = (month, year) => {
+                                                if (!month) return 31;
+                                                const m = parseInt(month);
+                                                const y = year ? parseInt(year) : currentYear;
+                                                return new Date(y, m, 0).getDate();
+                                            };
+
+                                            const maxDays = getDaysInMonth(selMonth, selYear);
+                                            const days = [];
+                                            for (let d = 1; d <= maxDays; d++) {
+                                                days.push(d);
+                                            }
+
+                                            const syncDob = (newDay, newMonth, newYear) => {
+                                                if (newDay && newMonth && newYear) {
+                                                    // Clamp day if needed
+                                                    const maxD = getDaysInMonth(newMonth, newYear);
+                                                    const clampedDay = Math.min(parseInt(newDay), maxD);
+                                                    const dd = String(clampedDay).padStart(2, '0');
+                                                    handleChange(key, 'dateOfBirth', `${newYear}-${newMonth}-${dd}`);
+                                                } else {
+                                                    // Partial - clear the field so validation catches it
+                                                    handleChange(key, 'dateOfBirth', '');
+                                                }
+                                            };
+
+                                            const selectStyle = { ...inputStyle, flex: 1, minWidth: 0 };
+
+                                            return (
+                                                <div className="flex gap-2">
+                                                    <select
+                                                        value={selDay}
+                                                        onChange={e => syncDob(e.target.value, selMonth, selYear)}
+                                                        style={selectStyle}
+                                                        aria-label="Day"
+                                                    >
+                                                        <option value="">Day</option>
+                                                        {days.map(d => (
+                                                            <option key={d} value={String(d).padStart(2, '0')}>
+                                                                {d}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                    <select
+                                                        value={selMonth}
+                                                        onChange={e => syncDob(selDay, e.target.value, selYear)}
+                                                        style={selectStyle}
+                                                        aria-label="Month"
+                                                    >
+                                                        <option value="">Month</option>
+                                                        {months.map(m => (
+                                                            <option key={m.value} value={m.value}>
+                                                                {m.label}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                    <select
+                                                        value={selYear}
+                                                        onChange={e => syncDob(selDay, selMonth, e.target.value)}
+                                                        style={selectStyle}
+                                                        aria-label="Year"
+                                                    >
+                                                        <option value="">Year</option>
+                                                        {years.map(y => (
+                                                            <option key={y} value={String(y)}>
+                                                                {y}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            );
+                                        })()}
                                     </div>
                                 </div>
                                 <input

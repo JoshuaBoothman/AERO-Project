@@ -2,6 +2,15 @@
 
 
 
+## [2026-02-12] - Standardise Date of Birth Picker (Completed)
+- **Time**: 06:25 - 06:35
+- **Completed Items**:
+    - **UX Improvement**: Replaced the browser-native `<input type="date">` for Date of Birth with three native `<select>` dropdowns (Day, Month, Year) in `AttendeeModal.jsx`.
+    - **Rationale**: On mobile, the native date picker forces users to scroll through a calendar to reach years like 1985. Native `<select>` elements trigger optimized wheel/list pickers on iOS/Android, making year selection instant.
+    - **Logic**: Dropdowns sync to the existing `dateOfBirth` field (`YYYY-MM-DD` format). Includes day-clamping validation (e.g., switching from 31st Jan to Feb auto-corrects to 28/29).
+    - **Scope**: Frontend-only change. No backend or database modifications required.
+    - **Verification**: Lint check passed (3 pre-existing warnings unrelated to this change).
+    - **Documentation**: Updated `IMPLEMENTATION_ROADMAP.md`.
 
 ## [2026-02-12] - Mobile Store Tab Navigation Fix (Completed)
 - **Time**: 06:12 - 06:22
