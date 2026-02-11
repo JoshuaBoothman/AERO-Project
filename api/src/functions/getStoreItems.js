@@ -167,6 +167,8 @@ app.http('getStoreItems', {
                     at.asset_type_id, at.name, at.description, at.base_hire_cost, at.full_event_cost, 
                     ISNULL(at.show_daily_cost, 1) as show_daily_cost, ISNULL(at.show_full_event_cost, 0) as show_full_event_cost, 
                     at.image_url,
+                    at.option_label,
+                    (SELECT COUNT(*) FROM asset_type_options ato WHERE ato.asset_type_id = at.asset_type_id AND ato.is_active = 1) as option_count,
                     ac.name as category_name,
                     ISNULL(ac.sort_order, 9999) as category_sort_order,
                     at.sort_order
@@ -185,7 +187,9 @@ app.http('getStoreItems', {
                 show_daily_cost: a.show_daily_cost,
                 show_full_event_cost: a.show_full_event_cost,
                 image: a.image_url,
-                category_name: a.category_name || 'Uncategorized' // Default to Uncategorized
+                category_name: a.category_name || 'Uncategorized', // Default to Uncategorized
+                option_label: a.option_label,
+                option_count: a.option_count
             }));
 
             // 5. Fetch Subevents

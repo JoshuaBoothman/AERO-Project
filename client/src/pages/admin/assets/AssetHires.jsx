@@ -82,6 +82,11 @@ function AssetHires() {
                         <tr key={hire.asset_hire_id} className="border-b hover:bg-gray-50">
                             <td className="p-3">
                                 <div className="font-bold">{hire.asset_type_name}</div>
+                                {hire.selected_option_label && (
+                                    <div className="text-xs font-medium text-purple-700 bg-purple-50 px-2 py-0.5 rounded inline-block mt-1 mb-1 border border-purple-100">
+                                        {hire.selected_option_label}
+                                    </div>
+                                )}
                                 {hire.identifier ? (
                                     <div className="text-sm text-gray-500">{hire.identifier}</div>
                                 ) : (

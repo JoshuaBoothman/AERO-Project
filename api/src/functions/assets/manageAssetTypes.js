@@ -13,7 +13,7 @@ app.http('manageAssetTypes', {
         try {
             if (method === 'POST') {
                 const body = await request.json();
-                const { name, description, event_id, base_hire_cost, full_event_cost, show_daily_cost, show_full_event_cost, image_url, asset_category_id } = body;
+                const { name, description, event_id, base_hire_cost, full_event_cost, show_daily_cost, show_full_event_cost, image_url, asset_category_id, option_label } = body;
 
                 if (!name || !event_id) {
                     return { status: 400, body: JSON.stringify({ error: "Name and Event ID are required" }) };
@@ -30,10 +30,11 @@ app.http('manageAssetTypes', {
                     .input('imageUrl', sql.NVarChar, image_url || null)
                     .input('catId', sql.Int, asset_category_id || null)
                     .input('stock', sql.Int, body.stock_quantity || 0)
+                    .input('optLabel', sql.NVarChar, option_label || null)
                     .query(`
-                        INSERT INTO asset_types (event_id, name, description, base_hire_cost, full_event_cost, show_daily_cost, show_full_event_cost, image_url, asset_category_id, stock_quantity)
+                        INSERT INTO asset_types (event_id, name, description, base_hire_cost, full_event_cost, show_daily_cost, show_full_event_cost, image_url, asset_category_id, stock_quantity, option_label)
                         OUTPUT INSERTED.*
-                        VALUES (@eventId, @name, @description, @cost, @fullEventCost, @showDaily, @showFull, @imageUrl, @catId, @stock)
+                        VALUES (@eventId, @name, @description, @cost, @fullEventCost, @showDaily, @showFull, @imageUrl, @catId, @stock, @optLabel)
                     `);
 
                 return { status: 201, jsonBody: result.recordset[0] };
@@ -56,6 +57,7 @@ app.http('manageAssetTypes', {
                 if (body.image_url !== undefined) { updates.push("image_url = @img"); req.input('img', sql.NVarChar, body.image_url); }
                 if (body.asset_category_id !== undefined) { updates.push("asset_category_id = @catId"); req.input('catId', sql.Int, body.asset_category_id); }
                 if (body.stock_quantity !== undefined) { updates.push("stock_quantity = @stock"); req.input('stock', sql.Int, body.stock_quantity); }
+                if (body.option_label !== undefined) { updates.push("option_label = @optLabel"); req.input('optLabel', sql.NVarChar, body.option_label); }
 
                 if (updates.length === 0) return { status: 400, body: "No fields to update" };
 

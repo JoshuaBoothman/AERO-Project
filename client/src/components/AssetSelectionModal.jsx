@@ -15,12 +15,35 @@ function AssetSelectionModal({ asset, hireDates, setHireDates, eventDates, onClo
     const [availableItems, setAvailableItems] = useState([]);
     const [error, setError] = useState(null);
 
+    // Options State
+    const [options, setOptions] = useState([]);
+    const [selectedOptionId, setSelectedOptionId] = useState(null);
+    const [loadingOptions, setLoadingOptions] = useState(false);
+
     // Pricing Mode State
     const [pricingMode, setPricingMode] = useState(getInitialMode(asset));
 
     // Update mode if asset changes
     useEffect(() => {
         setPricingMode(getInitialMode(asset));
+        setSelectedOptionId(null);
+        setOptions([]);
+
+        if (asset.option_count > 0) {
+            setLoadingOptions(true);
+            fetch(`/api/assets/types/${asset.asset_type_id || asset.id}/options`)
+                .then(res => res.json())
+                .then(data => {
+                    setOptions(data);
+                    if (data.length > 0) {
+                        // Optional: Pre-select first? Or force user choice? 
+                        // Plan said: "Selection is mandatory when options exist." 
+                        // Let's force choice (init null).
+                    }
+                })
+                .catch(err => console.error("Failed to load options", err))
+                .finally(() => setLoadingOptions(false));
+        }
     }, [asset]);
 
     useEffect(() => {
@@ -71,7 +94,13 @@ function AssetSelectionModal({ asset, hireDates, setHireDates, eventDates, onClo
         // We might need to override the price in the cart item.
         // Assuming onAddToCart handles an override or we pass a constructed object.
         // Let's attach the price to the asset clone or item.
-        const assetWithPrice = { ...asset, price: finalPrice };
+        // Let's attach the price to the asset clone or item.
+        const assetWithPrice = {
+            ...asset,
+            price: finalPrice,
+            selectedOptionId: selectedOptionId,
+            selectedOptionLabel: options.find(o => o.asset_type_option_id === parseInt(selectedOptionId))?.label
+        };
         onAddToCart(assetWithPrice, item, selectedDates);
         onClose();
     };
@@ -182,6 +211,32 @@ function AssetSelectionModal({ asset, hireDates, setHireDates, eventDates, onClo
 
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto p-6 bg-gray-50">
+
+                    {/* Options Dropdown */}
+                    {asset.option_count > 0 && (
+                        <div className="mb-6 bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+                            <label className="block text-sm font-bold text-gray-700 mb-2">
+                                {asset.option_label || "Select Option"}
+                            </label>
+                            {loadingOptions ? (
+                                <div className="text-sm text-gray-500">Loading options...</div>
+                            ) : (
+                                <select
+                                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary outline-none"
+                                    value={selectedOptionId || ''}
+                                    onChange={e => setSelectedOptionId(e.target.value)}
+                                >
+                                    <option value="">-- Select --</option>
+                                    {options.map(opt => (
+                                        <option key={opt.asset_type_option_id} value={opt.asset_type_option_id}>
+                                            {opt.label}
+                                        </option>
+                                    ))}
+                                </select>
+                            )}
+                        </div>
+                    )}
+
                     {loading ? (
                         <div className="flex justify-center py-20 text-gray-500">Checking availability...</div>
                     ) : error ? (
@@ -203,9 +258,13 @@ function AssetSelectionModal({ asset, hireDates, setHireDates, eventDates, onClo
                             <div className="flex justify-center gap-4">
                                 <button
                                     onClick={() => handleSelect(availableItems[0])} // Pass the "virtual" item (contains typeId)
-                                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition-transform transform hover:scale-105"
+                                    disabled={asset.option_count > 0 && !selectedOptionId}
+                                    className={`font-bold py-3 px-8 rounded-lg shadow-lg transition-transform transform hover:scale-105 ${asset.option_count > 0 && !selectedOptionId
+                                            ? 'bg-gray-400 cursor-not-allowed'
+                                            : 'bg-blue-600 hover:bg-blue-700 text-white'
+                                        }`}
                                 >
-                                    Add to Cart for ${total}
+                                    {asset.option_count > 0 && !selectedOptionId ? "Select Option" : `Add to Cart for $${total}`}
                                 </button>
                             </div>
                         </div>

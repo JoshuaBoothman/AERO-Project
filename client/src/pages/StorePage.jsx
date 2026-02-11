@@ -140,9 +140,10 @@ function StorePage({ orgSettings }) {
             type: 'ASSET',
             name: asset.name, // Use Type Name (e.g. "Golf Cart")
             price: specificItem.price || asset.price, // Fallback to category price
-            details: `Dates: ${formatDateForDisplay(dates.start)} - ${formatDateForDisplay(dates.end)}`,
+            details: `Dates: ${formatDateForDisplay(dates.start)} - ${formatDateForDisplay(dates.end)}${asset.selectedOptionLabel ? ` | Option: ${asset.selectedOptionLabel}` : ''}`,
             checkIn: dates.start,
             checkOut: dates.end,
+            selectedOptionId: asset.selectedOptionId || null, // [NEW]
             // Key Change: Store Type ID.
             id: asset.id,
             assetTypeId: asset.id,

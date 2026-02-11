@@ -43,6 +43,7 @@ app.http('getAssetHires', {
                     
                     at.name as asset_type_name,
                     at.image_url,
+                    ato.label as selected_option_label, -- [NEW]
                     
                     o.order_id,
                     p.first_name + ' ' + p.last_name as hirer_name
@@ -50,6 +51,7 @@ app.http('getAssetHires', {
                 FROM asset_hires ah
                 LEFT JOIN asset_items ai ON ah.asset_item_id = ai.asset_item_id
                 JOIN asset_types at ON ah.asset_type_id = at.asset_type_id
+                LEFT JOIN asset_type_options ato ON ah.selected_option_id = ato.asset_type_option_id -- [NEW]
                 JOIN order_items oi ON ah.order_item_id = oi.order_item_id
                 JOIN orders o ON oi.order_id = o.order_id
                 LEFT JOIN users u ON o.user_id = u.user_id

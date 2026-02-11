@@ -62,7 +62,8 @@ function Checkout() {
                     assetTypeId: a.assetTypeId || a.assetId || a.id,
                     checkIn: a.checkIn,
                     checkOut: a.checkOut,
-                    price: a.price
+                    price: a.price,
+                    selectedOptionId: a.selectedOptionId || null // [NEW]
                 })),
                 subevents: subevents.map(s => ({
                     subeventId: s.id,

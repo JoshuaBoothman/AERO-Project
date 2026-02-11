@@ -717,12 +717,14 @@ app.http('createOrder', {
                         const orderItemId = itemRes.recordset[0].id;
 
                         // Insert Asset Hire Record (Pooled = asset_item_id is NULL)
+                        // UPDATED: Include selected_option_id
                         await new sql.Request(transaction)
                             .input('atid', sql.Int, assetTypeId)
                             .input('oiid', sql.Int, orderItemId)
                             .input('start', sql.Date, asset.checkIn)
                             .input('end', sql.Date, asset.checkOut)
-                            .query(`INSERT INTO asset_hires (asset_type_id, asset_item_id, order_item_id, hire_start_date, hire_end_date) VALUES (@atid, NULL, @oiid, @start, @end)`);
+                            .input('optId', sql.Int, asset.selectedOptionId || null) // [NEW]
+                            .query(`INSERT INTO asset_hires (asset_type_id, asset_item_id, order_item_id, hire_start_date, hire_end_date, selected_option_id) VALUES (@atid, NULL, @oiid, @start, @end, @optId)`);
                     }
                 }
 

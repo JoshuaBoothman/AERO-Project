@@ -23,8 +23,10 @@ function AssetTypes() {
         show_daily_cost: true,
         show_full_event_cost: false,
         stock_quantity: 0, // [NEW] Pooled Inventory
-        image_url: ''
+        image_url: '',
+        option_label: '' // [NEW]
     });
+    const [optionsList, setOptionsList] = useState([]); // [NEW] { id, label, isNew, isModified, isDeleted }
 
     useEffect(() => {
         fetchData();
@@ -76,7 +78,7 @@ function AssetTypes() {
         setShowModal(true);
     };
 
-    const handleEdit = (type) => {
+    const handleEdit = async (type) => {
         setFormData({
             name: type.name,
             description: type.description || '',
@@ -86,8 +88,23 @@ function AssetTypes() {
             show_daily_cost: type.show_daily_cost || false,
             show_full_event_cost: type.show_full_event_cost || false,
             stock_quantity: type.stock_quantity || 0,
-            image_url: type.image_url || ''
+            image_url: type.image_url || '',
+            option_label: type.option_label || ''
         });
+
+        // Fetch Options
+        try {
+            const res = await fetch(`/api/assets/types/${type.asset_type_id}/options`);
+            if (res.ok) {
+                const opts = await res.json();
+                setOptionsList(opts);
+            } else {
+                setOptionsList([]);
+            }
+        } catch {
+            setOptionsList([]);
+        }
+
         setEditMode(true);
         setEditId(type.asset_type_id);
         setShowModal(true);
@@ -117,6 +134,35 @@ function AssetTypes() {
             });
 
             if (res.ok) {
+                // Handle Options (POST/PUT/DELETE)
+                if (editMode) {
+                    const typeId = editId;
+                    for (const opt of optionsList) {
+                        try {
+                            if (opt.isDeleted && opt.asset_type_option_id) {
+                                await fetch(`/api/assets/types/${typeId}/options/${opt.asset_type_option_id}`, {
+                                    method: 'DELETE',
+                                    headers: { 'Authorization': `Bearer ${token}`, 'X-Auth-Token': token }
+                                });
+                            } else if (opt.isNew && opt.label) {
+                                await fetch(`/api/assets/types/${typeId}/options`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'X-Auth-Token': token },
+                                    body: JSON.stringify({ label: opt.label })
+                                });
+                            } else if (opt.isModified && opt.asset_type_option_id) {
+                                await fetch(`/api/assets/types/${typeId}/options/${opt.asset_type_option_id}`, {
+                                    method: 'PUT',
+                                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'X-Auth-Token': token },
+                                    body: JSON.stringify({ label: opt.label, sort_order: opt.sort_order })
+                                });
+                            }
+                        } catch (e) {
+                            console.error("Option save error", e);
+                        }
+                    }
+                }
+
                 notify(editMode ? 'Asset Type updated' : 'Asset Type created', 'success');
                 setShowModal(false);
                 fetchData(); // Reload
@@ -259,6 +305,74 @@ function AssetTypes() {
                                     </label>
                                     <input type="number" step="0.01" className="w-full border p-2 rounded" placeholder="Price for event" value={formData.full_event_cost} onChange={e => setFormData({ ...formData, full_event_cost: e.target.value })} disabled={!formData.show_full_event_cost} />
                                 </div>
+                            </div>
+
+                            {/* Hire Options Section */}
+                            <div className="border-t pt-4">
+                                <h4 className="font-bold mb-2">Hire Options <span className="text-xs font-normal text-gray-500">(e.g. Flight Line vs Standard)</span></h4>
+                                <div className="mb-2">
+                                    <label className="block text-sm font-medium mb-1">Dropdown Label</label>
+                                    <input
+                                        type="text"
+                                        className="w-full border p-2 rounded"
+                                        placeholder="e.g. 'Select Flight Line'"
+                                        value={formData.option_label || ''}
+                                        onChange={e => setFormData({ ...formData, option_label: e.target.value })}
+                                    />
+                                    <p className="text-xs text-gray-500 mt-1">Defaults to 'Option' if left blank.</p>
+                                </div>
+
+                                {editMode ? (
+                                    <div className="bg-gray-50 p-3 rounded border">
+                                        <label className="block text-sm font-medium mb-2">Options List</label>
+                                        <div className="space-y-2 mb-2">
+                                            {optionsList.map((opt, idx) => (
+                                                <div key={idx} className="flex gap-2">
+                                                    <input
+                                                        type="text"
+                                                        className="flex-1 border p-2 rounded text-sm"
+                                                        value={opt.label}
+                                                        onChange={e => {
+                                                            const newOpts = [...optionsList];
+                                                            newOpts[idx].label = e.target.value;
+                                                            newOpts[idx].isModified = true;
+                                                            setOptionsList(newOpts);
+                                                        }}
+                                                        placeholder="Option Name"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            const newOpts = [...optionsList];
+                                                            if (newOpts[idx].asset_type_option_id) {
+                                                                newOpts[idx].isDeleted = true; // Mark for deletion
+                                                            } else {
+                                                                newOpts.splice(idx, 1); // Remove unsaved
+                                                            }
+                                                            setOptionsList(newOpts);
+                                                        }}
+                                                        className="text-red-500 hover:bg-red-50 px-2 rounded"
+                                                    >
+                                                        🗑️
+                                                    </button>
+                                                </div>
+                                            ))}
+                                            {/* Filter out deleted for display? No, let's just use CSS to hide or strikethrough logic in map if complex. 
+                                              Actually, for simplicity, let's hide deleted ones via filter in the render above? 
+                                              Let's refactor the map to filter first. 
+                                            */}
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setOptionsList([...optionsList, { label: '', isNew: true }])}
+                                            className="text-sm text-blue-600 hover:underline"
+                                        >
+                                            + Add Option
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <p className="text-sm text-gray-500 italic">Save asset type first to add options.</p>
+                                )}
                             </div>
 
                             <div className="border-t pt-4">

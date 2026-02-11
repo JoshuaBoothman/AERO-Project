@@ -23,6 +23,8 @@ app.http('getAssets', {
                     at.asset_category_id,
                     at.stock_quantity,
                     at.sort_order,
+                    at.option_label,
+                    (SELECT COUNT(*) FROM asset_type_options ato WHERE ato.asset_type_id = at.asset_type_id AND ato.is_active = 1) as option_count,
                     ac.name as category_name,
                     ISNULL(ac.sort_order, 9999) as category_sort_order,
                     (SELECT COUNT(*) FROM asset_items ai WHERE ai.asset_type_id = at.asset_type_id) as total_items,
