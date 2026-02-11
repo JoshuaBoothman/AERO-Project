@@ -1,5 +1,13 @@
 
 
+## [2026-02-12] - Pit Crew to Pilot Linking — In-Cart Fix (Completed)
+- **Time**: 07:00 - 07:17
+- **Completed Items**:
+    - **Bug Fix (API)**: Added missing `pendingPilotLinks.push()` in `createOrder.js` (L363). The scaffolding was in place but the push was a comment placeholder.
+    - **Bug Fix (Client)**: Fixed DOB dropdown selections resetting in `AttendeeModal.jsx`. The `syncDob` function was clearing `dateOfBirth` to `''` when only one of three dropdowns was filled, causing re-render to reset all selects. Now stores partial values so selections persist.
+    - **Bug Fix (Client)**: Fixed in-cart pilots not appearing in pit crew "Select Pilot" dropdown. `AttendeeModal` was receiving a synthetic mini-cart (`{ [ticketId]: 1 }`) instead of the real cart. Added `cartItems` prop to `AttendeeModal` and passed the real `CartContext` cart array from `StorePage.jsx`. Rewrote pilot lookup to scan actual cart items for pilot/junior_pilot tickets.
+    - **Verification**: ESLint passes cleanly on both modified files.
+    - **Documentation**: Updated `IMPLEMENTATION_ROADMAP.md` (item #5 complete).
 
 ## [2026-02-12] - Fix Asset Hires List Duplication & Add Filters (Completed)
 - **Time**: 06:43 - 06:55

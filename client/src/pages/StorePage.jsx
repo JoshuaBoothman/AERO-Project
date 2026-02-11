@@ -529,6 +529,7 @@ function StorePage({ orgSettings }) {
                 onConfirm={handleConfirmTicket}
                 tickets={selectedTicketForModal ? [selectedTicketForModal] : []}
                 cart={selectedTicketForModal ? { [selectedTicketForModal.id]: 1 } : {}}
+                cartItems={cart}
                 user={user}
                 token={token}
                 myPilots={myPilots}

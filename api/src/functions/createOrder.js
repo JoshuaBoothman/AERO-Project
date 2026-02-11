@@ -361,9 +361,7 @@ app.http('createOrder', {
                             }
                             // Store for post-linking
                             if (attendeeData.linkedPilotTempId) {
-                                // Add to list for postponed update
-                                // We need `attendeeId` (the crew) and `linkedPilotTempId` (the pilot's temp id)
-                                // We will stash this in a list `pendingPilotLinks`.
+                                pendingPilotLinks.push({ attendeeId, linkedPilotTempId: attendeeData.linkedPilotTempId });
                             }
 
                             allAttendeeIds.push(attendeeId);

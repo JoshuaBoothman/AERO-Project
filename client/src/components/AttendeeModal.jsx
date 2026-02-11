@@ -27,7 +27,8 @@ function AttendeeModal({
     token,
     myPilots = [],
     event,
-    confirmLabel = "Confirm"
+    confirmLabel = "Confirm",
+    cartItems = []
 }) {
 
 
@@ -396,14 +397,17 @@ function AttendeeModal({
 
                                             const syncDob = (newDay, newMonth, newYear) => {
                                                 if (newDay && newMonth && newYear) {
-                                                    // Clamp day if needed
+                                                    // All three filled — clamp day and store valid date
                                                     const maxD = getDaysInMonth(newMonth, newYear);
                                                     const clampedDay = Math.min(parseInt(newDay), maxD);
                                                     const dd = String(clampedDay).padStart(2, '0');
                                                     handleChange(key, 'dateOfBirth', `${newYear}-${newMonth}-${dd}`);
                                                 } else {
-                                                    // Partial - clear the field so validation catches it
-                                                    handleChange(key, 'dateOfBirth', '');
+                                                    // Partial — store what we have so selects keep their state
+                                                    const y = newYear || '';
+                                                    const m = newMonth || '';
+                                                    const d = newDay || '';
+                                                    handleChange(key, 'dateOfBirth', `${y}-${m}-${d}`);
                                                 }
                                             };
 
@@ -945,24 +949,23 @@ function AttendeeModal({
                                                         isNew: false
                                                     }));
 
-                                                    // 2. Pilots in Cart
+                                                    // 2. Pilots in Cart (from real cart items)
                                                     const newPilots = [];
-                                                    Object.entries(cart).forEach(([tId, q]) => {
-                                                        const t = tickets.find(ticket => (ticket.ticket_type_id || ticket.id) === parseInt(tId));
-                                                        if (['pilot', 'junior_pilot'].includes(t?.system_role)) {
-                                                            for (let i = 0; i < q; i++) {
-                                                                const pKey = `${tId}_${i}`;
-                                                                const pDetails = details[pKey];
-                                                                if (pDetails) {
-                                                                    const pName = (pDetails.firstName || pDetails.lastName)
-                                                                        ? `${pDetails.firstName} ${pDetails.lastName}`.trim()
-                                                                        : `Pilot #${i + 1}`;
-                                                                    newPilots.push({
-                                                                        tempId: pDetails.tempId,
-                                                                        name: `${pName} (In Cart)`,
-                                                                        isNew: true
-                                                                    });
-                                                                }
+                                                    cartItems.forEach((item, _idx) => {
+                                                        if (item.type === 'TICKET' && ['pilot', 'junior_pilot'].includes(item.system_role)) {
+                                                            if (item.attendees && item.attendees.length > 0) {
+                                                                item.attendees.forEach((att, aIdx) => {
+                                                                    if (att.tempId) {
+                                                                        const pName = (att.firstName || att.lastName)
+                                                                            ? `${att.firstName} ${att.lastName}`.trim()
+                                                                            : `Pilot #${aIdx + 1}`;
+                                                                        newPilots.push({
+                                                                            tempId: att.tempId,
+                                                                            name: `${pName} (In Cart)`,
+                                                                            isNew: true
+                                                                        });
+                                                                    }
+                                                                });
                                                             }
                                                         }
                                                     });

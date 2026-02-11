@@ -17,7 +17,7 @@ These changes improve data integrity and solve specific transaction-level hurdle
 
 4. [x] **[Fix Asset Hires List Duplication](file:///c:/laragon/www/AERO-Project/docs/implementation_plans/20260211-asset-hires-list-fix.md)**
    - *Why?* Ensures accurate reporting for admins before adding more asset features.
-5. [ ] **[Pit Crew to Pilot Linking (In-Cart)](file:///c:/laragon/www/AERO-Project/docs/implementation_plans/20260211-pit-crew-pilot-linking.md)**
+5. [x] **[Pit Crew to Pilot Linking (In-Cart)](file:///c:/laragon/www/AERO-Project/docs/implementation_plans/20260211-pit-crew-pilot-linking.md)**
    - *Why?* Fixes a logic gap where users couldn't link tickets in a single transaction.
 
 ## Priority Area 3: Feature Enhancements
