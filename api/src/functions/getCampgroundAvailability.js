@@ -24,8 +24,13 @@ app.http('getCampgroundAvailability', {
 
             if (eventRes.recordset.length === 0) return { status: 404, body: "Event not found" };
 
-            const eventStart = eventRes.recordset[0].start_date.toISOString().split('T')[0];
-            const eventEnd = eventRes.recordset[0].end_date.toISOString().split('T')[0];
+            // Extend by 1 day each side for early arrival / late departure
+            const rawStart = new Date(eventRes.recordset[0].start_date);
+            rawStart.setDate(rawStart.getDate() - 1);
+            const eventStart = rawStart.toISOString().split('T')[0];
+            const rawEnd = new Date(eventRes.recordset[0].end_date);
+            rawEnd.setDate(rawEnd.getDate() + 1);
+            const eventEnd = rawEnd.toISOString().split('T')[0];
 
             // User-selected dates (for availability check) - default to event dates
             const checkIn = startDate || eventStart;

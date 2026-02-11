@@ -46,9 +46,13 @@ function CampingAvailabilityReport() {
         const event = events.find(e => e.event_id == selectedEventId);
         if (!event) return;
 
-        // Use Event Dates directly
-        const startDate = event.start_date.split('T')[0];
-        const endDate = event.end_date.split('T')[0];
+        // Extend query range by 1 day each side for early arrival / late departure
+        const sDate = new Date(event.start_date.split('T')[0]);
+        sDate.setDate(sDate.getDate() - 1);
+        const startDate = sDate.toISOString().split('T')[0];
+        const eDate = new Date(event.end_date.split('T')[0]);
+        eDate.setDate(eDate.getDate() + 1);
+        const endDate = eDate.toISOString().split('T')[0];
 
         setLoading(true);
         try {
@@ -85,7 +89,9 @@ function CampingAvailabilityReport() {
         const sStr = selectedEvent.start_date.split('T')[0];
         const eStr = selectedEvent.end_date.split('T')[0];
         const eventStart = new Date(sStr);
+        eventStart.setDate(eventStart.getDate() - 1);
         const eventEnd = new Date(eStr);
+        eventEnd.setDate(eventEnd.getDate() + 1);
         const totalEventNights = Math.max(1, Math.ceil((eventEnd - eventStart) / (1000 * 60 * 60 * 24)));
 
         // 2. Group by Campsite
@@ -159,8 +165,11 @@ function CampingAvailabilityReport() {
         const sStr = selectedEvent.start_date.split('T')[0];
         const eStr = selectedEvent.end_date.split('T')[0];
 
+        // Extend grid by 1 day on each side for early arrival / late departure
         let curr = new Date(sStr);
+        curr.setDate(curr.getDate() - 1);  // Day before event
         const end = new Date(eStr);
+        end.setDate(end.getDate() + 1);    // Day after event
 
         // Logic "Booking cannot start on last day". 
         // We only show columns for "Nights". The night of the End Date is NOT part of the event.
@@ -241,7 +250,7 @@ function CampingAvailabilityReport() {
                                     <th style={{ textAlign: 'left', padding: '12px', width: '100px' }}>Type</th>
                                     <th style={{ textAlign: 'center', padding: '12px', width: '100px' }}>Status</th>
                                     {gridDates.map((d, i) => (
-                                        <th key={i} style={{ textAlign: 'center', padding: '8px', minWidth: '40px', fontSize: '0.8rem' }}>
+                                        <th key={i} style={{ textAlign: 'center', padding: '8px', minWidth: '80px', fontSize: '0.8rem' }}>
                                             {d.getDate()}/{d.getMonth() + 1}
                                         </th>
                                     ))}
@@ -283,8 +292,10 @@ function CampingAvailabilityReport() {
                                                     }}
                                                 >
                                                     {booking ? (
-                                                        <div style={{ width: '100%', height: '100%', minHeight: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                            <span style={{ fontSize: '0.7rem', color: '#64748b' }}>x</span>
+                                                        <div style={{ width: '100%', height: '100%', minHeight: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2px' }}>
+                                                            <span style={{ fontSize: '0.6rem', color: '#1e293b', lineHeight: '1.1', textAlign: 'center', wordBreak: 'break-word' }}>
+                                                                {booking.first_name} {booking.last_name}
+                                                            </span>
                                                         </div>
                                                     ) : null}
                                                 </td>

@@ -23,7 +23,7 @@ These changes improve data integrity and solve specific transaction-level hurdle
 ## Priority Area 3: Feature Enhancements
 Expanding system capabilities beyond the core fixes.
 
-6. [ ] **[Campsite Booking: Extended Dates & Report Names](file:///c:/laragon/www/AERO-Project/docs/implementation_plans/20260211-campsite-booking-dates.md)**
+6. [x] **[Campsite Booking: Extended Dates & Report Names](file:///c:/laragon/www/AERO-Project/docs/implementation_plans/completed/20260212-campsite-booking-dates.md)**
    - *Why?* Adds flexibility for campers and improves admin visibility.
 7. [ ] **[Asset Hire Options (Dropdown per Type)](file:///c:/laragon/www/AERO-Project/docs/implementation_plans/20260211-asset-hire-options.md)**
    - *Why?* Requires a database schema update; best done once the base asset list is fixed (Step 4).

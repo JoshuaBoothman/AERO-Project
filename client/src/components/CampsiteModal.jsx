@@ -18,6 +18,20 @@ function CampsiteModal({ event, onClose, onAddToCart, orgSettings }) {
         return d.toISOString().split('T')[0];
     };
 
+    // Shift a YYYY-MM-DD string by ±1 day
+    const dayBefore = (dateStr) => {
+        if (!dateStr) return '';
+        const d = new Date(dateStr);
+        d.setDate(d.getDate() - 1);
+        return d.toISOString().split('T')[0];
+    };
+    const dayAfter = (dateStr) => {
+        if (!dateStr) return '';
+        const d = new Date(dateStr);
+        d.setDate(d.getDate() + 1);
+        return d.toISOString().split('T')[0];
+    };
+
     const [startDate, setStartDate] = useState(formatDate(event?.start_date));
     const [endDate, setEndDate] = useState(formatDate(event?.end_date));
     const [useFullEventPrice, setUseFullEventPrice] = useState(false);
@@ -165,7 +179,7 @@ function CampsiteModal({ event, onClose, onAddToCart, orgSettings }) {
                             <input
                                 type="date"
                                 value={startDate}
-                                min={formatDate(event?.start_date)}
+                                min={dayBefore(formatDate(event?.start_date))}
                                 max={formatDate(event?.end_date)}
                                 onChange={e => !useFullEventPrice && setStartDate(e.target.value)}
                                 disabled={useFullEventPrice}
@@ -178,7 +192,7 @@ function CampsiteModal({ event, onClose, onAddToCart, orgSettings }) {
                                 type="date"
                                 value={endDate}
                                 min={formatDate(event?.start_date)}
-                                max={formatDate(event?.end_date)}
+                                max={dayAfter(formatDate(event?.end_date))}
                                 onChange={e => !useFullEventPrice && setEndDate(e.target.value)}
                                 disabled={useFullEventPrice}
                                 style={{ padding: '4px', background: useFullEventPrice ? '#eee' : 'white' }}

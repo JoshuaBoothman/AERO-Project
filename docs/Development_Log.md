@@ -1,5 +1,14 @@
 
 
+## [2026-02-12] - Campsite Booking: Extended Dates & Report Names (Completed)
+- **Time**: 07:21 - 07:35
+- **Completed Items**:
+    - **Feature (Frontend)**: Extended campsite booking date pickers in `CampsiteModal.jsx` to allow check-in 1 day before event start and check-out 1 day after event end. Added `dayBefore`/`dayAfter` helper functions. Default dates remain unchanged.
+    - **Feature (Frontend)**: Updated `CampingAvailabilityReport.jsx` — expanded grid date columns ±1 day, expanded API query range ±1 day, expanded processedData event bounds ±1 day. Replaced "x" cell marker with booker's first and last name. Widened date column headers from 40px to 80px.
+    - **Feature (Backend)**: Updated `getCampgroundAvailability.js` — extended event date boundaries ±1 day so booking grid and availability checks cover early-arrival/late-departure window.
+    - **Verification**: ESLint passes on both frontend files (pre-existing warnings only, no new errors introduced).
+    - **Documentation**: Updated `IMPLEMENTATION_ROADMAP.md` (item #6 complete).
+
 ## [2026-02-12] - Pit Crew to Pilot Linking — In-Cart Fix (Completed)
 - **Time**: 07:00 - 07:17
 - **Completed Items**:
