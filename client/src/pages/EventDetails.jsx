@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useNotification } from '../context/NotificationContext';
 import CampsiteModal from '../components/CampsiteModal';
 import PublicRegistrationModal from '../components/Public/PublicRegistrationModal';
 
@@ -9,9 +8,7 @@ function EventDetails({ propSlug }) {
     const { slug: paramSlug } = useParams();
     const slug = propSlug || paramSlug;
     const navigate = useNavigate();
-    const location = useLocation();
     const { user } = useAuth();
-    const { notify } = useNotification();
 
     const [event, setEvent] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -20,7 +17,7 @@ function EventDetails({ propSlug }) {
     // Purchase State (Legacy - Moved to StorePage.jsx)
     // Only Public Registration Modal kept here
     const [showPublicModal, setShowPublicModal] = useState(false);
-    const [selectedPublicDay, setSelectedPublicDay] = useState(null);
+    const [selectedPublicDay, _setSelectedPublicDay] = useState(null);
 
     // Products Map Cache (Still used? If tickets are displayed for info only, maybe. 
     // But tickets are usually hidden if we don't want people buying here. 
@@ -41,7 +38,7 @@ function EventDetails({ propSlug }) {
 
                 // We just need the event data. Tickets are for the Store.
                 if (data.tickets) {
-                    const { tickets, ...eventData } = data;
+                    const { tickets: _tickets, ...eventData } = data;
                     setEvent(eventData);
                 } else {
                     setEvent(data);
@@ -81,9 +78,23 @@ function EventDetails({ propSlug }) {
                 <p className="whitespace-pre-wrap mb-8 text-gray-700 leading-relaxed text-lg text-left md:text-center">{event.description}</p>
 
                 <div className="flex flex-col sm:flex-row justify-center gap-4">
-                    {/* Links to Store if logged in? Or just rely on Nav. */}
-                    {/* Maybe a "Buy Tickets" button that goes to the store? user didn't ask, but it's helpful. */}
-                    {/* For now, just removing the dead buttons as requested. */}
+                    <button
+                        onClick={() => {
+                            if (user) {
+                                navigate(`/events/${slug}/shop`);
+                            } else {
+                                navigate('/login', {
+                                    state: {
+                                        from: `/events/${slug}/shop`,
+                                        message: 'To register or shop for this event you must have a login.',
+                                    },
+                                });
+                            }
+                        }}
+                        className="bg-[#0f172a] text-white hover:bg-[#1e293b] font-semibold py-3 px-8 rounded-lg transition-colors shadow-md hover:shadow-lg text-lg"
+                    >
+                        Register Now
+                    </button>
                 </div>
 
                 {/* Temporarily hidden: Public Event Days Section */}

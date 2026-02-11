@@ -2,6 +2,16 @@
 
 
 
+## [2026-02-12] - 'Register Now' Navigation Logic (Completed)
+- **Time**: 06:33 - 06:45
+- **Completed Items**:
+    - **Feature**: Added "Register Now" CTA button to `EventDetails.jsx` with auth-aware navigation.
+    - **Logic**: Logged-in users navigate to `/events/{slug}/shop`; guests to `/login` with redirect state.
+    - **Login Enhancement**: `Login.jsx` reads `location.state` — displays amber info alert and redirects after login.
+    - **Lint Cleanup**: Fixed 4 pre-existing lint errors in `EventDetails.jsx`.
+    - **Verification**: Both files pass ESLint cleanly.
+    - **Documentation**: Updated `IMPLEMENTATION_ROADMAP.md`.
+
 ## [2026-02-12] - Standardise Date of Birth Picker (Completed)
 - **Time**: 06:25 - 06:35
 - **Completed Items**:

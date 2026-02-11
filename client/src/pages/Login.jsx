@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 function Login() {
@@ -8,6 +8,9 @@ function Login() {
   const [error, setError] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const redirectTo = location.state?.from || null;
+  const infoMessage = location.state?.message || null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,7 +31,9 @@ function Login() {
       const data = await res.json();
       login(data.token, data.user);
 
-      if (data.user.role === 'admin') {
+      if (redirectTo) {
+        navigate(redirectTo);
+      } else if (data.user.role === 'admin') {
         navigate('/admin');
       } else {
         navigate('/'); // Redirect to Home
@@ -48,6 +53,11 @@ function Login() {
       </div>
 
       <h1>Login</h1>
+      {infoMessage && (
+        <div style={{ padding: '0.75rem 1rem', marginBottom: '1rem', backgroundColor: '#fef3c7', border: '1px solid #f59e0b', borderRadius: '0.5rem', color: '#92400e', fontSize: '0.9rem' }}>
+          {infoMessage}
+        </div>
+      )}
       {error && <p style={{ color: 'red' }}>{error}</p>}
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         <input

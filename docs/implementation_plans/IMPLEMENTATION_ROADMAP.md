@@ -9,7 +9,7 @@ These changes address immediate usability issues with high impact and relatively
    - *Why first?* Essential for users to discover all store categories (Hire, Camping) on mobile.
 2. [x] **[Standardise Date of Birth Picker](file:///c:/laragon/www/AERO-Project/docs/implementation_plans/20260211-date-of-birth-date-picker.md)**
    - *Why?* Resolves a major friction point during primary registration flow.
-3. [ ] **['Register Now' Navigation Logic](file:///c:/laragon/www/AERO-Project/docs/implementation_plans/20260211-register-navigation.md)**
+3. [x] **['Register Now' Navigation Logic](file:///c:/laragon/www/AERO-Project/docs/implementation_plans/20260211-register-navigation.md)**
    - *Why?* Streamlines the entry point to the ticket purchase flow.
 
 ## Priority Area 2: Logic Refinement & Admin Tooling
