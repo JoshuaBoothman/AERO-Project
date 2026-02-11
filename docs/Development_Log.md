@@ -1,5 +1,16 @@
 
 
+
+## [2026-02-12] - Asset Hire Options (Completed)
+- **Time**: 07:35 - 08:15
+- **Completed Items**:
+    - **Feature (Backend)**: Implemented `asset_type_options` table and `manageAssetTypeOptions` CRUD API. Updated `getAssets.js`, `createOrder.js`, `getAssetHires.js` to manage and persist selected options.
+    - **Feature (Frontend - Admin)**: Updated `AssetTypes.jsx` to allow configuration of option labels and choices. Updated `AssetHires.jsx` to display selected options in the hires list.
+    - **Feature (Frontend - User)**: Updated `AssetSelectionModal.jsx` to fetch and display option dropdowns. Updated `StorePage.jsx` and `Checkout.jsx` to pass selected option data through the cart to the order.
+    - **Bug Fix (API)**: Updated `getStoreItems.js` to include option metadata (label/count) in the API response, resolving an issue where the dropdown was hidden on the frontend.
+    - **Verification**: Verified end-to-end flow: Admin creates options -> User selects option -> Selected option saved on order -> Admin sees selection in hires list.
+    - **Documentation**: Created `walkthrough.md` detailing changes and verification steps. Updated `task.md`.
+
 ## [2026-02-12] - Campsite Booking: Extended Dates & Report Names (Completed)
 - **Time**: 07:21 - 07:35
 - **Completed Items**:
