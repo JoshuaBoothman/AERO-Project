@@ -1,6 +1,16 @@
 
 
 
+## [2026-02-12] - Home Page Revamp (Completed)
+- **Time**: 08:35 - 09:00
+- **Completed Items**:
+    - **Feature (Frontend)**: Revamped `Home.jsx` to be a static landing page instead of auto-redirecting.
+    - **Content**: Added "Hero" section, "About ALSM", "Premier Event", "Associations" links, and Footer.
+    - **Design**: Used Tailwind CSS for responsive layout and existing CSS variables for branding.
+    - **Functionality**: Removed `useEffect` redirect.
+    - **Verification**: Verified code syntax via linting.
+    - **Documentation**: Archived implementation plan to `completed/`.
+
 ## [2026-02-12] - Asset Hire Options (Completed)
 - **Time**: 07:35 - 08:15
 - **Completed Items**:

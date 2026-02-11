@@ -25,13 +25,13 @@ Expanding system capabilities beyond the core fixes.
 
 6. [x] **[Campsite Booking: Extended Dates & Report Names](file:///c:/laragon/www/AERO-Project/docs/implementation_plans/completed/20260212-campsite-booking-dates.md)**
    - *Why?* Adds flexibility for campers and improves admin visibility.
-7. [ ] **[Asset Hire Options (Dropdown per Type)](file:///c:/laragon/www/AERO-Project/docs/implementation_plans/20260211-asset-hire-options.md)**
+7. [x] **[Asset Hire Options (Dropdown per Type)](file:///c:/laragon/www/AERO-Project/docs/implementation_plans/20260211-asset-hire-options.md)**
    - *Why?* Requires a database schema update; best done once the base asset list is fixed (Step 4).
 
 ## Priority Area 4: Major Changes (Final Phase)
 As specifically requested, these major revamp and integration tasks are scheduled last.
 
-8. [ ] **[Home Page Revamp](file:///c:/laragon/www/AERO-Project/docs/implementation_plans/20260202_home_page_revamp.md)**
+8. [x] **[Home Page Revamp](file:///c:/laragon/www/AERO-Project/docs/implementation_plans/completed/20260212_home_page_revamp.md)**
    - *Priority:* Low (Per User Request).
 9. [ ] **[Square Payment Integration](file:///c:/laragon/www/AERO-Project/docs/implementation_plans/Square_Integration.md)**
    - *Priority:* Specialized (Per User Request). High impact integration.
