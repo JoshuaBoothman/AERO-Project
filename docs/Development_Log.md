@@ -1,4 +1,14 @@
 
+## [2026-02-13] - Image Gallery & Home Page Carousel (Completed)
+- **Time**: 10:41 - 11:00
+- **Completed Items**:
+    - **Feature (Backend)**: Created Azure Functions (`getGalleryItems`, `createGalleryItem`, `deleteGalleryItem`) for gallery metadata management in SQL.
+    - **Feature (Admin)**: Added "Image Gallery" tab to System Settings with a new `GalleryManager` component for uploading (Azure Storage), previewing, and deleting media.
+    - **Feature (Frontend)**: Implemented an auto-scrolling carousel on the Home Page's "Premier Event" section.
+    - **Enhancement**: Added `object-contain` scaling to prevent cropping of tall images (e.g., newspaper clippings).
+    - **Interaction**: Added click-to-open functionality so slides open full media in a new tab.
+    - **Documentation**: Created `walkthrough.md`. Updated `task.md`.
+
 ## [2026-02-13] - Homepage Banner Adjustment (Completed)
 - **Time**: 09:34 - 09:40
 - **Completed Items**:

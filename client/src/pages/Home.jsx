@@ -1,6 +1,24 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 function Home() {
+  const [galleryItems, setGalleryItems] = useState([]);
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    fetch('/api/gallery')
+      .then(res => res.json())
+      .then(data => setGalleryItems(data || []))
+      .catch(err => console.error('Error fetching gallery:', err));
+  }, []);
+
+  useEffect(() => {
+    if (galleryItems.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentSlide(prev => (prev + 1) % galleryItems.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [galleryItems.length]);
   return (
     <div className="flex flex-col min-h-screen">
       {/* 1. Hero / Banner Section */}
@@ -62,10 +80,63 @@ function Home() {
         <div className="container mx-auto max-w-6xl">
           <div className="flex flex-col md:flex-row items-center gap-12">
             <div className="w-full md:w-1/2">
-              {/* Placeholder for Event Image */}
-              <div className="aspect-video bg-gray-200 rounded-xl shadow-lg flex items-center justify-center relative overflow-hidden group">
-                <div className="absolute inset-0 bg-gray-300 animate-pulse"></div>
-                <span className="relative z-10 text-gray-500 font-medium">Event Highlights Video/Image</span>
+              {/* Image Gallery Carousel */}
+              <div className="aspect-video bg-gray-200 rounded-xl shadow-lg relative overflow-hidden group">
+                {galleryItems.length === 0 ? (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="absolute inset-0 bg-gray-300 animate-pulse"></div>
+                    <span className="relative z-10 text-gray-500 font-medium italic">Gallery is empty</span>
+                  </div>
+                ) : (
+                  <>
+                    {galleryItems.map((item, index) => (
+                      <a
+                        key={item.id}
+                        href={item.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`absolute inset-0 transition-opacity duration-1000 ease-in-out cursor-pointer hover:brightness-95 ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
+                          }`}
+                      >
+                        {item.media_type === 'video' ? (
+                          <video
+                            src={item.url}
+                            className="w-full h-full object-contain"
+                            autoPlay
+                            muted
+                            loop
+                            playsInline
+                          />
+                        ) : (
+                          <img
+                            src={item.url}
+                            alt={item.caption || 'Event Highlight'}
+                            className="w-full h-full object-contain"
+                          />
+                        )}
+                        {item.caption && (
+                          <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent text-white text-sm">
+                            {item.caption}
+                          </div>
+                        )}
+                      </a>
+                    ))}
+
+                    {/* Navigation Dots */}
+                    {galleryItems.length > 1 && (
+                      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20 flex gap-2">
+                        {galleryItems.map((_, index) => (
+                          <button
+                            key={index}
+                            onClick={() => setCurrentSlide(index)}
+                            className={`w-2 h-2 rounded-full transition-all ${index === currentSlide ? 'bg-white w-4' : 'bg-white/50'
+                              }`}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
             </div>
             <div className="w-full md:w-1/2">

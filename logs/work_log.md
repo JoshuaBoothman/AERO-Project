@@ -8,3 +8,4 @@
 | 2026-01-27 | AERO Project | 1.0 | Subevent Registrations (Attendees Search, Guest Names, Invoice Display) | No | | | |
 | 2026-01-30 | AERO Project | 2.0 | Pooled Asset Inventory (DB Migration, Backend API Refactor, Frontend: Modal, Store, Admin, Invoice) | No | | | |
 | 2026-02-08 | AERO Project | 1.5 | Ticket Allocation Fixes (Mystery Guest Prevention), Mobile UI Tweaks, Asset Hire Visibility Fix (Pooled Items) | No | | | |
+

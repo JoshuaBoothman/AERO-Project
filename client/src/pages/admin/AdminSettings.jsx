@@ -4,10 +4,11 @@ import OrgSettings from './settings/OrgSettings';
 import AdminList from './settings/AdminList';
 import UserList from './settings/UserList';
 import VariantTemplates from './VariantTemplates';
+import GalleryManager from './settings/GalleryManager';
 import FAQManager from './settings/FAQManager';
 
 function AdminSettings() {
-    const [activeTab, setActiveTab] = useState('organization'); // 'organization' | 'admins'
+    const [activeTab, setActiveTab] = useState('organization'); // 'organization' | 'admins' | 'users' | 'templates' | 'faq' | 'gallery'
     const { refreshSettings } = useOutletContext();
 
     return (
@@ -61,6 +62,15 @@ function AdminSettings() {
                 >
                     FAQ
                 </button>
+                <button
+                    onClick={() => setActiveTab('gallery')}
+                    className={`pb-3 px-6 font-bold text-lg transition-colors border-b-4 ${activeTab === 'gallery'
+                        ? 'border-accent text-primary'
+                        : 'border-transparent text-gray-500 hover:text-primary'
+                        }`}
+                >
+                    Image Gallery
+                </button>
             </div>
 
             {/* Content By Tab */}
@@ -70,6 +80,7 @@ function AdminSettings() {
                 {activeTab === 'users' && <UserList />}
                 {activeTab === 'templates' && <VariantTemplates />}
                 {activeTab === 'faq' && <FAQManager />}
+                {activeTab === 'gallery' && <GalleryManager />}
             </div>
         </div>
     );
