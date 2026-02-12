@@ -4,30 +4,30 @@ function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* 1. Hero / Banner Section */}
-      <section className="relative bg-gray-900 text-white py-24 px-4 md:py-32 overflow-hidden">
+      <section className="relative bg-gray-900 text-white py-12 px-4 md:py-16 overflow-hidden">
         {/* Placeholder Background - In production this would be an <img> or background-image */}
         <div className="absolute inset-0 bg-gradient-to-br from-[var(--primary-color)] to-gray-900 opacity-90 z-0"></div>
         <div className="absolute inset-0 bg-[url('/placeholder-hero.jpg')] bg-cover bg-center opacity-20 mix-blend-overlay z-0"></div>
 
         <div className="container mx-auto relative z-10 text-center">
-          <h1 className="text-4xl md:text-6xl font-extrabold mb-6 tracking-tight leading-tight">
+          <h1 className="text-3xl md:text-4xl font-extrabold mb-4 tracking-tight leading-tight">
             Australian Large Scale Models invites you to the <br className="hidden md:block" />
             <span className="text-[var(--accent-color)]">Festival of Aeromodelling 2026</span>
           </h1>
-          <p className="text-xl md:text-3xl font-light mb-8 text-gray-200">
+          <p className="text-lg md:text-xl font-light mb-6 text-gray-200">
             4th – 12th of July 2026<br />
             <span className="font-semibold">Inglewood Aerodrome</span>
           </p>
           <div className="flex justify-center gap-4">
             <Link
               to="/events"
-              className="px-8 py-3 bg-[var(--accent-color)] text-[var(--primary-color)] font-bold rounded-lg text-lg hover:brightness-110 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              className="px-6 py-2 bg-[var(--accent-color)] text-[var(--primary-color)] font-bold rounded-lg text-base hover:brightness-110 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1"
             >
               View Events
             </Link>
             <Link
               to="/shop"
-              className="px-8 py-3 bg-white/10 backdrop-blur-sm border border-white/30 text-white font-bold rounded-lg text-lg hover:bg-white/20 transition-all"
+              className="px-6 py-2 bg-white/10 backdrop-blur-sm border border-white/30 text-white font-bold rounded-lg text-base hover:bg-white/20 transition-all"
             >
               Register Now
             </Link>
