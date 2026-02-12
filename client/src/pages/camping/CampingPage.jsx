@@ -362,7 +362,7 @@ function CampingPage({ embedded = false, event = null }) {
                                         {campgrounds.length <= 1 && <h3>{activeCampground.name}</h3>}
 
                                         {viewMode === 'map' ? (
-                                            <div style={{ position: 'relative', border: '1px solid #ddd', background: '#ccc', overflow: 'auto', maxHeight: '75vh', borderRadius: '8px' }}>
+                                            <div style={{ position: 'relative', border: '1px solid #ddd', background: '#ccc', overflow: 'auto', maxHeight: '75vh', borderRadius: '8px', padding: '15px 0' }}>
                                                 {hoveredSite && (
                                                     <CampsiteTooltip site={hoveredSite} eventRange={eventBounds} />
                                                 )}
@@ -428,12 +428,7 @@ function CampingPage({ embedded = false, event = null }) {
                                                                     // Current simplified tooltip just needs data, we can position it with mouse or fixed.
                                                                     // But for map, maybe better to position near the pin?
                                                                     // The tooltip component I wrote is absolute positioned but doesn't have coordinates.
-                                                                    // Let's modify the tooltip component to accept style or just position it here?
-                                                                    // Actually, standard tooltip behavior usually tracks mouse, but here we have fixed pins.
-                                                                    // Let's position it near the pin.
-
-                                                                    // Wait, the tooltip component I wrote has position: absolute but no top/left.
-                                                                    // I should update the tooltip styles in the component or pass them.
+                                                                    // Let's modify the tooltip styles in the component or pass them.
                                                                     // Providing a key helper to set position might be complex.
                                                                     // Let's just pass the site to state.
                                                                     setHoveredSite({ ...site, x: c.x, y: c.y });
@@ -443,8 +438,8 @@ function CampingPage({ embedded = false, event = null }) {
                                                                     position: 'absolute',
                                                                     left: `${c.x}%`,
                                                                     top: `${c.y}%`,
-                                                                    width: '20px',
-                                                                    height: '20px',
+                                                                    width: '16px',
+                                                                    height: '16px',
                                                                     background: color,
                                                                     borderRadius: '50%',
                                                                     transform: 'translate(-50%, -50%)',
@@ -454,7 +449,23 @@ function CampingPage({ embedded = false, event = null }) {
                                                                     opacity: site.is_available ? 1 : 0.6
                                                                 }}
                                                             // title attribute removed to prevent default browser tooltip
-                                                            />
+                                                            >
+                                                                <span style={{
+                                                                    position: 'absolute',
+                                                                    top: '-20px',
+                                                                    left: '50%',
+                                                                    transform: 'translateX(-50%)',
+                                                                    background: 'rgba(0,0,0,0.7)',
+                                                                    color: 'white',
+                                                                    padding: '2px 4px',
+                                                                    borderRadius: '3px',
+                                                                    fontSize: '0.7rem',
+                                                                    whiteSpace: 'nowrap',
+                                                                    pointerEvents: 'none'
+                                                                }}>
+                                                                    {site.site_number}
+                                                                </span>
+                                                            </div>
                                                         );
                                                     })}
                                                 </div>

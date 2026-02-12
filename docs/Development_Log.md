@@ -1,5 +1,13 @@
 
-
+## [2026-02-13] - Campsite Booking Map Adjustments (Completed)
+- **Time**: 09:14 - 09:25
+- **Completed Items**:
+    - **Feature (Frontend)**: Adjusted campsite pins on the user-side booking page (`CampingPage.jsx`) to match the admin view.
+    - **Design**: Reduced pin size from 20px to 16px.
+    - **Labels**: Added campsite number labels above pins with dark specialized background for visibility.
+    - **Bug Fix**: Added `25px` padding to map containers in both User and Admin views to prevent labels on top-edge pins from being cut off.
+    - **Verification**: Verified file syntax with linting for `CampingPage.jsx`. Confirmed consistency with `AdminMapTool.jsx`.
+    - **Documentation**: Archived implementation plan to `completed/`. Created `walkthrough.md`.
 
 ## [2026-02-12] - Home Page Revamp (Completed)
 - **Time**: 08:35 - 09:00

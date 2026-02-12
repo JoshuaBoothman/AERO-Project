@@ -418,7 +418,7 @@ function AttendeeModal({
                                                     <select
                                                         value={selDay}
                                                         onChange={e => syncDob(e.target.value, selMonth, selYear)}
-                                                        style={selectStyle}
+                                                        style={{ ...selectStyle, flex: 1.4 }}
                                                         aria-label="Day"
                                                     >
                                                         <option value="">Day</option>
@@ -431,7 +431,7 @@ function AttendeeModal({
                                                     <select
                                                         value={selMonth}
                                                         onChange={e => syncDob(selDay, e.target.value, selYear)}
-                                                        style={selectStyle}
+                                                        style={{ ...selectStyle, flex: 2 }}
                                                         aria-label="Month"
                                                     >
                                                         <option value="">Month</option>
@@ -444,7 +444,7 @@ function AttendeeModal({
                                                     <select
                                                         value={selYear}
                                                         onChange={e => syncDob(selDay, selMonth, e.target.value)}
-                                                        style={selectStyle}
+                                                        style={{ ...selectStyle, flex: 1.5 }}
                                                         aria-label="Year"
                                                     >
                                                         <option value="">Year</option>

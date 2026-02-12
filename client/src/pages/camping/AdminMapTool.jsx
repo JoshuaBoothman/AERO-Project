@@ -663,7 +663,7 @@ function AdminMapTool() {
                             />
                         )}
                         <div
-                            style={{ position: 'relative', width: '100%', height: '100%', overflow: 'auto' }}
+                            style={{ position: 'relative', width: '100%', height: '100%', overflow: 'auto', padding: '25px 0' }}
                             onClick={() => setSelectedSiteId(null)}
                         >
                             <div style={{ position: 'relative', minWidth: '1000px', display: 'inline-block' }}>
@@ -948,7 +948,6 @@ function AdminMapTool() {
                             </div>
                         </div>
                     </div>
-
 
 
 
