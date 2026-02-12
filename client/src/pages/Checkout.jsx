@@ -4,15 +4,67 @@ import { useCart } from '../context/CartContext';
 import { useNotification } from '../context/NotificationContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { formatDateTimeForDisplay } from '../utils/dateHelpers';
+import CampsiteModal from '../components/CampsiteModal'; // [NEW] Import Modal
 
 function Checkout() {
-    const { cart, removeFromCart, clearCart, cartTotal, cartItemCount } = useCart();
+    const { cart, removeFromCart, clearCart, cartTotal, cartItemCount, addToCart } = useCart(); // Destructure addToCart
     const { token } = useAuth();
     const { notify } = useNotification();
     const navigate = useNavigate();
     const location = useLocation();
 
     const [loading, setLoading] = useState(false);
+
+    // Edit State
+    const [editingItem, setEditingItem] = useState(null);
+    const [editEvent, setEditEvent] = useState(null);
+    const [editIndex, setEditIndex] = useState(null);
+
+    const handleEdit = async (item, idx) => {
+        // Only for Campsites for now
+        if (item.type !== 'CAMPSITE') return;
+
+        if (!item.eventSlug) {
+            // Fallback: if no slug, maybe try to find event? Or just error.
+            notify("Cannot edit this item (missing event context).", "error");
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const res = await fetch(`/api/events/${item.eventSlug}`);
+            if (!res.ok) throw new Error("Event not found");
+            const data = await res.json();
+            // API returns { status, jsonBody: eventData } or similar structure
+            const eventData = data.jsonBody || data;
+
+            setEditEvent(eventData);
+            setEditingItem(item);
+            setEditIndex(idx);
+        } catch (e) {
+            console.error(e);
+            notify("Failed to load event details for editing.", "error");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleEditSave = (newItems) => {
+        if (editIndex === null) return;
+
+        // Remove old item
+        removeFromCart(editIndex);
+
+        // Add new item(s) to cart
+        // Note: addToCart might append to end. 
+        // This changes order, but acceptable for Cart.
+        newItems.forEach(i => addToCart(i));
+
+        setEditingItem(null);
+        setEditEvent(null);
+        setEditIndex(null);
+        notify("Booking updated", "success");
+    };
 
     const handleCheckout = async () => {
         if (!token) {
@@ -50,7 +102,8 @@ function Checkout() {
                     checkOut: c.checkOut,
                     price: c.price,
                     adults: c.adults,
-                    children: c.children
+                    children: c.children,
+                    legacyOrderId: c.legacyOrderId // [NEW] Pass legacy ID
                 })),
                 merchandise: merch.map(m => ({
                     skuId: m.id,
@@ -173,10 +226,23 @@ function Checkout() {
                         {(item.quantity || 1) > 1 && (
                             <span className="text-xs font-bold uppercase tracking-wider bg-blue-100 text-blue-700 px-2 py-0.5 rounded whitespace-nowrap ml-2">Qty: {item.quantity}</span>
                         )}
+                        {item.legacyOrderId && (
+                            <span className="text-xs font-bold uppercase tracking-wider bg-amber-100 text-amber-700 px-2 py-0.5 rounded whitespace-nowrap ml-2">Legacy</span>
+                        )}
                     </div>
 
                     {details && (
                         <div className="text-sm text-gray-600">{details}</div>
+                    )}
+
+                    {/* EDIT Button for Campsites */}
+                    {item.type === 'CAMPSITE' && (
+                        <button
+                            onClick={() => handleEdit(item, idx)}
+                            className="text-xs text-primary font-medium hover:underline mt-1 flex items-center gap-1"
+                        >
+                            ✏️ Edit Details
+                        </button>
                     )}
 
                     {badges.length > 0 && (
@@ -252,6 +318,16 @@ function Checkout() {
                     </button>
                 </div>
             </div>
+
+            {/* Edit Modal */}
+            {editingItem && editEvent && (
+                <CampsiteModal
+                    event={editEvent}
+                    onClose={() => { setEditingItem(null); setEditEvent(null); setEditIndex(null); }}
+                    onAddToCart={handleEditSave}
+                    existingBooking={editingItem}
+                />
+            )}
         </div>
     );
 }

@@ -155,9 +155,50 @@ app.http('createLegacyBooking', {
                 // 4. Validate Campsite & Add Order Item
                 const campRes = await new sql.Request(transaction)
                     .input('cid', sql.Int, campsiteId)
-                    .query("SELECT price_per_night, site_number FROM campsites LEFT JOIN campgrounds ON campsites.campground_id = campgrounds.campground_id WHERE campsite_id = @cid");
+                    .query(`
+                        SELECT c.price_per_night, c.site_number, e.start_date, e.end_date 
+                        FROM campsites c 
+                        LEFT JOIN campgrounds cg ON c.campground_id = cg.campground_id 
+                        LEFT JOIN events e ON cg.event_id = e.event_id 
+                        WHERE c.campsite_id = @cid
+                    `);
 
                 if (campRes.recordset.length === 0) throw new Error("Invalid campsite ID");
+                const campData = campRes.recordset[0];
+
+                // 4a. Validate Dates against Event (Allow ±1 Day)
+                // Event Dates
+                const eventStart = new Date(campData.start_date);
+                const eventEnd = new Date(campData.end_date);
+
+                // Allowed Range: Start - 1 Day, End + 1 Day
+                const minCheckIn = new Date(eventStart);
+                minCheckIn.setDate(minCheckIn.getDate() - 1);
+
+                const maxCheckOut = new Date(eventEnd);
+                maxCheckOut.setDate(maxCheckOut.getDate() + 1);
+
+                // Normalize checks (ignore time)
+                const checkInDate = new Date(checkIn);
+                checkInDate.setHours(0, 0, 0, 0);
+                const checkOutDate = new Date(checkOut);
+                checkOutDate.setHours(0, 0, 0, 0);
+
+                const minIn = new Date(minCheckIn);
+                minIn.setHours(0, 0, 0, 0);
+                const maxOut = new Date(maxCheckOut);
+                maxOut.setHours(0, 0, 0, 0);
+
+                if (checkInDate < minIn || checkOutDate > maxOut) {
+                    // throw new Error(`Booking dates must be between ${minIn.toDateString()} and ${maxOut.toDateString()}`);
+                    // Actually, let's trust Admin logic for now but ideally we warn. 
+                    // The requirement is "Allow booking dates 1 day before...".
+                    // So we just don't throw error if it's within that range.
+                    // If outside? The original code didn't check against event dates, only campsite availability.
+                    // But good to enforce boundaries.
+                    throw new Error("Booking dates fall outside the allowed event period (Event Start -1 day to Event End +1 day).");
+                }
+
 
                 // 4b. Check Availability - Ensure no conflicting bookings
                 const availabilityCheck = await new sql.Request(transaction)
@@ -213,7 +254,7 @@ app.http('createLegacyBooking', {
                     const siteUrl = request.headers.get('origin');
 
                     // We need campsite name
-                    const campName = campRes.recordset[0].site_number || `Site ID ${campsiteId}`;
+                    const campName = campData.site_number || `Site ID ${campsiteId}`;
 
                     await sendLegacyWelcomeEmail(email, verificationToken, firstName, orgName, siteUrl, campName);
                 }

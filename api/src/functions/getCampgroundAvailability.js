@@ -56,22 +56,43 @@ app.http('getCampgroundAvailability', {
             // 3. Fetch ALL bookings for these campsites within the FULL EVENT period
             //    This is for displaying the booking grid
             const campsiteIds = sitesResult.recordset.map(r => r.campsite_id);
+            // If editing a legacy booking, we want to EXCLUDE that specific booking from "conflicts".
+            // The frontend should pass `exclude_order_id` query param.
+
             let bookingsMap = {}; // campsite_id -> [{ check_in, check_out }]
 
             if (campsiteIds.length > 0) {
-                // Query bookings for the entire event period
-                const bookingsQuery = `
-                    SELECT campsite_id, check_in_date, check_out_date
-                    FROM campsite_bookings
-                    WHERE campsite_id IN (${campsiteIds.join(',')})
-                    AND check_in_date < @eventEnd
-                    AND check_out_date > @eventStart
+                let bookingQuery = `
+                    SELECT 
+                        cb.campsite_id, 
+                        cb.check_in_date, 
+                        cb.check_out_date
+                    FROM campsite_bookings cb
+                    JOIN order_items oi ON cb.order_item_id = oi.order_item_id
+                    JOIN orders o ON oi.order_id = o.order_id
+                    JOIN campsites c ON cb.campsite_id = c.campsite_id
+                    JOIN campgrounds cg ON c.campground_id = cg.campground_id
+                    WHERE cg.event_id = @eventId
+                    AND o.payment_status != 'Cancelled'
+                    AND cb.check_out_date > @eventStart 
+                    AND cb.check_in_date < @eventEnd
                 `;
 
-                const bookingsResult = await pool.request()
-                    .input('eventStart', sql.Date, eventStart)
-                    .input('eventEnd', sql.Date, eventEnd)
-                    .query(bookingsQuery);
+                const excludeOrderId = request.query.get('exclude_order_id');
+                if (excludeOrderId) {
+                    bookingQuery += " AND o.order_id != @excludeOrderId";
+                }
+
+                const requestBuilder = pool.request()
+                    .input('eventId', sql.Int, eventId)
+                    .input('eventStart', sql.Date, new Date(eventStart))
+                    .input('eventEnd', sql.Date, new Date(eventEnd));
+
+                if (excludeOrderId) {
+                    requestBuilder.input('excludeOrderId', sql.Int, parseInt(excludeOrderId));
+                }
+
+                const bookingsResult = await requestBuilder.query(bookingQuery);
 
                 for (const booking of bookingsResult.recordset) {
                     if (!bookingsMap[booking.campsite_id]) {

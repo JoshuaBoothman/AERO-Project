@@ -20,10 +20,11 @@ app.http('getLegacyBookings', {
                     cb.check_in_date,
                     cb.check_out_date,
                     c.price_per_night,
-                    c.full_event_price, -- needed for price calculation if we re-calc
+                    c.full_event_price, 
+                    c.campground_id, -- Added for frontend map loading
                     camp.event_id,
                     e.name as event_name,
-                    e.name as event_name,
+                    e.slug as event_slug,
                     c.site_number as campsite_name -- sometimes site_number or name
                 FROM orders o
                 JOIN order_items oi ON o.order_id = oi.order_id

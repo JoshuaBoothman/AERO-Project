@@ -1,16 +1,15 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 
-function CampsiteModal({ event, onClose, onAddToCart, orgSettings }) {
+function CampsiteModal({ event, onClose, onAddToCart, orgSettings, existingBooking }) {
     // DEBUG LOG
-    console.log('[Modal] Render', { cid: event?.event_id });
+    console.log('[Modal] Render', { cid: event?.event_id, mode: existingBooking ? 'EDIT' : 'NEW' });
 
     const [campgrounds, setCampgrounds] = useState([]);
     const [selectedCampgroundId, setSelectedCampgroundId] = useState(null);
     const [loading, setLoading] = useState(false);
 
     // Selection Dates (Default to Event Dates)
-    // Adjust logic: If event start is in future, use it. 
     // Format YYYY-MM-DD
     const formatDate = (dateStr) => {
         if (!dateStr) return '';
@@ -37,6 +36,17 @@ function CampsiteModal({ event, onClose, onAddToCart, orgSettings }) {
     const [useFullEventPrice, setUseFullEventPrice] = useState(false);
     const [adults, setAdults] = useState(1);
     const [children, setChildren] = useState(0);
+
+    // Initial State from Existing Booking
+    useEffect(() => {
+        if (existingBooking) {
+            if (existingBooking.checkIn) setStartDate(formatDate(existingBooking.checkIn));
+            if (existingBooking.checkOut) setEndDate(formatDate(existingBooking.checkOut));
+            if (existingBooking.adults) setAdults(existingBooking.adults);
+            if (existingBooking.children) setChildren(existingBooking.children);
+            if (existingBooking.campgroundId) setSelectedCampgroundId(existingBooking.campgroundId);
+        }
+    }, [existingBooking]);
 
     // Derived State for Validation
     const nights = Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24));
@@ -65,10 +75,6 @@ function CampsiteModal({ event, onClose, onAddToCart, orgSettings }) {
 
     // Fetch campgrounds for this event
     useEffect(() => {
-        // Assuming we fetch all and filter, or fetch by event. 
-        // Admin tool used /api/campgrounds. Let's stick to that for now or consistent with Admin.
-        // Ideally: /api/events/:id/campgrounds. 
-        // Let's use the one that works: /api/campgrounds and filter.
         fetch('/api/campgrounds')
             .then(res => res.json())
             .then(data => {
@@ -78,18 +84,19 @@ function CampsiteModal({ event, onClose, onAddToCart, orgSettings }) {
             .catch(err => console.error(err));
     }, [event?.event_id]);
 
-    // Auto-select first campground if none selected
+    // Auto-select first campground if none selected and NOT editing (or if editing but ID missing)
     useEffect(() => {
-        if (campgrounds.length > 0 && !selectedCampgroundId) {
+        if (!existingBooking && campgrounds.length > 0 && !selectedCampgroundId) {
             setSelectedCampgroundId(campgrounds[0].campground_id);
         }
-    }, [campgrounds, selectedCampgroundId]);
+    }, [campgrounds, selectedCampgroundId, existingBooking]);
 
     // Fetch sites when campground or dates change
     useEffect(() => {
         if (selectedCampgroundId && startDate && endDate) {
             setLoading(true);
-            fetch(`/api/campgrounds/${selectedCampgroundId}/sites?startDate=${startDate}&endDate=${endDate}`)
+            const excludeParam = existingBooking?.legacyOrderId ? `&exclude_order_id=${existingBooking.legacyOrderId}` : '';
+            fetch(`/api/campgrounds/${selectedCampgroundId}/sites?startDate=${startDate}&endDate=${endDate}${excludeParam}`)
                 .then(res => res.json())
                 .then(data => {
                     setCampground(data.campground);
@@ -98,10 +105,37 @@ function CampsiteModal({ event, onClose, onAddToCart, orgSettings }) {
                 .catch(err => console.error(err))
                 .finally(() => setLoading(false));
         }
-    }, [selectedCampgroundId, startDate, endDate]);
+    }, [selectedCampgroundId, startDate, endDate, existingBooking]);
+
+    // Pre-select site when sites load if editing
+    useEffect(() => {
+        if (existingBooking && sites.length > 0) {
+            const mySite = sites.find(s => s.campsite_id === existingBooking.campsiteId);
+            // Only set if not already selected to avoid loop
+            if (mySite) {
+                setSelectedSites(prev => {
+                    // Check if already selected
+                    if (prev.length === 1 && prev[0].campsite_id === mySite.campsite_id) return prev;
+                    return [mySite];
+                });
+            }
+        }
+    }, [sites, existingBooking]);
 
     const toggleSiteSelection = (site) => {
         if (site.is_booked) return;
+
+        // Strict No-Switching Rule for Legacy Bookings
+        if (existingBooking) {
+            if (site.campsite_id !== existingBooking.campsiteId) {
+                alert("You cannot switch campsites for this legacy booking. Please contact admin if you need to move.");
+                return;
+            }
+            // Allow deselecting? No, why would they? They must book it.
+            // Actually, maybe they want to toggle to "refresh" logic? 
+            // Better to just Lock it.
+            return;
+        }
 
         setSelectedSites(prev => {
             const exists = prev.find(s => s.campsite_id === site.campsite_id);
@@ -123,20 +157,51 @@ function CampsiteModal({ event, onClose, onAddToCart, orgSettings }) {
         const selection = selectedSites.map(s => {
             // Calculate correct price for the item based on selection
             let finalPrice = 0;
-            if (useFullEventPrice && s.full_event_price) {
-                finalPrice = s.full_event_price + (extraAdults * (s.extra_adult_full_event_price || 0));
-            } else {
-                finalPrice = (s.price_per_night * nights) + (extraAdults * (s.extra_adult_price_per_night || 0) * nights);
+
+            // LEGACY BOOKING PRICING (Fixed Base + Variable Extras)
+            if (existingBooking && existingBooking.campsiteId === s.campsite_id && existingBooking.basePrice !== undefined) {
+                const fixedBase = existingBooking.basePrice;
+
+                let extraFee = 0;
+                // extras based on NEW duration/settings
+                if (useFullEventPrice && s.full_event_price) {
+                    extraFee = extraAdults * (s.extra_adult_full_event_price || 0);
+                } else {
+                    extraFee = extraAdults * (s.extra_adult_price_per_night || 0) * nights;
+                }
+
+                finalPrice = fixedBase + extraFee;
+            }
+            // STANDARD PRICING
+            else {
+                if (useFullEventPrice && s.full_event_price) {
+                    finalPrice = s.full_event_price + (extraAdults * (s.extra_adult_full_event_price || 0));
+                } else {
+                    finalPrice = (s.price_per_night * nights) + (extraAdults * (s.extra_adult_price_per_night || 0) * nights);
+                }
             }
 
             return {
-                ...s,
+                type: 'CAMPSITE', // Critical for CartContext
+                id: s.campsite_id,
+                name: `Site ${s.site_number || s.campsite_id}`,
+                campsiteId: s.campsite_id,
+                campsiteName: s.site_number || s.campsite_id,
+                campgroundId: campground?.campground_id,
+                campgroundName: campground?.name,
+                site_number: s.site_number,
                 checkIn: startDate,
                 checkOut: endDate,
-                campgroundName: campground?.name,
                 price: finalPrice,
+                eventId: event?.event_id,
+                eventName: event?.name,
+                eventSlug: event?.slug,
                 adults: adults === '' ? 1 : parseInt(adults),
-                children: children === '' ? 0 : parseInt(children)
+                children: children === '' ? 0 : parseInt(children),
+                // Preserve Legacy Context
+                isLegacy: existingBooking?.isLegacy || false,
+                legacyOrderId: existingBooking?.legacyOrderId,
+                basePrice: existingBooking?.basePrice
             };
         });
         onAddToCart(selection);
@@ -149,7 +214,7 @@ function CampsiteModal({ event, onClose, onAddToCart, orgSettings }) {
 
                 {/* Header */}
                 <div style={{ padding: '15px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h2 style={{ margin: 0 }}>Book Campsite</h2>
+                    <h2 style={{ margin: 0 }}>{existingBooking ? 'Edit Booking' : 'Book Campsite'}</h2>
                     <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', color: '#666' }}>
                         <X size={24} />
                     </button>
@@ -165,6 +230,7 @@ function CampsiteModal({ event, onClose, onAddToCart, orgSettings }) {
                             value={selectedCampgroundId || ''}
                             onChange={e => setSelectedCampgroundId(e.target.value)}
                             style={{ padding: '5px' }}
+                            disabled={!!existingBooking} // LOCKED for editing
                         >
                             {campgrounds.map(cg => (
                                 <option key={cg.campground_id} value={cg.campground_id}>{cg.name}</option>
@@ -198,22 +264,25 @@ function CampsiteModal({ event, onClose, onAddToCart, orgSettings }) {
                                 style={{ padding: '4px', background: useFullEventPrice ? '#eee' : 'white' }}
                             />
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', marginTop: '15px', gap: '2px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                <input
-                                    type="checkbox"
-                                    id="fullEventCheck"
-                                    checked={useFullEventPrice}
-                                    onChange={e => handleFullEventToggle(e.target.checked)}
-                                    disabled={isShortStay}
-                                    style={{ cursor: isShortStay ? 'not-allowed' : 'pointer' }}
-                                />
-                                <label htmlFor="fullEventCheck" style={{ fontSize: '0.9rem', cursor: isShortStay ? 'not-allowed' : 'pointer', color: isShortStay ? '#999' : 'inherit' }}>
-                                    Full Event Package
-                                </label>
+                        {/* Hide Full Event Package for Legacy Edits to avoid pricing confusion */}
+                        {!existingBooking && (
+                            <div style={{ display: 'flex', flexDirection: 'column', marginTop: '15px', gap: '2px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                    <input
+                                        type="checkbox"
+                                        id="fullEventCheck"
+                                        checked={useFullEventPrice}
+                                        onChange={e => handleFullEventToggle(e.target.checked)}
+                                        disabled={isShortStay}
+                                        style={{ cursor: isShortStay ? 'not-allowed' : 'pointer' }}
+                                    />
+                                    <label htmlFor="fullEventCheck" style={{ fontSize: '0.9rem', cursor: isShortStay ? 'not-allowed' : 'pointer', color: isShortStay ? '#999' : 'inherit' }}>
+                                        Full Event Package
+                                    </label>
+                                </div>
+                                {isShortStay && <span style={{ fontSize: '0.75rem', color: '#d32f2f', marginLeft: '20px' }}>Requires 5+ nights</span>}
                             </div>
-                            {isShortStay && <span style={{ fontSize: '0.75rem', color: '#d32f2f', marginLeft: '20px' }}>Requires 5+ nights</span>}
-                        </div>
+                        )}
                     </div>
 
                     {/* Guest Selection */}
@@ -246,9 +315,30 @@ function CampsiteModal({ event, onClose, onAddToCart, orgSettings }) {
                     <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
                         <div style={{ fontWeight: 'bold' }}>{selectedSites.length} sites selected</div>
                         <div style={{ fontSize: '0.9rem', color: '#666' }}>
+                            {existingBooking ? (
+                                <span title="Base Price Locked on original booking. Extra fees updated dynamically.">
+                                    Base Price Locked
+                                </span>
+                            ) : null}
+                            <br />
                             Total: ${selectedSites.reduce((sum, s) => {
                                 const safeAdults = adults === '' ? 1 : parseInt(adults);
                                 const extraAdults = Math.max(0, safeAdults - 1);
+
+                                if (existingBooking && existingBooking.campsiteId === s.campsite_id && existingBooking.basePrice !== undefined) {
+                                    // Legacy Logic
+                                    const fixedBase = existingBooking.basePrice;
+                                    let extraFee = 0;
+                                    if (useFullEventPrice && s.full_event_price) {
+                                        extraFee = extraAdults * (s.extra_adult_full_event_price || 0);
+                                    } else {
+                                        // Re-calc nights for extra fee
+                                        const currNights = Math.max(1, Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)));
+                                        extraFee = extraAdults * (s.extra_adult_price_per_night || 0) * currNights;
+                                    }
+                                    return sum + fixedBase + extraFee;
+                                }
+
                                 if (useFullEventPrice && s.full_event_price) {
                                     const extraFee = extraAdults * (s.extra_adult_full_event_price || 0);
                                     return sum + s.full_event_price + extraFee;
@@ -298,6 +388,12 @@ function CampsiteModal({ event, onClose, onAddToCart, orgSettings }) {
                                         border = '2px solid yellow';
                                     }
 
+                                    // Locked Style when editing
+                                    if (existingBooking && site.campsite_id !== existingBooking.campsiteId) {
+                                        cursor = 'not-allowed'; // Cannot select other sites
+                                        if (!site.is_booked) bg = '#ccc'; // Grey out available sites? Or just leave green but unclickable?
+                                    }
+
                                     return (
                                         <div
                                             key={site.campsite_id}
@@ -342,7 +438,7 @@ function CampsiteModal({ event, onClose, onAddToCart, orgSettings }) {
                         onClick={handleConfirm}
                         disabled={selectedSites.length === 0}
                     >
-                        Add {selectedSites.length} Sites to Order
+                        {existingBooking ? 'Update Booking' : `Add ${selectedSites.length} Sites to Order`}
                     </button>
                 </div>
             </div>

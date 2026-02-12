@@ -509,96 +509,98 @@ app.http('createOrder', {
                         if (availRes.recordset.length === 0) throw new Error(`Invalid campsite ID: ${campsiteId}`);
                         const { is_booked, price_per_night, full_event_price, extra_adult_price_per_night, extra_adult_full_event_price } = availRes.recordset[0];
 
-                        // if (is_booked) throw new Error(`Campsite ${campsiteId} not available.`);
+                        let fixedBasePrice = null;
+
                         if (is_booked) {
                             // Check if this is a "Legacy" booking owned by the SAME user (Claiming process)
                             const legacyCheckReq = new sql.Request(transaction);
                             const legacyCheckRes = await legacyCheckReq
                                 .input('cid', sql.Int, campsiteId)
                                 .input('uid', sql.Int, user.userId)
-                                .input('start', sql.Date, checkIn)
-                                .input('end', sql.Date, checkOut)
+                                .input('start', sql.Date, checkIn) // These params aren't strictly used in the relaxed query below but nice to have in context
                                 .query(`
-                                    SELECT cb.booking_id, oi.order_item_id, oi.attendee_id, o.order_id
+                                    SELECT cb.booking_id, oi.order_item_id, oi.attendee_id, o.order_id,
+                                           cb.check_in_date as original_check_in, 
+                                           cb.check_out_date as original_check_out
                                     FROM campsite_bookings cb
                                     JOIN order_items oi ON cb.order_item_id = oi.order_item_id
                                     JOIN orders o ON oi.order_id = o.order_id
                                     WHERE cb.campsite_id = @cid
                                     AND o.user_id = @uid
                                     AND o.payment_status = 'Pending'
-                                    AND o.booking_source = 'Legacy' -- Must be marked as Legacy
-                                    AND cb.check_in_date < @end AND cb.check_out_date > @start
+                                    AND o.booking_source = 'Legacy'
                                 `);
 
                             if (legacyCheckRes.recordset.length > 0) {
                                 // It IS a legacy booking. We "Merge" it.
-                                const { booking_id, order_item_id, attendee_id } = legacyCheckRes.recordset[0];
+                                const legacyBooking = legacyCheckRes.recordset[0];
+                                const { booking_id, order_item_id, attendee_id, original_check_in, original_check_out } = legacyBooking;
 
-                                // 1. Delete Campsite Booking
-                                await new sql.Request(transaction)
-                                    .input('cbid', sql.Int, booking_id)
-                                    .query("DELETE FROM campsite_bookings WHERE booking_id = @cbid");
+                                // 1. Calculate Original Base Price (Fixed) from DB data
+                                // Note: We need to calc based on original dates.
+                                const origStart = new Date(original_check_in);
+                                const origEnd = new Date(original_check_out);
+                                const origNights = Math.ceil((origEnd - origStart) / (1000 * 60 * 60 * 24));
 
-                                // 2. Delete Order Item
-                                await new sql.Request(transaction)
-                                    .input('oiid', sql.Int, order_item_id)
-                                    .query("DELETE FROM order_items WHERE order_item_id = @oiid");
-
-                                // 3. Clean up Legacy Attendee (if applicable)
-                                if (attendee_id) {
-                                    // Check if this is a placeholder attendee
-                                    const attCheckRes = await new sql.Request(transaction)
-                                        .input('aid', sql.Int, attendee_id)
-                                        .query(`
-                                            SELECT tt.name 
-                                            FROM attendees a
-                                            JOIN event_ticket_types tt ON a.ticket_type_id = tt.ticket_type_id
-                                            WHERE a.attendee_id = @aid
-                                        `);
-
-                                    if (attCheckRes.recordset.length > 0 && attCheckRes.recordset[0].name === 'Legacy Booking Placeholder') {
-                                        await new sql.Request(transaction)
-                                            .input('aid', sql.Int, attendee_id)
-                                            .query("DELETE FROM attendees WHERE attendee_id = @aid");
-                                    }
+                                if (full_event_price && origNights > 4) {
+                                    fixedBasePrice = full_event_price;
+                                } else {
+                                    fixedBasePrice = price_per_night * origNights;
                                 }
 
-                                // Proceed (is_booked effectively becomes false for this flow)
+                                // 2. Delete Old Booking components
+                                await new sql.Request(transaction).input('cbid', sql.Int, booking_id).query("DELETE FROM campsite_bookings WHERE booking_id = @cbid");
+                                await new sql.Request(transaction).input('oiid', sql.Int, order_item_id).query("DELETE FROM order_items WHERE order_item_id = @oiid");
+
+                                // Clean up Legacy Attendee if needed? (Optional, skipping for safety/simplicity as attendee might be shared)
+
                             } else {
                                 throw new Error(`Campsite ${campsiteId} not available.`);
                             }
                         }
 
-                        // Validate Price
+                        // --- PRICING VALIDATION ---
                         const start = new Date(checkIn);
                         const end = new Date(checkOut);
                         const nights = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
-
                         const extraAdults = Math.max(0, adults - 1);
 
-                        // Option 1: Daily Rate
-                        const baseDaily = price_per_night * nights;
-                        const extraDaily = extraAdults * (extra_adult_price_per_night || 0) * nights;
-                        const totalDaily = baseDaily + extraDaily;
+                        let expectedTotal = 0;
 
-                        // Option 2: Full Event Rate
-                        let totalFull = null;
-                        // Only allow full event rate if stay is > 4 nights (per 2026-02-02 plan)
-                        if (full_event_price && nights > 4) {
-                            const baseFull = full_event_price;
-                            const extraFull = extraAdults * (extra_adult_full_event_price || 0);
-                            totalFull = baseFull + extraFull;
+                        if (fixedBasePrice !== null) {
+                            // LEGACY PRICING MODEL
+                            let extrasTotal = 0;
+                            if (full_event_price && nights > 4) {
+                                extrasTotal = extraAdults * (extra_adult_full_event_price || 0);
+                            } else {
+                                extrasTotal = extraAdults * (extra_adult_price_per_night || 0) * nights;
+                            }
+                            expectedTotal = fixedBasePrice + extrasTotal;
+                        } else {
+                            // STANDARD PRICING MODEL
+                            const baseDaily = price_per_night * nights;
+                            const extraDaily = extraAdults * (extra_adult_price_per_night || 0) * nights;
+                            const totalDaily = baseDaily + extraDaily;
+
+                            let totalFull = null;
+                            if (full_event_price && nights > 4) {
+                                const baseFull = full_event_price;
+                                const extraFull = extraAdults * (extra_adult_full_event_price || 0);
+                                totalFull = baseFull + extraFull;
+                            }
+
+                            if (totalFull !== null && Math.abs(price - totalFull) < 0.5) {
+                                expectedTotal = totalFull;
+                            } else {
+                                expectedTotal = totalDaily;
+                            }
                         }
 
-                        // Allow small float difference or exact match
-                        let isValidPrice = false;
-                        if (Math.abs(price - totalDaily) < 0.5) isValidPrice = true;
-                        if (totalFull !== null && Math.abs(price - totalFull) < 0.5) isValidPrice = true;
-
-                        if (!isValidPrice) {
-                            throw new Error(`Invalid price for campsite ${campsiteId}. Expected ${totalDaily.toFixed(2)} (Daily) or ${totalFull ? totalFull.toFixed(2) : 'N/A'} (Full), got ${price}`);
+                        if (Math.abs(price - expectedTotal) > 0.5) {
+                            throw new Error(`Invalid price for campsite ${campsiteId}. Expected ${expectedTotal.toFixed(2)}, got ${price}`);
                         }
 
+                        // --- INSERT NEW BOOKING ---
                         totalAmount += price;
                         const itemReq = new sql.Request(transaction);
                         const itemRes = await itemReq

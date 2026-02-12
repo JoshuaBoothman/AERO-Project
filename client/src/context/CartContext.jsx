@@ -63,37 +63,43 @@ export function CartProvider({ children }) {
 
                             legacyItems.forEach(item => {
                                 // Check if already in cart (use uppercase for consistency)
-                                const exists = newCart.find(c => c.type === 'CAMPSITE' && c.campsiteId === item.campsite_id);
+                                // Use legacyOrderId to prevent duplicates/overwriting if already loaded
+                                const exists = newCart.find(c => c.legacyOrderId === item.order_id);
                                 if (!exists) {
                                     // Calculate Price (Basic approximation or use logic)
                                     // Logic: Nights * Daily
                                     const start = new Date(item.check_in_date);
                                     const end = new Date(item.check_out_date);
                                     const nights = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
-                                    const price = item.price_per_night * nights;
-                                    // Note: Full Event Price logic is complex, stick to daily for default or check nights > 4
-                                    // If nights > 4 && full_event_price exists, maybe use that?
-                                    // For simplicity, let's trust the user will see generic price or calculated.
-                                    // Let's use simple logic:
-                                    let finalPrice = price;
-                                    if (nights > 4 && item.full_event_price) {
+
+                                    let finalPrice = 0;
+                                    // Same logic as backend: if nights > 4 and full price exists
+                                    if (item.full_event_price && nights > 4) {
                                         finalPrice = item.full_event_price;
+                                    } else {
+                                        finalPrice = item.price_per_night * nights;
                                     }
 
                                     newCart.push({
                                         type: 'CAMPSITE', // Must be uppercase for Checkout.jsx comparison
-                                        id: item.campsite_id, // Checkout looks for .id for payload mapping
+                                        id: item.campsite_id, // Checkout looks for .id for payload mapping (campsiteId)
                                         name: `Site ${item.campsite_name}`, // Checkout displays .name
                                         campsiteId: item.campsite_id,
+                                        campsiteName: item.campsite_name,
+                                        campgroundId: item.campground_id, // Store for map loading
                                         site_number: item.site_number || item.campsite_name,
                                         checkIn: item.check_in_date,
                                         checkOut: item.check_out_date,
                                         price: finalPrice,
                                         eventId: item.event_id,
                                         eventName: item.event_name,
+                                        eventSlug: item.event_slug,
                                         adults: 1, // Default from legacy import
                                         children: 0,
-                                        isLegacy: true // Mark as legacy
+                                        children: 0,
+                                        isLegacy: true, // Mark as legacy
+                                        legacyOrderId: item.order_id, // Store ID to prevent duplication on next load
+                                        basePrice: finalPrice // LOCK the base price for future edits
                                     });
                                     changed = true;
                                 }
