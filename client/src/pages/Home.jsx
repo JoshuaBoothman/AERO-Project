@@ -22,34 +22,27 @@ function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* 1. Hero / Banner Section */}
-      <section className="relative bg-gray-900 text-white py-12 px-4 md:py-16 overflow-hidden">
-        {/* Placeholder Background - In production this would be an <img> or background-image */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[var(--primary-color)] to-gray-900 opacity-90 z-0"></div>
-        <div className="absolute inset-0 bg-[url('/placeholder-hero.jpg')] bg-cover bg-center opacity-20 mix-blend-overlay z-0"></div>
+      <section className="relative overflow-hidden bg-black group">
+        <img
+          src="/hero-banner.webp"
+          alt="ALSM Festival of Aeromodelling 2026"
+          className="w-full h-auto block min-h-[200px] object-cover md:object-contain"
+        />
 
-        <div className="container mx-auto relative z-10 text-center">
-          <h1 className="text-3xl md:text-4xl font-extrabold mb-4 tracking-tight leading-tight">
-            Australian Large Scale Models invites you to the <br className="hidden md:block" />
-            <span className="text-[var(--accent-color)]">Festival of Aeromodelling 2026</span>
-          </h1>
-          <p className="text-lg md:text-xl font-light mb-6 text-gray-200">
-            4th – 12th of July 2026<br />
-            <span className="font-semibold">Inglewood Aerodrome</span>
-          </p>
-          <div className="flex justify-center gap-4">
-            <Link
-              to="/events"
-              className="px-6 py-2 bg-[var(--accent-color)] text-[var(--primary-color)] font-bold rounded-lg text-base hover:brightness-110 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-            >
-              View Events
-            </Link>
-            <Link
-              to="/shop"
-              className="px-6 py-2 bg-white/10 backdrop-blur-sm border border-white/30 text-white font-bold rounded-lg text-base hover:bg-white/20 transition-all"
-            >
-              Register Now
-            </Link>
-          </div>
+        {/* Action Buttons - Positioned over the black bar in the image */}
+        <div className="absolute bottom-0 left-0 right-0 py-2 md:py-4 lg:py-6 flex items-center justify-center gap-3 md:gap-6 bg-gradient-to-t from-black/80 to-transparent md:from-transparent">
+          <Link
+            to="/events"
+            className="px-4 py-1.5 md:px-8 md:py-3 bg-[var(--accent-color)] text-[var(--primary-color)] font-bold rounded-lg text-xs md:text-base lg:text-lg hover:brightness-110 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+          >
+            View Events
+          </Link>
+          <Link
+            to="/shop"
+            className="px-4 py-1.5 md:px-8 md:py-3 bg-white text-[var(--primary-color)] md:bg-white/10 md:backdrop-blur-sm md:border md:border-white/30 md:text-white font-bold rounded-lg text-xs md:text-base lg:text-lg hover:bg-white/20 transition-all shadow-lg transform hover:-translate-y-1"
+          >
+            Register Now
+          </Link>
         </div>
       </section>
 
@@ -166,19 +159,24 @@ function Home() {
             Can’t make it to an Australian Large Scale Models event, or new to aeromodelling? You can find local flying events and information on how to get into the hobby through the Model Aeronautical Association of Australia or via your state association below.
           </p>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 md:gap-8">
+          <div className="flex flex-wrap justify-center gap-6 md:gap-8 max-w-5xl mx-auto">
             {/* National */}
-            <AssociationLink name="MAAA" href="https://www.maaa.asn.au/" isNational />
+            <AssociationLink
+              name="MAAA"
+              href="https://www.maaa.asn.au/"
+              isNational
+              logo="/logos/MAA.webp"
+            />
 
             {/* States */}
-            <AssociationLink name="MAAQ (QLD)" href="https://maaq.org/" />
-            <AssociationLink name="ANSW (NSW)" href="https://nsw.aeromodellers.org.au/" />
-            <AssociationLink name="ACTAA (ACT)" href="https://actaa.net.au/" />
-            <AssociationLink name="MASA (SA)" href="https://www.masa.org.au/" />
-            <AssociationLink name="ANT (NT)" href="https://www.maaa.asn.au/about-us/state-associations/ant" />
-            <AssociationLink name="TMAA (TAS)" href="https://tasmodelaero.com/" />
-            <AssociationLink name="VMAA (VIC)" href="https://www.vmaa.com.au/" />
-            <AssociationLink name="AWA (WA)" href="https://www.facebook.com/profile.php?id=100064786877751" />
+            <AssociationLink name="MAAQ (QLD)" href="https://maaq.org/" logo="/logos/MAAQ.webp" />
+            <AssociationLink name="ANSW (NSW)" href="https://nsw.aeromodellers.org.au/" logo="/logos/ANSW.webp" />
+            <AssociationLink name="ACTAA (ACT)" href="https://actaa.net.au/" logo="/logos/ASCTAA.webp" />
+            <AssociationLink name="MASA (SA)" href="https://www.masa.org.au/" logo="/logos/MASA.webp" />
+            <AssociationLink name="ANT (NT)" href="https://www.maaa.asn.au/about-us/state-associations/ant" logo="/logos/ANT.webp" />
+            <AssociationLink name="TMAA (TAS)" href="https://tasmodelaero.com/" logo="/logos/TMAA.webp" />
+            <AssociationLink name="VMAA (VIC)" href="https://www.vmaa.com.au/" logo="/logos/VMAA.webp" />
+            <AssociationLink name="AWA (WA)" href="https://www.facebook.com/profile.php?id=100064786877751" logo="/logos/AWA.webp" />
           </div>
         </div>
       </section>
@@ -190,10 +188,18 @@ function Home() {
             We would like to say thank you to the Goondiwindi Regional Council for their ongoing support with Australian Large Scale Models.
           </p>
           <div className="flex justify-center items-center">
-            {/* Placeholder for Council Logo */}
-            <div className="h-16 w-64 bg-gray-200 rounded flex items-center justify-center text-gray-400 text-sm font-semibold border-2 border-dashed border-gray-300">
-              Goondiwindi Regional Council Logo
-            </div>
+            <a
+              href="https://www.grc.qld.gov.au/Home"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group bg-white p-4 md:p-6 rounded-xl border border-gray-200 shadow-sm transition-all duration-300 hover:shadow-xl hover:scale-105 hover:border-[var(--primary-color)]"
+            >
+              <img
+                src="/logos/goondoowindi-council-logo.webp"
+                alt="Goondiwindi Regional Council Logo"
+                className="h-12 md:h-16 w-auto object-contain grayscale group-hover:grayscale-0 transition-all duration-500"
+              />
+            </a>
           </div>
         </div>
       </footer>
@@ -202,24 +208,32 @@ function Home() {
 }
 
 // Helper Component for Association Links
-function AssociationLink({ name, href, isNational }) {
+function AssociationLink({ name, href, isNational, logo }) {
   return (
     <a
       href={href}
       target="_blank"
       rel="noopener noreferrer"
       className={`
-        flex flex-col items-center justify-center p-6 rounded-xl transition-all duration-300
-        ${isNational
-          ? 'bg-[var(--primary-color)] text-white shadow-lg hover:shadow-xl hover:scale-105 col-span-2 md:col-span-1'
-          : 'bg-gray-50 text-gray-700 hover:bg-white hover:shadow-md hover:text-[var(--primary-color)] border border-gray-100'}
+        flex flex-col items-center justify-center p-6 rounded-xl transition-all duration-300 group
+        w-full sm:w-[calc(50%-1rem)] md:w-[calc(33.33%-2rem)] lg:w-[calc(20%-2rem)] min-w-[160px]
+        bg-white border border-gray-200 shadow-sm hover:shadow-xl hover:scale-105 hover:border-[var(--primary-color)]
       `}
     >
-      {/* Placeholder Icon/Logo */}
-      <div className={`w-12 h-12 mb-3 rounded-full flex items-center justify-center text-xl font-bold ${isNational ? 'bg-white/20' : 'bg-gray-200'}`}>
-        {name.charAt(0)}
+      <div className={`w-20 h-20 mb-4 flex items-center justify-center overflow-hidden grayscale group-hover:grayscale-0 transition-all duration-500`}>
+        {logo ? (
+          <img
+            src={logo}
+            alt={`${name} Logo`}
+            className="w-full h-full object-contain"
+          />
+        ) : (
+          <div className={`w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold ${isNational ? 'bg-white/20' : 'bg-gray-200'}`}>
+            {name.charAt(0)}
+          </div>
+        )}
       </div>
-      <span className="font-bold text-sm md:text-base">{name}</span>
+      <span className="font-bold text-sm md:text-base text-center">{name}</span>
     </a>
   );
 }

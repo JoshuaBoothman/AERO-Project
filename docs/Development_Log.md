@@ -1,3 +1,28 @@
+## [2026-02-13] - Homepage Visual Overhaul
+**Milestone:** Static Assets Implementation & Hero Section Redesign
+
+### Completed Items
+*   **Static Asset Management**
+    *   **Architecture**: Established `client/public/logos/` as the standard directory for static UI assets (logos, banners) to ensure version control and avoid unnecessary cloud storage costs for static content.
+*   **National & State Associations Section**
+    *   **Frontend**: Overhauled the associations section in `Home.jsx`.
+    *   **UI/UX**: 
+        *   Replaced text placeholders with 9 official association logos.
+        *   Implemented a uniform card design (white background, subtle border, light shadow).
+        *   Added a premium "grayscale-to-color" transition and scaling effect on hover.
+    *   **Layout**: Switched from a CSS grid to a centering flexbox to ensure the bottom row of logos remains balanced.
+*   **Hero Section Redesign**
+    *   **Frontend**: Replaced the entire text-based hero banner with a high-resolution 2000px custom banner image.
+    *   **Buttons**: Overlaid the "View Events" and "Register Now" action buttons directly onto the banner's integrated black bar using absolute positioning.
+    *   **Responsiveness**: Optimized banner scaling and button legibility for mobile devices.
+*   **Footer Enhancements**
+    *   **Council Logo**: Added the Goondiwindi Regional Council logo to the footer.
+    *   **Consistency**: Applied the same card-styling and grayscale hover effect used in the associations section for brand cohesion.
+    *   **Linking**: Integrated a direct link to the official council website.
+
+### Verification
+*   **Manual**: Verified by user across various screen sizes.
+
 
 ## [2026-02-13] - Image Gallery & Home Page Carousel (Completed)
 - **Time**: 10:41 - 11:00
