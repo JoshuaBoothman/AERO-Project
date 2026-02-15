@@ -15,12 +15,12 @@ app.http('manageAssetTypes', {
                 const body = await request.json();
                 const { name, description, event_id, base_hire_cost, full_event_cost, show_daily_cost, show_full_event_cost, image_url, asset_category_id, option_label } = body;
 
-                if (!name || !event_id) {
-                    return { status: 400, body: JSON.stringify({ error: "Name and Event ID are required" }) };
+                if (!name) { // Removed !event_id check
+                    return { status: 400, body: JSON.stringify({ error: "Name is required" }) };
                 }
 
                 const result = await pool.request()
-                    .input('eventId', sql.Int, event_id)
+                    .input('eventId', sql.Int, event_id || null) // Allow null
                     .input('name', sql.NVarChar, name)
                     .input('description', sql.NVarChar, description || '')
                     .input('cost', sql.Decimal(10, 2), base_hire_cost || 0)

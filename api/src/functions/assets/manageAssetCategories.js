@@ -33,21 +33,29 @@ app.http('manageAssetCategories', {
                 const body = await request.json();
                 const { event_id, name, sort_order } = body;
 
-                if (!event_id || !name) {
-                    return { status: 400, body: JSON.stringify({ error: "Event ID and Name are required" }) };
+                if (!name) { // Removed !event_id check
+                    return { status: 400, body: JSON.stringify({ error: "Name is required" }) };
                 }
 
                 // Get next sort order if not provided
                 let order = sort_order;
                 if (order === undefined) {
-                    const maxRes = await pool.request()
-                        .input('eid', sql.Int, event_id)
-                        .query("SELECT MAX(sort_order) as maxOrder FROM asset_categories WHERE event_id = @eid");
+                    const maxReq = pool.request();
+                    let maxQuery = "SELECT MAX(sort_order) as maxOrder FROM asset_categories";
+
+                    if (event_id) {
+                        maxQuery += " WHERE event_id = @eid";
+                        maxReq.input('eid', sql.Int, event_id);
+                    } else {
+                        maxQuery += " WHERE event_id IS NULL";
+                    }
+
+                    const maxRes = await maxReq.query(maxQuery);
                     order = (maxRes.recordset[0].maxOrder || 0) + 1;
                 }
 
                 const result = await pool.request()
-                    .input('eid', sql.Int, event_id)
+                    .input('eid', sql.Int, event_id || null) // Allow null
                     .input('name', sql.NVarChar, name)
                     .input('sort', sql.Int, order)
                     .query(`

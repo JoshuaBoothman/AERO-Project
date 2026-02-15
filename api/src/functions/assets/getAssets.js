@@ -34,7 +34,7 @@ app.http('getAssets', {
             `;
 
             if (eventId) {
-                query += ` WHERE at.event_id = @eventId`;
+                query += ` WHERE (at.event_id = @eventId OR at.event_id IS NULL)`;
             }
 
             query += ` ORDER BY category_sort_order ASC, at.sort_order ASC, at.name ASC`;

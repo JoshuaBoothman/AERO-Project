@@ -174,7 +174,7 @@ app.http('getStoreItems', {
                     at.sort_order
                 FROM asset_types at
                 LEFT JOIN asset_categories ac ON at.asset_category_id = ac.asset_category_id
-                WHERE at.event_id = @eid
+                WHERE (at.event_id = @eid OR at.event_id IS NULL)
                 ORDER BY category_sort_order ASC, at.sort_order ASC, at.name ASC
             `);
             const assets = assetRes.recordset.map(a => ({

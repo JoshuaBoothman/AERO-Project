@@ -1,3 +1,19 @@
+## [2026-02-15] - Global Asset Management (Completed)
+- **Time**: 14:00 - 14:30
+- **Completed Items**:
+    - **Feature (Global Assets)**: Decoupled Assets and Asset Categories from specific events, allowing them to be shared globally across all events.
+    - **Database**:
+        - Updated `asset_types` and `asset_categories` tables to allow NULL `event_id` (via manual script).
+    - **Backend (API)**:
+        - Updated `manageAssetTypes.js` and `manageAssetCategories.js` to allow creating/updating items without an `event_id`.
+        - Updated `getAssets.js` and `getStoreItems.js` to fetch global assets (NULL `event_id`) in addition to event-specific ones.
+    - **Frontend (Admin)**:
+        - Verified `AssetTypes.jsx` handles global asset creation correctly.
+    - **Verification**:
+        - Verified safety of `createOrder.js` and availability logic (dependent on `asset_type_id`, not event context).
+    - **Documentation**:
+        - Updated `task.md` and `implementation_plan.md`.
+
 ## [2026-02-15] - Invoice Square Payment (Completed)
 - **Time**: 11:35 - 11:50
 - **Completed Items**:
