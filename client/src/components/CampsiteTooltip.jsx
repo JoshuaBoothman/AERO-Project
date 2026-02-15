@@ -2,7 +2,8 @@
 import React from 'react';
 import { formatDateForDisplay } from '../utils/dateHelpers';
 
-const CampsiteTooltip = ({ site, eventRange }) => {
+const CampsiteTooltip = ({ site, eventRange, coreEventRange }) => {
+
     if (!site) return null;
 
     // Filter relevant bookings for this event range
@@ -19,7 +20,27 @@ const CampsiteTooltip = ({ site, eventRange }) => {
     // Sort bookings by date
     relevantBookings.sort((a, b) => new Date(a.check_in) - new Date(b.check_in));
 
-    const isFullyBooked = false; // logic handled by parent usually, but here we can just show dates
+    // Calculate status for display
+    let isFullyBooked = false;
+    if (coreEventRange && coreEventRange.start && coreEventRange.end) {
+        const cStart = new Date(coreEventRange.start);
+        const cEnd = new Date(coreEventRange.end);
+        const nights = Math.max(1, Math.ceil((cEnd - cStart) / (1000 * 60 * 60 * 24)));
+
+        let booked = 0;
+        relevantBookings.forEach(b => {
+            const bStart = new Date(b.check_in);
+            const bEnd = new Date(b.check_out);
+            // Clamp to core range
+            const effStart = bStart < cStart ? cStart : bStart;
+            const effEnd = bEnd > cEnd ? cEnd : bEnd;
+            if (effEnd > effStart) {
+                booked += Math.ceil((effEnd - effStart) / (1000 * 60 * 60 * 24));
+            }
+        });
+        isFullyBooked = booked >= nights;
+    }
+
 
     return (
         <div style={{
@@ -50,8 +71,9 @@ const CampsiteTooltip = ({ site, eventRange }) => {
                     fontWeight: 'bold',
                     fontSize: '0.75rem'
                 }}>
-                    {relevantBookings.length === 0 ? 'Available' : (site.is_available ? 'Partially Booked' : 'Unavailable')}
+                    {relevantBookings.length === 0 ? 'Available' : (isFullyBooked ? 'Booked' : 'Partially Booked')}
                 </span>
+
             </div>
 
             {relevantBookings.length > 0 && (

@@ -656,11 +656,28 @@ function AdminMapTool() {
                         {hoveredSite && (
                             <CampsiteTooltip
                                 site={hoveredSite}
-                                eventRange={{
-                                    start: events.find(e => e.event_id == selectedEventId)?.start_date,
-                                    end: events.find(e => e.event_id == selectedEventId)?.end_date
-                                }}
+                                eventRange={(() => {
+                                    const evt = events.find(e => e.event_id == selectedEventId);
+                                    if (!evt) return { start: '', end: '' };
+                                    const s = new Date(evt.start_date);
+                                    s.setDate(s.getDate() - 1);
+                                    const e = new Date(evt.end_date);
+                                    e.setDate(e.getDate() + 1);
+                                    return {
+                                        start: s.toISOString().split('T')[0],
+                                        end: e.toISOString().split('T')[0]
+                                    };
+                                })()}
+                                coreEventRange={(() => {
+                                    const evt = events.find(e => e.event_id == selectedEventId);
+                                    if (!evt) return { start: '', end: '' };
+                                    return {
+                                        start: evt.start_date.split('T')[0],
+                                        end: evt.end_date.split('T')[0]
+                                    };
+                                })()}
                             />
+
                         )}
                         <div
                             style={{ position: 'relative', width: '100%', height: '100%', overflow: 'auto', padding: '25px 0' }}

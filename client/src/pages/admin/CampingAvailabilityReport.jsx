@@ -84,15 +84,14 @@ function CampingAvailabilityReport() {
     const processedData = useMemo(() => {
         if (!hasSearched || !selectedEvent || !reportData.length) return [];
 
-        // 1. Calculate Total Event Nights
+        // 1. Calculate Total Event Nights (Core Dates)
         // Use YYYY-MM-DD to avoid time issues, matching CampingPage logic
         const sStr = selectedEvent.start_date.split('T')[0];
         const eStr = selectedEvent.end_date.split('T')[0];
-        const eventStart = new Date(sStr);
-        eventStart.setDate(eventStart.getDate() - 1);
-        const eventEnd = new Date(eStr);
-        eventEnd.setDate(eventEnd.getDate() + 1);
-        const totalEventNights = Math.max(1, Math.ceil((eventEnd - eventStart) / (1000 * 60 * 60 * 24)));
+        const coreStart = new Date(sStr);
+        const coreEnd = new Date(eStr);
+        const coreEventNights = Math.max(1, Math.ceil((coreEnd - coreStart) / (1000 * 60 * 60 * 24)));
+
 
         // 2. Group by Campsite
         const sites = {};
@@ -127,9 +126,10 @@ function CampingAvailabilityReport() {
                     const bStart = new Date(b.check_in_date.split('T')[0]);
                     const bEnd = new Date(b.check_out_date.split('T')[0]);
 
-                    // Clamp booking to event bounds
-                    const effectiveStart = bStart < eventStart ? eventStart : bStart;
-                    const effectiveEnd = bEnd > eventEnd ? eventEnd : bEnd;
+                    // Clamp booking to CORE event bounds
+                    const effectiveStart = bStart < coreStart ? coreStart : bStart;
+                    const effectiveEnd = bEnd > coreEnd ? coreEnd : bEnd;
+
 
                     if (effectiveEnd > effectiveStart) {
                         const nights = Math.ceil((effectiveEnd - effectiveStart) / (1000 * 60 * 60 * 24));
@@ -140,7 +140,8 @@ function CampingAvailabilityReport() {
 
             let status = 'Available';
             // Allow for tiny floating point errors or overlaps by checking >= total
-            if (bookedNights >= totalEventNights) status = 'Full';
+            if (bookedNights >= coreEventNights) status = 'Full';
+
             else if (bookedNights > 0) status = 'Partial';
 
             return {

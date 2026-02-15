@@ -1,4 +1,20 @@
+## [2026-02-15] - Campsite Booking Status Fix (Completed)
+- **Time**: 14:35 - 14:55
+- **Completed Items**:
+    - **Bug Fix**: Resolved issue where campsites were incorrectly marked as "Partial" due to booking grid extended dates.
+    - **Backend (API)**:
+        - Updated `getCampgroundAvailability.js` to return `original_event_start` and `original_event_end` (core event dates).
+    - **Frontend (Client)**:
+        - Updated `CampingPage.jsx`, `CampingListView.jsx`, `CampsiteTooltip.jsx`, `AdminMapTool.jsx`, and `CampingAvailabilityReport.jsx` to use core event dates for "Full" vs "Partial" status calculation.
+        - Sites are now marked "Booked" (Red) only if they cover the core event duration, ignoring the +/- 1 day buffer used for the grid.
+    - **Verification**:
+        - Linted all modified files (Pass).
+        - Created `walkthrough.md`.
+    - **Documentation**:
+        - Archived implementation plan to `completed/`.
+
 ## [2026-02-15] - Campsite Map Display Fix (Completed)
+
 - **Time**: 14:30 - 14:35
 - **Completed Items**:
     - **Feature (Frontend)**: Updated public `CampingPage.jsx` map display to match Admin view.

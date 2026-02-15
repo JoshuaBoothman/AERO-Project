@@ -26,6 +26,8 @@ function CampingPage({ embedded = false, event = null }) {
     const [eventName, setEventName] = useState('');
     const [dates, setDates] = useState({ start: '', end: '' });
     const [eventBounds, setEventBounds] = useState({ start: '', end: '' });
+    const [originalEventBounds, setOriginalEventBounds] = useState({ start: '', end: '' });
+
     const [useFullEventPrice, setUseFullEventPrice] = useState(false);
     const [campgrounds, setCampgrounds] = useState([]); // [{ id, name, sites: [] }]
     const [activeCampgroundId, setActiveCampgroundId] = useState(null);
@@ -68,6 +70,8 @@ function CampingPage({ embedded = false, event = null }) {
                     const endRaw = event.end_date.split('T')[0];
                     setDates({ start: startRaw, end: endRaw });
                     setEventBounds({ start: startRaw, end: endRaw });
+                    setOriginalEventBounds({ start: startRaw, end: endRaw });
+
                 }
             }
         } catch (err) { console.error('Failed to fetch event details:', err); }
@@ -85,6 +89,10 @@ function CampingPage({ embedded = false, event = null }) {
                 if (data.event_start && data.event_end) {
                     setEventBounds({ start: data.event_start, end: data.event_end });
                 }
+                if (data.original_event_start && data.original_event_end) {
+                    setOriginalEventBounds({ start: data.original_event_start, end: data.original_event_end });
+                }
+
                 // Set default active tab
                 if (data.campgrounds.length > 0) {
                     setActiveCampgroundId(data.campgrounds[0].campground_id);
@@ -112,6 +120,8 @@ function CampingPage({ embedded = false, event = null }) {
                 const endRaw = e.split('T')[0];
                 setDates({ start: startRaw, end: endRaw });
                 setEventBounds({ start: startRaw, end: endRaw });
+                setOriginalEventBounds({ start: startRaw, end: endRaw });
+
             }
             // Don't set loading false yet, we need availability
         } else {
@@ -378,28 +388,34 @@ function CampingPage({ embedded = false, event = null }) {
                                                         const isSelected = selectedSite?.campsite_id === site.campsite_id;
 
                                                         // Calculate Booking Status
-                                                        // 1. Calculate total nights in event
-                                                        const eStart = new Date(eventBounds.start);
-                                                        const eEnd = new Date(eventBounds.end);
-                                                        const totalEventNights = Math.max(1, Math.ceil((eEnd - eStart) / (1000 * 60 * 60 * 24)));
+                                                        // 1. Calculate total nights in CORE event (for status)
+                                                        const coreStart = new Date(originalEventBounds.start || eventBounds.start);
+                                                        const coreEnd = new Date(originalEventBounds.end || eventBounds.end);
+                                                        const coreEventNights = Math.max(1, Math.ceil((coreEnd - coreStart) / (1000 * 60 * 60 * 24)));
 
-                                                        // 2. Calculate total nights booked for this site
-                                                        let bookedNights = 0;
+                                                        // 2. Calculate total nights booked for this site WITHIN CORE DATES
+                                                        let bookedCoreNights = 0;
                                                         if (site.bookings && site.bookings.length > 0) {
                                                             site.bookings.forEach(b => {
                                                                 const bStart = new Date(b.check_in);
                                                                 const bEnd = new Date(b.check_out);
-                                                                // Clamp booking to event bounds to avoid over-counting (though DB shouldn't allow it)
-                                                                const effectiveStart = bStart < eStart ? eStart : bStart;
-                                                                const effectiveEnd = bEnd > eEnd ? eEnd : bEnd;
+                                                                // Clamp to CORE event bounds
+                                                                const effectiveStart = bStart < coreStart ? coreStart : bStart;
+                                                                const effectiveEnd = bEnd > coreEnd ? coreEnd : bEnd;
                                                                 if (effectiveEnd > effectiveStart) {
-                                                                    bookedNights += Math.ceil((effectiveEnd - effectiveStart) / (1000 * 60 * 60 * 24));
+                                                                    bookedCoreNights += Math.ceil((effectiveEnd - effectiveStart) / (1000 * 60 * 60 * 24));
                                                                 }
                                                             });
                                                         }
 
-                                                        const isFullyBooked = bookedNights >= totalEventNights;
-                                                        const isPartiallyBooked = bookedNights > 0 && bookedNights < totalEventNights;
+                                                        const isFullyBooked = bookedCoreNights >= coreEventNights;
+                                                        // Partial if ANY booking exists (even outside core) OR if inside core but not full
+                                                        // But previous logic said: "Partial if bookedNights > 0".
+                                                        // Let's stick to: if it has bookings, but not FULL core event, it's partial.
+                                                        // Actually, we should check if it has ANY bookings at all.
+                                                        const hasAnyBookings = site.bookings && site.bookings.length > 0;
+                                                        const isPartiallyBooked = hasAnyBookings && !isFullyBooked;
+
 
                                                         // Map Pin Color Logic:
                                                         // 1. Selected -> Blue
@@ -477,7 +493,10 @@ function CampingPage({ embedded = false, event = null }) {
                                                 onSiteSelect={handleSiteClick}
                                                 eventStartDate={eventBounds.start}
                                                 eventEndDate={eventBounds.end}
+                                                originalEventStartDate={originalEventBounds.start}
+                                                originalEventEndDate={originalEventBounds.end}
                                                 compactMode={true}
+
                                             />
                                         )}
                                     </div>

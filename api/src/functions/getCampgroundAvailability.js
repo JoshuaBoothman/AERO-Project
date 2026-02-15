@@ -148,6 +148,8 @@ app.http('getCampgroundAvailability', {
                 jsonBody: {
                     event_start: eventStart,  // Full event period for grid
                     event_end: eventEnd,
+                    original_event_start: eventRes.recordset[0].start_date.toISOString().split('T')[0], // Core Event Start
+                    original_event_end: eventRes.recordset[0].end_date.toISOString().split('T')[0],     // Core Event End
                     check_in: checkIn,        // User-selected dates
                     check_out: checkOut,
                     campgrounds: Object.values(campgrounds)

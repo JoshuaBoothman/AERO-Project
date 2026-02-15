@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 
-const CampingListView = ({ activeCampground, selectedSite, onSiteSelect, eventStartDate, eventEndDate, compactMode = false }) => {
+const CampingListView = ({ activeCampground, selectedSite, onSiteSelect, eventStartDate, eventEndDate, originalEventStartDate, originalEventEndDate, compactMode = false }) => {
+
     // Generate array of dates from event start to event end (exclusive of end date for nights)
     const dateColumns = useMemo(() => {
         if (!eventStartDate || !eventEndDate) return [];
@@ -97,27 +98,32 @@ const CampingListView = ({ activeCampground, selectedSite, onSiteSelect, eventSt
                                 )}
                                 <td style={{ padding: '10px 12px', textAlign: 'center' }}>
                                     {(() => {
-                                        // Calculate total nights in event
-                                        const eStart = new Date(eventStartDate);
-                                        const eEnd = new Date(eventEndDate);
-                                        const totalEventNights = Math.max(1, Math.ceil((eEnd - eStart) / (1000 * 60 * 60 * 24)));
+                                        // Calculate Booking Status
+                                        // 1. Calculate total nights in CORE event (for status)
+                                        const coreStart = new Date(originalEventStartDate || eventStartDate);
+                                        const coreEnd = new Date(originalEventEndDate || eventEndDate);
+                                        const coreEventNights = Math.max(1, Math.ceil((coreEnd - coreStart) / (1000 * 60 * 60 * 24)));
 
-                                        // Calculate booked nights
-                                        let bookedNights = 0;
+                                        // 2. Calculate total nights booked for this site WITHIN CORE DATES
+                                        let bookedCoreNights = 0;
                                         if (site.bookings && site.bookings.length > 0) {
                                             site.bookings.forEach(b => {
                                                 const bStart = new Date(b.check_in);
                                                 const bEnd = new Date(b.check_out);
-                                                const effectiveStart = bStart < eStart ? eStart : bStart;
-                                                const effectiveEnd = bEnd > eEnd ? eEnd : bEnd;
+                                                // Clamp to CORE event bounds
+                                                const effectiveStart = bStart < coreStart ? coreStart : bStart;
+                                                const effectiveEnd = bEnd > coreEnd ? coreEnd : bEnd;
                                                 if (effectiveEnd > effectiveStart) {
-                                                    bookedNights += Math.ceil((effectiveEnd - effectiveStart) / (1000 * 60 * 60 * 24));
+                                                    bookedCoreNights += Math.ceil((effectiveEnd - effectiveStart) / (1000 * 60 * 60 * 24));
                                                 }
                                             });
                                         }
 
-                                        const isFullyBooked = bookedNights >= totalEventNights;
-                                        const isPartiallyBooked = bookedNights > 0 && bookedNights < totalEventNights;
+                                        const isFullyBooked = bookedCoreNights >= coreEventNights;
+                                        // Partial if ANY booking exists (even outside core) but not full core
+                                        const hasAnyBookings = site.bookings && site.bookings.length > 0;
+                                        const isPartiallyBooked = hasAnyBookings && !isFullyBooked;
+
 
                                         // Status Display:
                                         // 1. Fully Booked -> Red
