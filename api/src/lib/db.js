@@ -7,6 +7,19 @@ let poolPromise;
 
 // Helper to get or create the connection pool
 async function getPool() {
+    if (poolPromise) {
+        try {
+            const pool = await poolPromise;
+            if (pool.connected) {
+                return pool;
+            }
+            console.warn('DB Pool found but disconnected. Retrying connection...');
+        } catch (e) {
+            console.warn('Existing DB Pool promise failed. Retrying connection...', e);
+        }
+        poolPromise = null;
+    }
+
     if (!poolPromise) {
         poolPromise = sql.connect(config)
             .then(pool => {
@@ -32,7 +45,7 @@ async function query(command, parameters = []) {
         parameters.forEach(param => {
             request.input(param.name, param.type, param.value);
         });
-        
+
         const result = await request.query(command);
         return result.recordset;
     } catch (err) {

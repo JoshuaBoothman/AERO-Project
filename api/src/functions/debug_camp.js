@@ -10,7 +10,9 @@ app.http('debug_camp', {
 
         try {
             // 1. Check Event
-            const r1 = await pool.request().query(`SELECT * FROM events WHERE event_id = ${eventId}`);
+            const r1 = await pool.request()
+                .input('eventId', sql.Int, eventId)
+                .query('SELECT * FROM events WHERE event_id = @eventId');
 
             // 2. Check Campgrounds
             const r2 = await pool.request().query(`SELECT * FROM campgrounds WHERE event_id = ${eventId}`);
