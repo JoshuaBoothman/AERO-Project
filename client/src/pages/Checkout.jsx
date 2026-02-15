@@ -1,10 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useNotification } from '../context/NotificationContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { formatDateTimeForDisplay } from '../utils/dateHelpers';
 import CampsiteModal from '../components/CampsiteModal'; // [NEW] Import Modal
+import { PaymentForm, CreditCard } from 'react-square-web-payments-sdk';
+
+// [NEW] Square Sandbox Credentials
+const SQUARE_APP_ID = import.meta.env.VITE_SQUARE_APP_ID;
+const SQUARE_LOCATION_ID = import.meta.env.VITE_SQUARE_LOCATION_ID;
 
 function Checkout() {
     const { cart, removeFromCart, clearCart, cartTotal, cartItemCount, addToCart } = useCart(); // Destructure addToCart
@@ -13,19 +18,19 @@ function Checkout() {
     const navigate = useNavigate();
     const location = useLocation();
 
+    // [UPDATED] State
     const [loading, setLoading] = useState(false);
+    const [paymentMethod, setPaymentMethod] = useState('CARD'); // 'DEPOSIT' or 'CARD'
+    const [organization, setOrganization] = useState(null);
 
-    // Edit State
+    // [RESTORED] Edit State
     const [editingItem, setEditingItem] = useState(null);
     const [editEvent, setEditEvent] = useState(null);
     const [editIndex, setEditIndex] = useState(null);
 
     const handleEdit = async (item, idx) => {
-        // Only for Campsites for now
         if (item.type !== 'CAMPSITE') return;
-
         if (!item.eventSlug) {
-            // Fallback: if no slug, maybe try to find event? Or just error.
             notify("Cannot edit this item (missing event context).", "error");
             return;
         }
@@ -35,7 +40,6 @@ function Checkout() {
             const res = await fetch(`/api/events/${item.eventSlug}`);
             if (!res.ok) throw new Error("Event not found");
             const data = await res.json();
-            // API returns { status, jsonBody: eventData } or similar structure
             const eventData = data.jsonBody || data;
 
             setEditEvent(eventData);
@@ -51,107 +55,149 @@ function Checkout() {
 
     const handleEditSave = (newItems) => {
         if (editIndex === null) return;
-
-        // Remove old item
         removeFromCart(editIndex);
-
-        // Add new item(s) to cart
-        // Note: addToCart might append to end. 
-        // This changes order, but acceptable for Cart.
         newItems.forEach(i => addToCart(i));
-
         setEditingItem(null);
         setEditEvent(null);
         setEditIndex(null);
         notify("Booking updated", "success");
     };
 
-    const handleCheckout = async () => {
+    // [NEW] Fetch Organization Settings
+    useEffect(() => {
+        fetch('/api/getOrganization')
+            .then(res => res.json())
+            .then(data => setOrganization(data))
+            .catch(err => console.error("Failed to fetch org settings", err));
+    }, []);
+
+    // [NEW] Helper: Just creates the order in the DB
+    const createOrderRecord = async () => {
+        const eventId = cart[0]?.eventId;
+        if (!eventId) throw new Error("No event associated with cart items.");
+
+        // Group Items
+        const tickets = cart.filter(i => i.type === 'TICKET');
+        const campsites = cart.filter(i => i.type === 'CAMPSITE');
+        const merch = cart.filter(i => i.type === 'MERCH');
+        const assets = cart.filter(i => i.type === 'ASSET');
+        const subevents = cart.filter(i => i.type === 'SUBEVENT');
+
+        const payload = {
+            eventId: eventId,
+            items: tickets.map(t => ({
+                ticketTypeId: t.id,
+                quantity: t.quantity,
+                attendees: t.attendees || []
+            })),
+            campsites: campsites.map(c => ({
+                campsiteId: c.id,
+                checkIn: c.checkIn,
+                checkOut: c.checkOut,
+                price: c.price,
+                adults: c.adults,
+                children: c.children,
+                legacyOrderId: c.legacyOrderId // [NEW] Pass legacy ID
+            })),
+            merchandise: merch.map(m => ({
+                skuId: m.id,
+                quantity: m.quantity,
+                price: m.price
+            })),
+            assets: assets.map(a => ({
+                assetId: a.assetTypeId || a.assetId || a.id,
+                assetTypeId: a.assetTypeId || a.assetId || a.id,
+                checkIn: a.checkIn,
+                checkOut: a.checkOut,
+                price: a.price,
+                selectedOptionId: a.selectedOptionId || null // [NEW]
+            })),
+            subevents: subevents.map(s => ({
+                subeventId: s.id,
+                price: s.price,
+                selectedOptions: s.selectedOptions || {},
+                attendeeId: s.attendeeId,
+                attendeeTempId: s.attendeeTempId,
+                guestName: s.guestName,
+                note: s.note // [NEW] Pass note to backend
+            }))
+        };
+
+        // Fetch call
+        const res = await fetch('/api/createOrder', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'X-Auth-Token': token
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.error || "Order creation failed");
+        }
+        return await res.json(); // Returns { orderId, total, invoiceNumber }
+    };
+
+    // [NEW] Option 1: Direct Deposit
+    const handleDepositCheckout = async () => {
         if (!token) {
             notify("Please login to checkout.", "error");
             navigate('/login', { state: { from: location } });
             return;
         }
-
         setLoading(true);
         try {
-            const eventId = cart[0]?.eventId;
-            if (!eventId) {
-                notify("Error: No event associated with cart items.", "error");
-                setLoading(false);
-                return;
-            }
+            const data = await createOrderRecord();
+            notify(`Order Success! ID: ${data.orderId}`, "success");
+            clearCart();
+            navigate(`/orders/${data.orderId}/invoice`);
+        } catch (e) {
+            console.error(e);
+            notify('Checkout Failed: ' + e.message, "error");
+        } finally {
+            setLoading(false);
+        }
+    };
 
-            // Group Items
-            const tickets = cart.filter(i => i.type === 'TICKET');
-            const campsites = cart.filter(i => i.type === 'CAMPSITE');
-            const merch = cart.filter(i => i.type === 'MERCH');
-            const assets = cart.filter(i => i.type === 'ASSET');
-            const subevents = cart.filter(i => i.type === 'SUBEVENT');
+    // [NEW] Option 2: Square Payment
+    const handleSquarePayment = async (tokenResult) => {
+        setLoading(true);
+        try {
+            // 1. Create Order
+            const orderData = await createOrderRecord();
 
-            const payload = {
-                eventId: eventId,
-                items: tickets.map(t => ({
-                    ticketTypeId: t.id,
-                    quantity: t.quantity,
-                    attendees: t.attendees || []
-                })),
-                campsites: campsites.map(c => ({
-                    campsiteId: c.id,
-                    checkIn: c.checkIn,
-                    checkOut: c.checkOut,
-                    price: c.price,
-                    adults: c.adults,
-                    children: c.children,
-                    legacyOrderId: c.legacyOrderId // [NEW] Pass legacy ID
-                })),
-                merchandise: merch.map(m => ({
-                    skuId: m.id,
-                    quantity: m.quantity,
-                    price: m.price
-                })),
-                assets: assets.map(a => ({
-                    assetId: a.assetTypeId || a.assetId || a.id,
-                    assetTypeId: a.assetTypeId || a.assetId || a.id,
-                    checkIn: a.checkIn,
-                    checkOut: a.checkOut,
-                    price: a.price,
-                    selectedOptionId: a.selectedOptionId || null // [NEW]
-                })),
-                subevents: subevents.map(s => ({
-                    subeventId: s.id,
-                    price: s.price,
-                    selectedOptions: s.selectedOptions || {},
-                    attendeeId: s.attendeeId,
-                    attendeeTempId: s.attendeeTempId,
-                    guestName: s.guestName,
-                    note: s.note // [NEW] Pass note to backend
-                }))
-            };
-
-            const res = await fetch('/api/createOrder', {
+            // 2. Process Payment
+            const payRes = await fetch('/api/processSquarePayment', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
                     'X-Auth-Token': token
                 },
-                body: JSON.stringify(payload)
+                body: JSON.stringify({
+                    orderId: orderData.orderId,
+                    sourceId: tokenResult.token
+                })
             });
 
-            if (res.ok) {
-                const data = await res.json();
-                notify(`Order Success! ID: ${data.orderId}`, "success");
+            if (!payRes.ok) {
+                const err = await payRes.json();
+                notify(`Payment Failed: ${err.error}. Order saved.`, "warning");
                 clearCart();
-                navigate(`/orders/${data.orderId}/invoice`);
-            } else {
-                const err = await res.json();
-                notify('Checkout Failed: ' + err.error, "error");
+                navigate(`/orders/${orderData.orderId}/invoice`);
+                return;
             }
+
+            notify("Payment Successful!", "success");
+            clearCart();
+            navigate(`/orders/${orderData.orderId}/invoice`);
 
         } catch (e) {
             console.error(e);
-            notify('Error submitting order', "error");
+            notify("Error processing order: " + e.message, "error");
         } finally {
             setLoading(false);
         }
@@ -294,28 +340,88 @@ function Checkout() {
                 </div>
 
                 {/* Total Section */}
+                {/* Total & Payment Section */}
                 <div className="bg-gray-50 p-8 border-t border-gray-200">
                     <div className="flex justify-between items-center mb-8">
                         <span className="text-xl font-medium text-gray-600">Total Amount</span>
                         <span className="text-4xl font-bold text-primary">${cartTotal.toFixed(2)}</span>
                     </div>
 
-                    <button
-                        onClick={handleCheckout}
-                        disabled={loading}
-                        className="w-full bg-primary text-secondary py-4 rounded-lg text-xl font-bold hover:brightness-110 shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-3"
-                    >
-                        {loading ? (
-                            <>
-                                <span className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></span>
-                                Processing...
-                            </>
+                    {/* Payment Method Selector */}
+                    <div className="mb-8">
+                        <h3 className="text-lg font-semibold text-gray-800 mb-4">Payment Method</h3>
+                        <div className="flex gap-4">
+                            <label className={`flex items-center gap-2 p-4 rounded-lg border cursor-pointer transition-all flex-1 ${paymentMethod === 'DEPOSIT' ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200' : 'border-gray-200 bg-white hover:border-gray-300'}`}>
+                                <input
+                                    type="radio" name="payment" value="DEPOSIT"
+                                    checked={paymentMethod === 'DEPOSIT'}
+                                    onChange={() => setPaymentMethod('DEPOSIT')}
+                                    className="w-5 h-5 text-blue-600"
+                                />
+                                <span className="font-medium text-gray-700">Bank Transfer / Pay Later</span>
+                            </label>
+
+                            <label className={`flex items-center gap-2 p-4 rounded-lg border cursor-pointer transition-all flex-1 ${paymentMethod === 'CARD' ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200' : 'border-gray-200 bg-white hover:border-gray-300'}`}>
+                                <input
+                                    type="radio" name="payment" value="CARD"
+                                    checked={paymentMethod === 'CARD'}
+                                    onChange={() => setPaymentMethod('CARD')}
+                                    className="w-5 h-5 text-blue-600"
+                                />
+                                <span className="font-medium text-gray-700">Credit Card (Square)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    {/* Action Area */}
+                    <div className="w-full">
+                        {paymentMethod === 'DEPOSIT' ? (
+                            <div className="space-y-4">
+                                {organization && (
+                                    <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 text-sm text-blue-800">
+                                        <h4 className="font-bold mb-2">Bank Transfer Details</h4>
+                                        <p><strong>Account Name:</strong> {organization.bank_account_name || 'N/A'}</p>
+                                        <p><strong>BSB:</strong> {organization.bank_bsb || 'N/A'}</p>
+                                        <p><strong>Account Number:</strong> {organization.bank_account_number || 'N/A'}</p>
+                                        <div className="mt-3 text-xs bg-white p-2 rounded border border-blue-100">
+                                            ⚠️ <strong>Important:</strong> Please wait for the next screen to get your <strong>Reference Number</strong> before transferring.
+                                        </div>
+                                    </div>
+                                )}
+                                <button
+                                    onClick={handleDepositCheckout}
+                                    disabled={loading}
+                                    className="w-full bg-primary text-secondary py-4 rounded-lg text-xl font-bold hover:brightness-110 shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-3"
+                                >
+                                    {loading ? 'Processing...' : 'Place Order (Pay Later)'}
+                                </button>
+                            </div>
                         ) : (
-                            <>
-                                🔒 Secure Pay Now
-                            </>
+                            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+                                <h4 className="font-bold text-gray-700 mb-4">Enter Card Details</h4>
+                                <PaymentForm
+                                    applicationId={SQUARE_APP_ID}
+                                    locationId={SQUARE_LOCATION_ID}
+                                    cardTokenizeResponseReceived={handleSquarePayment}
+                                >
+                                    <CreditCard
+                                        buttonProps={{
+                                            css: {
+                                                backgroundColor: '#0055AA',
+                                                color: '#fff',
+                                                fontSize: '18px',
+                                                fontWeight: 'bold',
+                                                padding: '16px',
+                                                borderRadius: '8px',
+                                            }
+                                        }}
+                                    >
+                                        {loading ? 'Processing Payment...' : `Pay $${cartTotal.toFixed(2)}`}
+                                    </CreditCard>
+                                </PaymentForm>
+                            </div>
                         )}
-                    </button>
+                    </div>
                 </div>
             </div>
 

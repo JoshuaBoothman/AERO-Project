@@ -96,7 +96,6 @@ export function CartProvider({ children }) {
                                         eventSlug: item.event_slug,
                                         adults: 1, // Default from legacy import
                                         children: 0,
-                                        children: 0,
                                         isLegacy: true, // Mark as legacy
                                         legacyOrderId: item.order_id, // Store ID to prevent duplication on next load
                                         basePrice: finalPrice // LOCK the base price for future edits

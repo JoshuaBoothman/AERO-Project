@@ -1,6 +1,7 @@
 const { app } = require('@azure/functions');
 const { validateToken } = require('../lib/auth');
 const { getPool, sql } = require('../lib/db');
+const { sendOrderConfirmationEmail } = require('../lib/emailService');
 
 app.http('createOrder', {
     methods: ['POST'],
@@ -847,6 +848,40 @@ app.http('createOrder', {
                 // No transaction record created yet (Pending Payment)
 
                 await transaction.commit();
+
+                // 9. Send Confirmation Email
+                try {
+                    // Fetch Org Settings
+                    const orgReq = new sql.Request(pool);
+                    const orgRes = await orgReq.query("SELECT TOP 1 bank_account_name, bank_bsb, bank_account_number FROM organization_settings");
+
+                    let bankDetails = {
+                        accountName: 'Aeromodelling Club',
+                        bsb: '000-000',
+                        accountNumber: '00000000'
+                    };
+
+                    if (orgRes.recordset.length > 0) {
+                        const s = orgRes.recordset[0];
+                        bankDetails = {
+                            accountName: s.bank_account_name || 'Aeromodelling Club',
+                            bsb: s.bank_bsb || 'N/A',
+                            accountNumber: s.bank_account_number || 'N/A'
+                        };
+                    }
+
+                    await sendOrderConfirmationEmail(
+                        user.email,
+                        user.firstName,
+                        invoiceNumber,
+                        totalAmount,
+                        bankDetails
+                    );
+
+                } catch (emailErr) {
+                    context.log(`Failed to send order confirmation email: ${emailErr.message}`);
+                    // Swallow error so order succeeds
+                }
 
                 return {
                     status: 200,

@@ -266,6 +266,7 @@ function AdminOrders() {
                                     <th className="p-4">Customer</th>
                                     <th className="p-4">Items</th>
                                     <th className="p-4">Total</th>
+                                    <th className="p-4">Payment Method</th>
                                     <th className="p-4">Status</th>
                                     <th className="p-4">Action</th>
                                 </tr>
@@ -294,6 +295,9 @@ function AdminOrders() {
                                             {order.amount_paid > 0 && order.amount_paid < order.total_amount && (
                                                 <div className="text-xs text-orange-600 font-normal">Paid: ${order.amount_paid.toFixed(2)}</div>
                                             )}
+                                        </td>
+                                        <td className="p-4 text-sm text-gray-600">
+                                            {order.payment_method || <span className="text-gray-400 italic">-</span>}
                                         </td>
                                         <td className="p-4">
                                             <span className={`inline-block px-2 py-1 rounded text-xs font-bold uppercase border ${getStatusColor(order.payment_status)}`}>

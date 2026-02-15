@@ -1,3 +1,26 @@
+## [2026-02-15] - Invoice Square Payment (Completed)
+- **Time**: 11:35 - 11:50
+- **Completed Items**:
+    - **Feature (Frontend)**: Added `Square Payment Form` to `Invoice.jsx`, allowing users to pay outstanding balances directly on the invoice page.
+    - **Logic**: Integrated `handleSquarePayment` to process transactions via the API and auto-refresh the invoice status upon success.
+    - **UI**: Added conditional rendering to show the payment form only when a balance is due, matching the styling of the Checkout page.
+    - **Verification**: Verified end-to-end payment flow using Sandbox credentials.
+    - **Documentation**: Updated `task.md` and `walkthrough.md`.
+
+## [2026-02-15] - Square Payment Integration
+- **Time**: 09:50 - 11:35
+- **Completed Items**:
+    - **Feature (Backend)**: Implemented `processSquarePayment` Azure Function using `square` SDK (v44+).
+    - **Feature (Frontend)**: Integrated `react-square-web-payments-sdk` into `Checkout.jsx`, adding "Pay with Card" option alongside "Direct Deposit".
+    - **Configuration**: Refactored frontend credentials to use `.env` (`VITE_SQUARE_APP_ID`, `VITE_SQUARE_LOCATION_ID`).
+    - **Bug Fixes**:
+        - Restored missing `handleEdit`/`handleEditSave` logic in `Checkout.jsx` (accidental deletion).
+        - Fixed `CartContext` duplicate key error in `children: 0`.
+        - Fixed backend `SquareClient` initialization and `payments.create` method call for SDK v44 compatibility.
+        - Fixed "Order not found" error by removing invalid `orderId` from Square API request (uses Square ID, not local ID).
+    - **Verification**: Verified end-to-end payment flow in Sandbox.
+    - **Documentation**: Updated `task.md` and `walkthrough.md`.
+
 ## [2026-02-13] - Homepage Visual Overhaul
 **Milestone:** Static Assets Implementation & Hero Section Redesign
 

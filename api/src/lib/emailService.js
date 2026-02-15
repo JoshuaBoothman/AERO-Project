@@ -233,5 +233,73 @@ module.exports = {
     sendVerificationEmail,
     sendPublicRegistrationEmail,
     sendPasswordResetEmail,
-    sendLegacyWelcomeEmail
+    sendLegacyWelcomeEmail,
+    sendOrderConfirmationEmail
 };
+
+/**
+ * Sends an order confirmation email.
+ * @param {string} email - User's email.
+ * @param {string} firstName - User's first name.
+ * @param {string} invoiceNumber - The invoice number (e.g. INV-2024-123).
+ * @param {number} totalAmount - Total amount of the order.
+ * @param {object} bankDetails - { accountName, bsb, accountNumber }
+ */
+async function sendOrderConfirmationEmail(email, firstName, invoiceNumber, totalAmount, bankDetails) {
+    if (!process.env.RESEND_API_KEY) {
+        console.error('RESEND_API_KEY is missing.');
+        return { success: false, error: 'Misconfigured: Missing RESEND_API_KEY' };
+    }
+
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    const orgName = 'Aeromodelling'; // Or fetch from somewhere if dynamic
+
+    const bankHtml = `
+        <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <h3 style="margin-top: 0; color: #333;">Bank Transfer Details</h3>
+            <p style="margin: 5px 0;"><strong>Account Name:</strong> ${bankDetails.accountName}</p>
+            <p style="margin: 5px 0;"><strong>BSB:</strong> ${bankDetails.bsb}</p>
+            <p style="margin: 5px 0;"><strong>Account Number:</strong> ${bankDetails.accountNumber}</p>
+            <p style="margin: 5px 0;"><strong>Reference:</strong> ${invoiceNumber}</p>
+            <p style="color: #d9534f; font-size: 0.9em; margin-top: 10px;">
+                <strong>Note:</strong> If you have already paid via Credit Card, please disregard these payment instructions.
+            </p>
+        </div>
+    `;
+
+    try {
+        const data = await resend.emails.send({
+            from: `${orgName} <registrations@meandervalleywebdesign.com.au>`,
+            to: [email],
+            subject: `Order Confirmation: ${invoiceNumber}`,
+            html: `
+                <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 8px;">
+                    <h2 style="color: #28a745;">Order Confirmed!</h2>
+                    <p>Hi ${firstName || 'There'},</p>
+                    <p>Thank you for your order. Here is your order summary:</p>
+                    
+                    <div style="margin: 20px 0; font-size: 1.1em;">
+                        <p><strong>Order / Invoice:</strong> ${invoiceNumber}</p>
+                        <p><strong>Total Amount:</strong> $${Number(totalAmount).toFixed(2)}</p>
+                    </div>
+
+                    ${bankHtml}
+
+                    <p>A receipt/invoice is attached to your account dashboard.</p>
+                    <p>Thanks,<br/>${orgName} Team</p>
+                </div>
+            `
+        });
+
+        if (data.error) {
+            console.error('Resend API error:', data.error);
+            return { success: false, error: data.error };
+        }
+
+        console.log(`Order confirmation email sent to ${email} for ${invoiceNumber}`);
+        return { success: true, data };
+    } catch (error) {
+        console.error('Error sending order confirmation email:', error);
+        return { success: false, error };
+    }
+}

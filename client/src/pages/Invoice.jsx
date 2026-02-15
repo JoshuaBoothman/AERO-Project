@@ -1,41 +1,87 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext'; // [NEW] Import Notification
+import { PaymentForm, CreditCard } from 'react-square-web-payments-sdk'; // [NEW] Import Square SDK
+
+// [NEW] Square Credentials
+const SQUARE_APP_ID = import.meta.env.VITE_SQUARE_APP_ID;
+const SQUARE_LOCATION_ID = import.meta.env.VITE_SQUARE_LOCATION_ID;
 
 function Invoice() {
     const { orderId } = useParams();
     const { token } = useAuth();
+    const { notify } = useNotification(); // [NEW] Use Notification
     const [order, setOrder] = useState(null);
     const [organization, setOrganization] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [paymentLoading, setPaymentLoading] = useState(false); // [NEW] Payment Loading State
     const [error, setError] = useState(null);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                // Fetch Order
-                const ordRes = await fetch(`/api/orders/${orderId}`, {
-                    headers: { 'Authorization': `Bearer ${token}`, 'X-Auth-Token': token }
-                });
-                if (!ordRes.ok) throw new Error("Order not found");
-                const ordData = await ordRes.json();
-                setOrder(ordData);
+    // [NEW] Fetch Data Function
+    const fetchOrderData = async () => {
+        try {
+            // Fetch Order
+            const ordRes = await fetch(`/api/orders/${orderId}`, {
+                headers: { 'Authorization': `Bearer ${token}`, 'X-Auth-Token': token }
+            });
+            if (!ordRes.ok) throw new Error("Order not found");
+            const ordData = await ordRes.json();
+            setOrder(ordData);
 
-                // Fetch Org Settings
-                const orgRes = await fetch(`/api/getOrganization`);
-                if (orgRes.ok) {
-                    const orgData = await orgRes.json();
-                    setOrganization(orgData);
-                }
-
-            } catch (err) {
-                setError(err.message);
-            } finally {
-                setLoading(false);
+            // Fetch Org Settings (only need once really, but fine here)
+            const orgRes = await fetch(`/api/getOrganization`);
+            if (orgRes.ok) {
+                const orgData = await orgRes.json();
+                setOrganization(orgData);
             }
-        };
-        fetchData();
+
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchOrderData();
     }, [orderId, token]);
+
+    // [NEW] Handle Square Payment
+    const handleSquarePayment = async (tokenResult) => {
+        setPaymentLoading(true);
+        try {
+            const payRes = await fetch('/api/processSquarePayment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    'X-Auth-Token': token
+                },
+                body: JSON.stringify({
+                    orderId: order.order_id,
+                    sourceId: tokenResult.token
+                })
+            });
+
+            if (!payRes.ok) {
+                const err = await payRes.json();
+                notify(`Payment Failed: ${err.error}`, "error");
+                return;
+            }
+
+            notify("Payment Successful! Invoice updated.", "success");
+            // Reload order data to reflect payment
+            setLoading(true); // Show main loading briefly or just re-fetch
+            await fetchOrderData();
+
+        } catch (e) {
+            console.error(e);
+            notify("Error processing payment: " + e.message, "error");
+        } finally {
+            setPaymentLoading(false);
+        }
+    };
 
     if (loading) return <div className="p-8">Loading Invoice...</div>;
     if (error) return <div className="p-8 text-red-600">Error: {error}</div>;
@@ -199,6 +245,35 @@ function Invoice() {
                         </div>
                     </div>
                 </div>
+
+                {/* Payment Section (Square) */}
+                {balanceDue > 0.01 && (
+                    <div className="mb-8 break-inside-avoid print:hidden">
+                        <div className="bg-white p-6 rounded border border-gray-200 shadow-sm max-w-md mx-auto">
+                            <h3 className="font-bold text-gray-800 mb-4 text-center">Pay Balance Online</h3>
+                            <PaymentForm
+                                applicationId={SQUARE_APP_ID}
+                                locationId={SQUARE_LOCATION_ID}
+                                cardTokenizeResponseReceived={handleSquarePayment}
+                            >
+                                <CreditCard
+                                    buttonProps={{
+                                        css: {
+                                            backgroundColor: '#0055AA',
+                                            color: '#fff',
+                                            fontSize: '18px',
+                                            fontWeight: 'bold',
+                                            padding: '16px',
+                                            borderRadius: '8px',
+                                        }
+                                    }}
+                                >
+                                    {paymentLoading ? 'Processing Payment...' : `Pay $${balanceDue.toFixed(2)}`}
+                                </CreditCard>
+                            </PaymentForm>
+                        </div>
+                    </div>
+                )}
 
                 {/* Bank Details (If unpaid) */}
                 {balanceDue > 0.01 && (

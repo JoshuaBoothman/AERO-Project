@@ -56,7 +56,8 @@ app.http('getAdminOrders', {
                      FROM order_items oi 
                      JOIN attendees a ON oi.attendee_id = a.attendee_id 
                      JOIN events e ON a.event_id = e.event_id 
-                     WHERE oi.order_id = o.order_id) as event_id
+                     WHERE oi.order_id = o.order_id) as event_id,
+                    pm.payment_method
                 FROM orders o
                 LEFT JOIN users u ON o.user_id = u.user_id
                 OUTER APPLY (
@@ -64,6 +65,12 @@ app.http('getAdminOrders', {
                     FROM persons 
                     WHERE user_id = u.user_id
                 ) p
+                OUTER APPLY (
+                     SELECT TOP 1 payment_method
+                     FROM transactions t
+                     WHERE t.order_id = o.order_id AND t.status = 'Success'
+                     ORDER BY t.timestamp DESC
+                ) pm
                 WHERE 1=1
             `;
 
