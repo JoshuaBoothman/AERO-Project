@@ -205,6 +205,13 @@ async function sendLegacyWelcomeEmail(email, token, firstName, organizationName,
                 <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto;">
                     <h2>Welcome back, ${firstName}!</h2>
                     <p>A campsite booking (<strong>${campsiteName}</strong>) has been reserved for you for the upcoming event.</p>
+                    
+                    <div style="background-color: #fff3cd; color: #856404; padding: 15px; border-left: 4px solid #ffeeba; margin: 20px 0;">
+                        <strong>Important Notice:</strong> 
+                        The website will not be live for new registrations until <strong>Thursday 19th February at 4:00 PM (QLD Time)</strong>. 
+                        Please do not attempt to claim your account until that time.
+                    </div>
+
                     <p>To confirm this booking and pay, you need to active your account.</p>
                     <div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #007bff; margin: 20px 0;">
                         <strong>Action Required:</strong> Please register an account using this email address: <strong>${email}</strong>

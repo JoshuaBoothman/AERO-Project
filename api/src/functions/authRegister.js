@@ -9,6 +9,24 @@ app.http('authRegister', {
         try {
             const { email, password, firstName, lastName, ausNumber } = await request.json();
 
+            // 0. Check Registration Lock
+            try {
+                const settingsRes = await query("SELECT TOP 1 registration_lock_until FROM organization_settings");
+                if (settingsRes.length > 0 && settingsRes[0].registration_lock_until) {
+                    const lockDate = new Date(settingsRes[0].registration_lock_until);
+                    const now = new Date();
+                    if (now < lockDate) {
+                        return {
+                            status: 403,
+                            body: "Registrations are closed until Thursday 19th Feb at 4pm QLD time."
+                        };
+                    }
+                }
+            } catch (err) {
+                context.log(`Error checking registration lock: ${err.message}`);
+                // Proceed if check fails (fail open? or fail closed? Fail open is better for UX if DB is acting up, but riskier. Let's fail open but log.)
+            }
+
             if (!email || !password || !firstName || !lastName || !ausNumber) {
                 return { status: 400, body: "Missing required fields (including AUS Number)." };
             }

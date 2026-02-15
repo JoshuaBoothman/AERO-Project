@@ -1,3 +1,23 @@
+## [2026-02-15] - Lock New Registrations Until Launch (Completed)
+- **Time**: 15:15 - 15:35
+- **Completed Items**:
+    - **Feature**: Restricted new user registrations until Thursday 19th February 2026 at 4:00 PM QLD Time.
+    - **Database**:
+        - Added `registration_lock_until` column to `organization_settings` table (via Manual Script).
+    - **Backend (API)**:
+        - Updated `authRegister.js` to reject registration attempts during the lock period (Returns 403).
+        - Updated `emailService.js` to include a warning in "Legacy Welcome" emails about the lock period.
+    - **Frontend (Client)**:
+        - Updated `Login.jsx` to disable "Create Account" button and show a warning message when locked.
+        - Updated `Register.jsx` to disable the registration form and show a warning message when locked.
+        - **Bug Fix**: Fixed `ReferenceError: useEffect is not defined` in `Login.jsx`.
+    - **Verification**:
+        - Verified database date parsing logic via script (`api/src/scripts/checkLock.js`).
+        - Confirmed lock status is active for current date (Feb 15) vs lock date (Feb 19).
+    - **Documentation**:
+        - Archived implementation plan to `completed/`.
+        - Created `walkthrough.md`.
+
 ## [2026-02-15] - Subevent Date Display Fix (Completed)
 - **Time**: 15:00 - 15:10
 - **Completed Items**:

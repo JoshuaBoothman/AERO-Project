@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 
 function Register() {
@@ -10,7 +10,22 @@ function Register() {
     password: ''
   });
   const [error, setError] = useState('');
+  const [registrationLocked, setRegistrationLocked] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    fetch('/api/getOrganization')
+      .then(res => res.json())
+      .then(data => {
+        if (data.registration_lock_until) {
+          const lock = new Date(data.registration_lock_until);
+          if (new Date() < lock) {
+            setRegistrationLocked(true);
+          }
+        }
+      })
+      .catch(err => console.error("Error fetching lock status:", err));
+  }, []);
 
   const [success, setSuccess] = useState(false);
 
@@ -57,7 +72,23 @@ function Register() {
     <div className="auth-container" style={{ maxWidth: '400px', margin: '2rem auto', padding: '2rem' }}>
       <h1>Register</h1>
       {error && <p style={{ color: 'red' }}>{error}</p>}
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', textAlign: 'left' }}>
+
+      {registrationLocked && (
+        <div style={{
+          padding: '0.75rem',
+          marginBottom: '1rem',
+          backgroundColor: '#fff3cd',
+          color: '#856404',
+          border: '1px solid #ffeeba',
+          borderRadius: '4px',
+          fontSize: '0.9rem'
+        }}>
+          <strong>Registration Locked</strong><br />
+          New registrations are closed until Thursday 19th Feb at 4:00 PM (QLD Time).
+        </div>
+      )}
+
+      <form onSubmit={(e) => { if (registrationLocked) e.preventDefault(); else handleSubmit(e); }} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', textAlign: 'left', opacity: registrationLocked ? 0.6 : 1, pointerEvents: registrationLocked ? 'none' : 'auto' }}>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
           <label style={{ fontWeight: 600, fontSize: '0.9rem' }}>First Name</label>

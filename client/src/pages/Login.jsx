@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -11,6 +11,26 @@ function Login() {
   const location = useLocation();
   const redirectTo = location.state?.from || null;
   const infoMessage = location.state?.message || null;
+
+  const [registrationLocked, setRegistrationLocked] = useState(false);
+  const [lockDate, setLockDate] = useState(null);
+
+  useEffect(() => {
+    // Check for registration lock
+    fetch('/api/getOrganization')
+      .then(res => res.json())
+      .then(data => {
+        if (data.registration_lock_until) {
+          const lock = new Date(data.registration_lock_until);
+          const now = new Date();
+          if (now < lock) {
+            setRegistrationLocked(true);
+            setLockDate(lock);
+          }
+        }
+      })
+      .catch(err => console.error("Failed to fetch org settings:", err));
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -47,7 +67,39 @@ function Login() {
     <div className="auth-container" style={{ maxWidth: '400px', margin: '2rem auto', padding: '2rem' }}>
       <div style={{ marginBottom: '2rem', borderBottom: '1px solid #eee', paddingBottom: '1.5rem', textAlign: 'center' }}>
         <p style={{ marginBottom: '1rem', color: '#666' }}>Don't have an account?</p>
-        <Link to="/register" className="primary-button" style={{ display: 'block', width: '100%', boxSizing: 'border-box', textDecoration: 'none', backgroundColor: 'var(--accent-color)', color: 'var(--primary-color)' }}>
+
+        {registrationLocked && (
+          <div style={{
+            padding: '0.75rem',
+            marginBottom: '1rem',
+            backgroundColor: '#fff3cd',
+            color: '#856404',
+            border: '1px solid #ffeeba',
+            borderRadius: '4px',
+            fontSize: '0.9rem'
+          }}>
+            <strong>Registration Locked</strong><br />
+            New registrations are closed until Thursday 19th Feb at 4:00 PM (QLD Time).
+          </div>
+        )}
+
+        <Link
+          to={registrationLocked ? "#" : "/register"}
+          className="primary-button"
+          style={{
+            display: 'block',
+            width: '100%',
+            boxSizing: 'border-box',
+            textDecoration: 'none',
+            backgroundColor: registrationLocked ? '#cccccc' : 'var(--accent-color)',
+            color: registrationLocked ? '#666666' : 'var(--primary-color)',
+            pointerEvents: registrationLocked ? 'none' : 'auto',
+            cursor: registrationLocked ? 'not-allowed' : 'pointer'
+          }}
+          onClick={(e) => {
+            if (registrationLocked) e.preventDefault();
+          }}
+        >
           Create an Account
         </Link>
       </div>
