@@ -1,3 +1,14 @@
+## [2026-02-15] - Subevent Date Display Fix (Completed)
+- **Time**: 15:00 - 15:10
+- **Completed Items**:
+    - **Bug Fix**: Resolved date discrepancy in "Official Dinner Subevent (Auto-Add)" dropdown on Edit Event page.
+    - **Root Cause**: `EventForm.jsx` was using `toLocaleDateString`, extending the date into the next day due to timezone shifts (e.g., 4 PM UTC+10 becoming 2 AM UTC+10+Offset).
+    - **Method**: 
+        - Updated `EventForm.jsx` to use standardized `dateHelpers` (`formatDateForDisplayShortMonth`) which uses UTC methods to respect the stored "wall-clock" time.
+        - Implemented `formatDateForDisplayShortMonth` in `dateHelpers.js` to render dates as `dd-MMM-yyyy` (e.g., "11-Jul-2026") without a time component, as requested.
+    - **Verification**: Verified dropdown options now display correct date without time.
+    - **Documentation**: Archived code change plans to `completed/`.
+
 ## [2026-02-15] - Campsite Booking Status Fix (Completed)
 - **Time**: 14:35 - 14:55
 - **Completed Items**:

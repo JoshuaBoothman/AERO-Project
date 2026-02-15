@@ -6,7 +6,7 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical } from 'lucide-react';
-import { formatDateTimeForInput } from '../../utils/dateHelpers';
+import { formatDateTimeForInput, formatDateTimeForDisplay, formatDateForDisplay, formatDateForDisplayShortMonth } from '../../utils/dateHelpers';
 
 function SortableTicketRow({ ticket, onEdit, onDelete }) {
     const {
@@ -545,13 +545,7 @@ function EventForm() {
     const canBePublic = !(formData.status === 'Draft' || formData.status === 'Archived');
     const canPurchase = formData.status === 'Published';
 
-    // Helper to format date for display "10-Jan-2026"
-    const formatDateDisplay = (isoString) => {
-        if (!isoString) return '';
-        const date = new Date(isoString);
-        if (isNaN(date)) return '';
-        return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-    };
+
 
     const handleDeleteEvent = () => {
         confirm("Are you sure you want to delete this event? This action cannot be undone.", async () => {
@@ -618,7 +612,7 @@ function EventForm() {
                         />
                         {formData.start_date && (
                             <small style={{ color: '#666', display: 'block', marginTop: '0.2rem' }}>
-                                Selected: {formatDateDisplay(formData.start_date)}
+                                Selected: {formatDateForDisplay(formData.start_date)}
                             </small>
                         )}
                     </div>
@@ -631,7 +625,7 @@ function EventForm() {
                         />
                         {formData.end_date && (
                             <small style={{ color: '#666', display: 'block', marginTop: '0.2rem' }}>
-                                Selected: {formatDateDisplay(formData.end_date)}
+                                Selected: {formatDateForDisplay(formData.end_date)}
                             </small>
                         )}
                     </div>
@@ -648,7 +642,7 @@ function EventForm() {
                     />
                     {formData.dinner_date && (
                         <small style={{ color: '#666', display: 'block', marginTop: '0.2rem' }}>
-                            Selected: {formatDateDisplay(formData.dinner_date)}
+                            Selected: {formatDateForDisplay(formData.dinner_date)}
                         </small>
                     )}
                 </div>
@@ -666,7 +660,7 @@ function EventForm() {
                             <option value="">-- None --</option>
                             {subevents.map(s => (
                                 <option key={s.subevent_id} value={s.subevent_id}>
-                                    {s.name} ({formatDateDisplay(s.start_time)})
+                                    {s.name} ({formatDateForDisplayShortMonth(s.start_time)})
                                 </option>
                             ))}
                         </select>

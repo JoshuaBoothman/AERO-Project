@@ -85,3 +85,21 @@ export const formatDateTimeRange = (startStr, endStr) => {
     const formatTime = (d) => `${d.getUTCHours().toString().padStart(2, '0')}:${d.getUTCMinutes().toString().padStart(2, '0')}`;
     return `${d1.getUTCDate().toString().padStart(2, '0')}/${(d1.getUTCMonth() + 1).toString().padStart(2, '0')}/${d1.getUTCFullYear()} ${formatTime(d1)} - ${formatTime(d2)}`;
 };
+
+/**
+ * Format date for display with short month (DD-MMM-YYYY)
+ * e.g. 15-Feb-2026
+ * 
+ * @param {string|Date} dateStr - Date string or Date object
+ * @returns {string} Formatted display string
+ */
+export const formatDateForDisplayShortMonth = (dateStr) => {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    // Use UTC methods to extract the "wall clock" values without timezone conversion
+    const day = d.getUTCDate().toString().padStart(2, '0');
+    const month = months[d.getUTCMonth()];
+    const year = d.getUTCFullYear();
+    return `${day}-${month}-${year}`;
+};
