@@ -1,3 +1,11 @@
+## [2026-02-15] - Campsite Map Display Fix (Completed)
+- **Time**: 14:30 - 14:35
+- **Completed Items**:
+    - **Feature (Frontend)**: Updated public `CampingPage.jsx` map display to match Admin view.
+    - **UI**: Changed map container to `inline-block` and image to `maxWidth: none` to allow full-resolution display with scrollbars.
+    - **Verification**: Verified code changes to ensure pins remain correctly positioned relative to the full-size image.
+    - **Documentation**: Archived implementation plan to `completed/`. Created `walkthrough.md`.
+
 ## [2026-02-15] - Global Asset Management (Completed)
 - **Time**: 14:00 - 14:30
 - **Completed Items**:

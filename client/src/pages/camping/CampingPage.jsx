@@ -366,8 +366,8 @@ function CampingPage({ embedded = false, event = null }) {
                                                 {hoveredSite && (
                                                     <CampsiteTooltip site={hoveredSite} eventRange={eventBounds} />
                                                 )}
-                                                <div style={{ position: 'relative', minWidth: '1000px', width: '100%' }}>
-                                                    <img src={activeCampground.map_image_url} alt={activeCampground.name} style={{ width: '100%', display: 'block' }} />
+                                                <div style={{ position: 'relative', minWidth: '1000px', display: 'inline-block' }}>
+                                                    <img src={activeCampground.map_image_url} alt={activeCampground.name} style={{ display: 'block', maxWidth: 'none' }} />
 
                                                     {/* Render Pins */}
                                                     {activeCampground.sites.map(site => {
